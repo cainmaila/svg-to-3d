@@ -62,12 +62,15 @@
 	}
 
 	// 添加光源
-	const ambientLight = new THREE.AmbientLight(0x404040)
+	const ambientLight = new THREE.AmbientLight(0x000000)
 	scene.add(ambientLight)
 
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
 	directionalLight.position.set(1, 1, 1)
 	scene.add(directionalLight)
+	//更美的光源
+	const light = new THREE.HemisphereLight(0xffffbb, 0x080820)
+	scene.add(light)
 
 	// 渲染循環
 	function animate() {
