@@ -79,6 +79,10 @@
 		}
 	}
 
+	function onSelect() {
+		draw.on('click', selectShape)
+	}
+
 	//開始繪製
 	function startDrawing(event: MouseEvent) {
 		const point = getMousePosition(event)
@@ -201,9 +205,6 @@
 <div class="toolbar">
 	<fieldset>
 		<legend>繪製方式</legend>
-		<input type="radio" id="select" name="drawtype" on:change={() => setCurrentTool('select')} />
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label>選取</label>
 		<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect')} />
 		<!-- svelte-ignore a11y-label-has-associated-control -->
 		<label>矩形區域</label>
@@ -224,8 +225,10 @@
 	<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
 	id="drawing"
+	on:click={onSelect}
 	on:mousedown={startDrawing}
 	on:mousemove={drawing}
 	on:mouseup={endDrawing}
