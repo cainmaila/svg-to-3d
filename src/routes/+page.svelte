@@ -13,6 +13,7 @@
 	let pathString = '' //自由繪製的路徑
 	let selectedShape: any //選中的形狀
 	let draw: Svg //SVG 畫布
+	let svgContent: any //SVG 內容
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
@@ -83,6 +84,7 @@
 	function endDrawing() {
 		isDrawing = false
 		currentShape = null
+		svgContent = draw.svg()
 	}
 
 	//選擇形狀
