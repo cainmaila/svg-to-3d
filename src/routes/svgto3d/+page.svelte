@@ -41,6 +41,13 @@
 			return
 		}
 
+		//加個網格底座
+		const grid = new THREE.GridHelper(1000, 100, 0x888888, 0x444444)
+		// grid.position.y = -50
+		scene.add(grid)
+
+		//group置中
+		// group.position.y = -25
 		scene.add(group)
 		// 調整相機位置
 		const box = new THREE.Box3().setFromObject(group)

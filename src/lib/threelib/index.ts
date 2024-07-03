@@ -1,4 +1,4 @@
-import { DoubleSide, ExtrudeGeometry, Group, Mesh, MeshPhongMaterial, Shape, Vector2 } from "three"
+import { Box3, DoubleSide, ExtrudeGeometry, Group, Mesh, MeshPhongMaterial, Shape, Vector2, Vector3 } from "three"
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js"
 
 /**
@@ -61,7 +61,13 @@ export function svgToGroupSync(svgPath: string, {
                 }
             })
             //把groupr y軸旋轉90度
-            group.rotation.x = Math.PI / 2
+            group.rotation.x = -Math.PI / 2
+
+            //根據Box移到中心
+            const box = new Box3().setFromObject(group)
+            const center = box.getCenter(new Vector3())
+            group.position.x = -center.x
+            group.position.z = -center.z
 
             resolve(group)
         }, undefined, function (error) {
