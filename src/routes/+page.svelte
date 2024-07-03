@@ -19,6 +19,8 @@
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
+		loadImg('/back.png')
+
 		// 創建一個臨時的div來解析SVG內容
 		const tempDiv = document.createElement('div')
 		tempDiv.innerHTML = get(svgString$)
@@ -176,6 +178,23 @@
 	function clear() {
 		draw.clear()
 		svgString$.set('')
+	}
+
+	async function loadImg(path: string) {
+		const img = new Image()
+		img.onload = function (e) {
+			// 調整繪圖區域大小以匹配圖片
+			// draw.size(img.width, img.height)
+			// 創建一個新的圖片元素並設置為背景
+			const background = draw.image(path)
+			//縮到畫布大小
+			background.size(canvasWidth, canvasHeight)
+			background.back() // 將圖片移到最底層
+
+			// 可選：調整圖片透明度，使其更容易描繪
+			background.opacity(0.3)
+		}
+		img.src = path
 	}
 </script>
 
