@@ -16,7 +16,7 @@
 
 	init()
 	async function init() {
-		const group = await svgToGroupSync('/sss.svg', {
+		const group = await svgToGroupSync('/box.svg', {
 			lineWidth: 5, // 設置線段厚度和高度
 			wallHeight: 50,
 			color: 0xcccccc
