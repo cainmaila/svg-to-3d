@@ -6,7 +6,7 @@
 	import { get } from 'svelte/store'
 
 	//畫布大小
-	const canvasWidth = 500
+	const canvasWidth = 800
 	const canvasHeight = 500
 	const lineWidth = 5 //線條寬度
 
@@ -169,18 +169,18 @@
 			y: (event.clientY - CTM.f) / CTM.d
 		}
 	}
+
+	//清除所有形狀
+	function clear() {
+		draw.clear()
+		svgString$.set('')
+	}
 </script>
 
 <div class="toolbar">
 	<fieldset>
 		<legend>繪製方式</legend>
-		<input
-			type="radio"
-			id="select"
-			name="drawtype"
-			checked
-			on:change={() => setCurrentTool('select')}
-		/>
+		<input type="radio" id="select" name="drawtype" on:change={() => setCurrentTool('select')} />
 		<!-- svelte-ignore a11y-label-has-associated-control -->
 		<label>選取</label>
 		<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect')} />
@@ -198,6 +198,7 @@
 		<!-- svelte-ignore a11y-label-has-associated-control -->
 		<label>自由繪製</label>
 	</fieldset>
+	<button id="deleteBtn" on:click={clear}>清除全部</button>
 	<button id="deleteBtn" on:click={deleteSelected}>刪除選取</button>
 	<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
 </div>
@@ -213,6 +214,8 @@
 <style lang="postcss">
 	#drawing {
 		border: 1px solid #ccc;
+		width: 800px;
+		height: 500px;
 	}
 	.toolbar button {
 		margin: 5px;
