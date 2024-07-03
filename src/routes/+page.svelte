@@ -188,6 +188,7 @@
 	function clear() {
 		draw.clear()
 		svgString$.set('')
+		loadImg('/back.png')
 	}
 
 	async function loadImg(path: string) {
@@ -215,37 +216,39 @@
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
-<div class="toolbar">
-	<fieldset>
-		<legend>繪製方式</legend>
-		<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect')} />
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label>矩形區域</label>
-		<input type="radio" id="line" name="drawtype" on:change={() => setCurrentTool('line')} />
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label>直線</label>
-		<input
-			type="radio"
-			id="freeDraw"
-			name="drawtype"
-			on:change={() => setCurrentTool('freeDraw')}
-		/>
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label>自由繪製</label>
-	</fieldset>
-	<button id="deleteBtn" on:click={clear}>清除全部</button>
-	<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
-</div>
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-	id="drawing"
-	on:click={onSelect}
-	on:mousedown={startDrawing}
-	on:mousemove={drawing}
-	on:mouseup={endDrawing}
-	on:mouseleave={endDrawing}
-></div>
+<main class="container">
+	<div class="toolbar">
+		<fieldset>
+			<legend>繪製方式</legend>
+			<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect')} />
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label>矩形區域</label>
+			<input type="radio" id="line" name="drawtype" on:change={() => setCurrentTool('line')} />
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label>直線</label>
+			<input
+				type="radio"
+				id="freeDraw"
+				name="drawtype"
+				on:change={() => setCurrentTool('freeDraw')}
+			/>
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label>自由繪製</label>
+		</fieldset>
+		<button id="deleteBtn" on:click={clear}>清除全部</button>
+		<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
+	</div>
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<div
+		id="drawing"
+		on:click={onSelect}
+		on:mousedown={startDrawing}
+		on:mousemove={drawing}
+		on:mouseup={endDrawing}
+		on:mouseleave={endDrawing}
+	></div>
+</main>
 
 <style lang="postcss">
 	#drawing {
