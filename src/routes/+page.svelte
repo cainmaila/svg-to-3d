@@ -1,6 +1,9 @@
 <script lang="ts">
-	import { Rect, Svg, SVG, Line, Path } from '@svgdotjs/svg.js'
+	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import { onMount } from 'svelte'
+	import { svgString$ } from '$lib/stores'
+	import { goto } from '$app/navigation'
+	import { get } from 'svelte/store'
 
 	//畫布大小
 	const canvasWidth = 500
@@ -13,11 +16,55 @@
 	let pathString = '' //自由繪製的路徑
 	let selectedShape: any //選中的形狀
 	let draw: Svg //SVG 畫布
-	let svgContent: any //SVG 內容
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
+		// 創建一個臨時的div來解析SVG內容
+		const tempDiv = document.createElement('div')
+		tempDiv.innerHTML = get(svgString$)
+		// 獲取SVG元素
+		const svgElement = tempDiv.querySelector('svg')
+		if (!svgElement) {
+			return
+		}
+		// 將SVG元素的內容添加到繪圖區域
+		const svgChildren = Array.from(svgElement.children)
+		svgChildren.forEach((child) => {
+			if (child.tagName.toLowerCase() === 'rect') {
+				draw
+					.rect(child.width.baseVal.value, child.height.baseVal.value)
+					.move(child.x.baseVal.value, child.y.baseVal.value)
+					.attr(getAttributes(child))
+			} else if (child.tagName.toLowerCase() === 'line') {
+				draw
+					.line(
+						child.x1.baseVal.value,
+						child.y1.baseVal.value,
+						child.x2.baseVal.value,
+						child.y2.baseVal.value
+					)
+					.attr(getAttributes(child))
+			} else if (child.tagName.toLowerCase() === 'path') {
+				draw.path(child.getAttribute('d')).attr(getAttributes(child))
+			}
+		})
 	})
+
+	// 輔助函數：獲取元素的屬性
+	function getAttributes(element) {
+		const attrs = {}
+		for (let attr of element.attributes) {
+			if (
+				attr.name !== 'width' &&
+				attr.name !== 'height' &&
+				attr.name !== 'x' &&
+				attr.name !== 'y'
+			) {
+				attrs[attr.name] = attr.value
+			}
+		}
+		return attrs
+	}
 
 	//設置當前工具
 	function setCurrentTool(tool: string) {
@@ -84,7 +131,7 @@
 	function endDrawing() {
 		isDrawing = false
 		currentShape = null
-		svgContent = draw.svg()
+		svgString$.set(draw.svg())
 	}
 
 	//選擇形狀
@@ -125,11 +172,34 @@
 </script>
 
 <div class="toolbar">
-	<button id="rectBtn" on:click={() => setCurrentTool('rect')}>矩形區域</button>
-	<button id="lineBtn" on:click={() => setCurrentTool('line')}>直線</button>
-	<button id="freeDrawBtn" on:click={() => setCurrentTool('freeDraw')}>自由繪製</button>
-	<button id="selectBtn" on:click={() => setCurrentTool('select')}>選取</button>
-	<button id="deleteBtn" on:click={deleteSelected}>刪除</button>
+	<fieldset>
+		<legend>繪製方式</legend>
+		<input
+			type="radio"
+			id="select"
+			name="drawtype"
+			checked
+			on:change={() => setCurrentTool('select')}
+		/>
+		<!-- svelte-ignore a11y-label-has-associated-control -->
+		<label>選取</label>
+		<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect')} />
+		<!-- svelte-ignore a11y-label-has-associated-control -->
+		<label>矩形區域</label>
+		<input type="radio" id="line" name="drawtype" on:change={() => setCurrentTool('line')} />
+		<!-- svelte-ignore a11y-label-has-associated-control -->
+		<label>直線</label>
+		<input
+			type="radio"
+			id="freeDraw"
+			name="drawtype"
+			on:change={() => setCurrentTool('freeDraw')}
+		/>
+		<!-- svelte-ignore a11y-label-has-associated-control -->
+		<label>自由繪製</label>
+	</fieldset>
+	<button id="deleteBtn" on:click={deleteSelected}>刪除選取</button>
+	<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div

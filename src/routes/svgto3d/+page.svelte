@@ -1,8 +1,11 @@
 <script lang="ts">
 	import * as THREE from 'three'
-	import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-	import { createExtrudedLine, svgToGroupSync } from '$lib/threelib'
+	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
+	import { svgString$ } from '$lib/stores'
+	import { get } from 'svelte/store'
+	import { onDestroy } from 'svelte'
+	import { goto } from '$app/navigation'
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -16,11 +19,28 @@
 
 	init()
 	async function init() {
-		const group = await svgToGroupSync('/box.svg', {
-			lineWidth: 5, // 設置線段厚度和高度
-			wallHeight: 50,
-			color: 0xcccccc
-		})
+		const svgString = get(svgString$)
+		if (!svgString) {
+			goto('/', {
+				replaceState: true
+			})
+			return
+		}
+		let group
+		try {
+			const svg = svgStringToURL(svgString)
+			group = await svgToGroupSync(svg, {
+				lineWidth: 5, // 設置線段厚度和高度
+				wallHeight: 50,
+				color: 0xcccccc
+			})
+		} catch (error: any) {
+			goto('', {
+				replaceState: true
+			})
+			return
+		}
+
 		scene.add(group)
 		// 調整相機位置
 		const box = new THREE.Box3().setFromObject(group)
@@ -49,4 +69,8 @@
 		renderer.render(scene, camera)
 	}
 	animate()
+
+	onDestroy(() => {
+		renderer.domElement.remove()
+	})
 </script>
