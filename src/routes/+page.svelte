@@ -248,6 +248,7 @@
 		on:mouseup={endDrawing}
 		on:mouseleave={endDrawing}
 	></div>
+	<code>選取物件(黃色標示)，按Delete可刪除</code>
 </main>
 
 <style lang="postcss">
