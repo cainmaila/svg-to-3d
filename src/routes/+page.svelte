@@ -29,7 +29,7 @@
 		}
 		// 將SVG元素的內容添加到繪圖區域
 		const svgChildren = Array.from(svgElement.children)
-		svgChildren.forEach((child) => {
+		svgChildren.forEach((child: any) => {
 			if (child.tagName.toLowerCase() === 'rect') {
 				draw
 					.rect(child.width.baseVal.value, child.height.baseVal.value)
@@ -51,7 +51,7 @@
 	})
 
 	// 輔助函數：獲取元素的屬性
-	function getAttributes(element) {
+	function getAttributes(element: any) {
 		const attrs = {}
 		for (let attr of element.attributes) {
 			if (
@@ -60,6 +60,8 @@
 				attr.name !== 'x' &&
 				attr.name !== 'y'
 			) {
+				// 排除一些不需要的屬性
+				//@ts-ignore
 				attrs[attr.name] = attr.value
 			}
 		}
