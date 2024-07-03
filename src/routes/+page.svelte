@@ -1,17 +1,33 @@
 <script lang="ts">
-	import { Svg, SVG } from '@svgdotjs/svg.js'
+	import { Rect, Svg, SVG, Line, Path } from '@svgdotjs/svg.js'
 	import { onMount } from 'svelte'
 
-	let isDrawing = false
-	let currentShape: any
-	let currentTool = ''
-	let pathString = ''
-	let draw: Svg
+	//畫布大小
+	const canvasWidth = 500
+	const canvasHeight = 500
+	const lineWidth = 5 //線條寬度
+
+	let isDrawing = false //是否正在繪製
+	let currentShape: any //當前正在繪製的形狀
+	let currentTool = '' //當前選擇的工具
+	let pathString = '' //自由繪製的路徑
+	let selectedShape: any //選中的形狀
+	let draw: Svg //SVG 畫布
 
 	onMount(() => {
-		draw = SVG().addTo('#drawing').size(500, 500)
+		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
 	})
 
+	//設置當前工具
+	function setCurrentTool(tool: string) {
+		currentTool = tool
+		draw.off('click') //清除之前的事件監聽
+		if (tool === 'select') {
+			draw.on('click', selectShape)
+		}
+	}
+
+	//開始繪製
 	function startDrawing(event: MouseEvent) {
 		const point = getMousePosition(event)
 		isDrawing = true
@@ -22,20 +38,24 @@
 					.rect()
 					.move(point.x, point.y)
 					.fill('none')
-					.stroke({ color: 'white', width: 2 })
+					.stroke({ color: 'white', width: lineWidth })
 				break
 			case 'line':
 				currentShape = draw
 					.line(point.x, point.y, point.x, point.y)
-					.stroke({ color: 'white', width: 2 })
+					.stroke({ color: 'white', width: lineWidth })
 				break
 			case 'freeDraw':
 				pathString = `M${point.x},${point.y}`
-				currentShape = draw.path(pathString).fill('none').stroke({ color: 'white', width: 2 })
+				currentShape = draw
+					.path(pathString)
+					.fill('none')
+					.stroke({ color: 'white', width: lineWidth })
 				break
 		}
 	}
 
+	//繪製中
 	function drawing(event: MouseEvent) {
 		if (!isDrawing) return
 
@@ -59,11 +79,39 @@
 		}
 	}
 
+	//結束繪製
 	function endDrawing() {
 		isDrawing = false
 		currentShape = null
 	}
 
+	//選擇形狀
+	function selectShape(event: any) {
+		const clickedElement = event.target
+		if (selectedShape) {
+			selectedShape.stroke({ color: 'white' })
+		}
+		if (
+			clickedElement.instance.type === 'rect' ||
+			clickedElement.instance.type === 'line' ||
+			clickedElement.instance.type === 'path'
+		) {
+			selectedShape = clickedElement.instance
+			selectedShape.stroke({ color: 'yellow' })
+		} else {
+			selectedShape = null
+		}
+	}
+
+	//刪除選中的形狀
+	function deleteSelected() {
+		if (selectedShape) {
+			selectedShape.remove()
+			selectedShape = null
+		}
+	}
+
+	//獲取滑鼠位置
 	function getMousePosition(event: MouseEvent) {
 		const CTM = draw.node.getScreenCTM()
 		if (!CTM) return { x: 0, y: 0 }
@@ -75,9 +123,11 @@
 </script>
 
 <div class="toolbar">
-	<button id="rectBtn" on:click={() => (currentTool = 'rect')}>矩形</button>
-	<button id="lineBtn" on:click={() => (currentTool = 'line')}>直线</button>
-	<button id="freeDrawBtn" on:click={() => (currentTool = 'freeDraw')}>自由绘制</button>
+	<button id="rectBtn" on:click={() => setCurrentTool('rect')}>矩形區域</button>
+	<button id="lineBtn" on:click={() => setCurrentTool('line')}>直線</button>
+	<button id="freeDrawBtn" on:click={() => setCurrentTool('freeDraw')}>自由繪製</button>
+	<button id="selectBtn" on:click={() => setCurrentTool('select')}>選取</button>
+	<button id="deleteBtn" on:click={deleteSelected}>刪除</button>
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
