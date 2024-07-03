@@ -50,6 +50,12 @@
 				draw.path(child.getAttribute('d')).attr(getAttributes(child))
 			}
 		})
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Delete') {
+				deleteSelected()
+			}
+		})
 	})
 
 	// 輔助函數：獲取元素的屬性
@@ -200,8 +206,15 @@
 		}
 		img.src = path
 	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Backspace') {
+			deleteSelected()
+		}
+	}
 </script>
 
+<svelte:window on:keydown={handleKeydown} />
 <div class="toolbar">
 	<fieldset>
 		<legend>繪製方式</legend>
@@ -221,7 +234,6 @@
 		<label>自由繪製</label>
 	</fieldset>
 	<button id="deleteBtn" on:click={clear}>清除全部</button>
-	<button id="deleteBtn" on:click={deleteSelected}>刪除選取</button>
 	<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
