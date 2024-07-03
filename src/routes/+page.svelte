@@ -237,6 +237,8 @@
 		border: 1px solid #ccc;
 		width: 800px;
 		height: 500px;
+		user-select: none;
+		-webkit-user-drag: none;
 	}
 	.toolbar button {
 		margin: 5px;
