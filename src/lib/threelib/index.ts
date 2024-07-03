@@ -21,8 +21,6 @@ export function createExtrudedLine(start: Vector2, end: Vector2, width: number) 
 }
 
 
-
-
 // 創建 SVG 加載器
 const loader = new SVGLoader()
 /**
@@ -62,6 +60,9 @@ export function svgToGroupSync(svgPath: string, {
                     group.add(mesh)
                 }
             })
+            //把groupr y軸旋轉90度
+            group.rotation.x = Math.PI / 2
+
             resolve(group)
         }, undefined, function (error) {
             rehect(error)
@@ -69,3 +70,12 @@ export function svgToGroupSync(svgPath: string, {
     })
 }
 
+/**
+ * 將 SVG 字串轉換為 URL
+ * @param svgString
+ * @returns
+ */
+export function svgStringToURL(svgString: string) {
+    // const svg = new DOMParser().parseFromString(svgdata, 'image/svg+xml')
+    return URL.createObjectURL(new Blob([svgString], { type: "image/svg+xml" }))
+}
