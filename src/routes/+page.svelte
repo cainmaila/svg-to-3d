@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Svg, SVG } from '@svgdotjs/svg.js'
+	import '@svgdotjs/svg.draggable.js'
 	import { onMount } from 'svelte'
 	import { svgString$ } from '$lib/stores'
 	import { goto } from '$app/navigation'
@@ -16,6 +17,8 @@
 	let pathString = '' //自由繪製的路徑
 	let selectedShape: any //選中的形狀
 	let draw: Svg //SVG 畫布
+	let controlPoints: any[] = [] //控制點
+	let drawingArea: HTMLElement
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
@@ -57,6 +60,88 @@
 			}
 		})
 	})
+
+	// 創建控制點
+	function createControlPoint(x: number, y: number, index: number) {
+		const controlPoint = draw.circle(10).fill('blue').center(x, y).attr('cursor', 'pointer')
+		controlPoint.draggable()
+		controlPoint.on('dragmove', (event: any) => {
+			event.preventDefault()
+			const { handler, box } = event.detail
+			const { x, y } = box
+			handler.move(x, y)
+			// const _y = drawingArea?.offsetTop || 0
+			// const _x = drawingArea?.offsetLeft || 0
+			updateShape(x + 5, y + 5, index) // +5 是因為控制點的半徑是5
+		})
+		controlPoints.push(controlPoint)
+	}
+	// 更新 updateShape 函數
+	function updateShape(newX: number, newY: number, index: number) {
+		if (selectedShape.type === 'rect') {
+			const box = selectedShape.bbox()
+			switch (index) {
+				case 0: // 左上
+					selectedShape
+						.size(box.width + (box.x - newX), box.height + (box.y - newY))
+						.move(newX, newY)
+					break
+				case 1: // 右上
+					selectedShape.size(newX - box.x, box.height + (box.y - newY)).move(box.x, newY)
+					break
+				case 2: // 右下
+					selectedShape.size(newX - box.x, newY - box.y)
+					break
+				case 3: // 左下
+					selectedShape.size(box.width + (box.x - newX), newY - box.y).move(newX, box.y)
+					break
+			}
+			// 更新控制點位置
+			addControlPoints(selectedShape)
+		} else if (selectedShape.type === 'line') {
+			const line = selectedShape.array()
+			line[index] = [newX, newY]
+			selectedShape.plot(line)
+		} else if (selectedShape.type === 'path') {
+			const pathArray = selectedShape.array()
+			pathArray[index][1] = newX
+			pathArray[index][2] = newY
+			selectedShape.plot(pathArray)
+		}
+	}
+
+	// 添加控制點
+	function addControlPoints(shape: any) {
+		removeControlPoints() // 先移除舊的控制點
+		if (shape.type === 'rect') {
+			const box = shape.bbox()
+			const points = [
+				{ x: box.x, y: box.y }, // 左上
+				{ x: box.x + box.width, y: box.y }, // 右上
+				{ x: box.x + box.width, y: box.y + box.height }, // 右下
+				{ x: box.x, y: box.y + box.height } // 左下
+			]
+			points.forEach((point, index) => createControlPoint(point.x, point.y, index))
+		} else if (shape.type === 'line') {
+			const line = shape.array()
+			createControlPoint(line[0][0], line[0][1], 0) // 起點
+			createControlPoint(line[1][0], line[1][1], 1) // 終點
+		} else if (shape.type === 'path') {
+			// 對於路徑，我們可以添加每個路徑點的控制點
+			const pathArray = shape.array()
+			pathArray.forEach((segment: any, index: number) => {
+				if (segment[0] !== 'M') {
+					// 忽略移動命令
+					createControlPoint(segment[1], segment[2], index)
+				}
+			})
+		}
+	}
+	// 移除控制點
+	function removeControlPoints() {
+		controlPoints.forEach((point) => point.remove())
+		controlPoints = []
+	}
 
 	// 輔助函數：獲取元素的屬性
 	function getAttributes(element: any) {
@@ -153,6 +238,7 @@
 		const clickedElement = event.target
 		if (selectedShape) {
 			selectedShape.stroke({ color: 'white' })
+			removeControlPoints()
 		}
 		if (
 			clickedElement.instance.type === 'rect' ||
@@ -161,6 +247,7 @@
 		) {
 			selectedShape = clickedElement.instance
 			selectedShape.stroke({ color: 'yellow' })
+			addControlPoints(selectedShape)
 		} else {
 			selectedShape = null
 		}
@@ -169,6 +256,7 @@
 	//刪除選中的形狀
 	function deleteSelected() {
 		if (selectedShape) {
+			removeControlPoints() // 先移除舊的控制點
 			selectedShape.remove()
 			selectedShape = null
 		}
@@ -241,6 +329,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
+		bind:this={drawingArea}
 		id="drawing"
 		on:click={onSelect}
 		on:mousedown={startDrawing}
@@ -253,11 +342,17 @@
 
 <style lang="postcss">
 	#drawing {
+		position: relative;
 		border: 1px solid #ccc;
 		width: 800px;
 		height: 500px;
 		user-select: none;
 		-webkit-user-drag: none;
+		& svg {
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
 	}
 	.toolbar button {
 		margin: 5px;
