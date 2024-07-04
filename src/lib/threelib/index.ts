@@ -34,7 +34,8 @@ const loader = new SVGLoader()
  */
 export function svgToGroupSync(svgPath: string, {
     lineWidth = 5, // 設置線段厚度和高度
-    wallHeight = 50,
+    wallHeight = 100,
+    doorHigh = 50,
     color = 0xcccccc
 }) {
     return new Promise<Group>((resolve, rehect) => {
@@ -42,22 +43,48 @@ export function svgToGroupSync(svgPath: string, {
             const paths = data.paths
             const group = new Group()
             paths.forEach((path) => {
-                const points = path.subPaths[0].getPoints()
-                for (let i = 0; i < points.length - 1; i++) {
-                    const start = points[i]
-                    const end = points[i + 1]
-                    const shape = createExtrudedLine(start, end, lineWidth)
-                    const geometry = new ExtrudeGeometry(shape, {
-                        depth: wallHeight,
-                        bevelEnabled: false
-                    })
+                switch (path.userData?.node?.getAttribute('data-type')) {
+                    case 'door':
+                        {
+                            const points = path.subPaths[0].getPoints()
+                            for (let i = 0; i < points.length - 1; i++) {
+                                const start = points[i]
+                                const end = points[i + 1]
+                                const shape = createExtrudedLine(start, end, lineWidth * 2)
+                                const geometry = new ExtrudeGeometry(shape, {
+                                    depth: doorHigh,
+                                    bevelEnabled: false
+                                })
 
-                    const material = new MeshPhongMaterial({
-                        color,
-                        side: DoubleSide
-                    })
-                    const mesh = new Mesh(geometry, material)
-                    group.add(mesh)
+                                const material = new MeshPhongMaterial({
+                                    color,
+                                    // side: DoubleSide
+                                })
+                                const mesh = new Mesh(geometry, material)
+                                group.add(mesh)
+                            }
+                        }
+                        break
+                    default:
+                        {
+                            const points = path.subPaths[0].getPoints()
+                            for (let i = 0; i < points.length - 1; i++) {
+                                const start = points[i]
+                                const end = points[i + 1]
+                                const shape = createExtrudedLine(start, end, lineWidth)
+                                const geometry = new ExtrudeGeometry(shape, {
+                                    depth: wallHeight,
+                                    bevelEnabled: false
+                                })
+
+                                const material = new MeshPhongMaterial({
+                                    color,
+                                    // side: DoubleSide
+                                })
+                                const mesh = new Mesh(geometry, material)
+                                group.add(mesh)
+                            }
+                        }
                 }
             })
             //把groupr y軸旋轉90度
