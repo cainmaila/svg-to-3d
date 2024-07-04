@@ -2,9 +2,9 @@
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import { onMount } from 'svelte'
+	import { get } from 'svelte/store'
 	import { svgString$ } from '$lib/stores'
 	import { goto } from '$app/navigation'
-	import { get } from 'svelte/store'
 
 	//畫布大小
 	const canvasWidth = 800
@@ -18,7 +18,7 @@
 	let selectedShape: any //選中的形狀
 	let draw: Svg //SVG 畫布
 	let controlPoints: any[] = [] //控制點
-	let drawingArea: HTMLElement
+	let drawingArea: HTMLElement //繪圖區域
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
@@ -35,7 +35,15 @@
 		// 將SVG元素的內容添加到繪圖區域
 		const svgChildren = Array.from(svgElement.children)
 		svgChildren.forEach((child: any) => {
-			if (child.tagName.toLowerCase() === 'rect') {
+			if (child.tagName.toLowerCase() === 'polygon') {
+				const points = child
+					.getAttribute('points')
+					.split(' ')
+					.map((element: string) => {
+						return element.split(',').map((point) => parseFloat(point))
+					})
+				draw.polygon().plot(points).fill('none').stroke({ color: 'white', width: lineWidth })
+			} else if (child.tagName.toLowerCase() === 'rect') {
 				draw
 					.rect(child.width.baseVal.value, child.height.baseVal.value)
 					.move(child.x.baseVal.value, child.y.baseVal.value)
@@ -53,12 +61,16 @@
 				draw.path(child.getAttribute('d')).attr(getAttributes(child))
 			}
 		})
-
+		//監聽Delete鍵，刪除選中的形狀
 		document.addEventListener('keydown', (event) => {
-			if (event.key === 'Delete') {
-				deleteSelected()
-			}
+			event.key === 'Delete' && deleteSelected()
 		})
+		return () => {
+			document.removeEventListener('keydown', (event) => {
+				event.key === 'Delete' && deleteSelected()
+			})
+			draw.clear()
+		}
 	})
 
 	// 創建控制點
@@ -70,8 +82,6 @@
 			const { handler, box } = event.detail
 			const { x, y } = box
 			handler.move(x, y)
-			// const _y = drawingArea?.offsetTop || 0
-			// const _x = drawingArea?.offsetLeft || 0
 			updateShape(x + 5, y + 5, index) // +5 是因為控制點的半徑是5
 		})
 		controlPoints.push(controlPoint)
@@ -82,26 +92,6 @@
 			const points = selectedShape.array()
 			points[index] = [newX, newY]
 			selectedShape.plot(points)
-		} else if (selectedShape.type === 'rect') {
-			const box = selectedShape.bbox()
-			switch (index) {
-				case 0: // 左上
-					selectedShape
-						.size(box.width + (box.x - newX), box.height + (box.y - newY))
-						.move(newX, newY)
-					break
-				case 1: // 右上
-					selectedShape.size(newX - box.x, box.height + (box.y - newY)).move(box.x, newY)
-					break
-				case 2: // 右下
-					selectedShape.size(newX - box.x, newY - box.y)
-					break
-				case 3: // 左下
-					selectedShape.size(box.width + (box.x - newX), newY - box.y).move(newX, box.y)
-					break
-			}
-			// 更新控制點位置
-			addControlPoints(selectedShape)
 		} else if (selectedShape.type === 'line') {
 			const line = selectedShape.array()
 			line[index] = [newX, newY]
@@ -120,15 +110,6 @@
 		if (shape.type === 'polygon') {
 			const points = shape.array()
 			points.forEach((point: any, index: number) => createControlPoint(point[0], point[1], index))
-		} else if (shape.type === 'rect') {
-			const box = shape.bbox()
-			const points = [
-				{ x: box.x, y: box.y }, // 左上
-				{ x: box.x + box.width, y: box.y }, // 右上
-				{ x: box.x + box.width, y: box.y + box.height }, // 右下
-				{ x: box.x, y: box.y + box.height } // 左下
-			]
-			points.forEach((point, index) => createControlPoint(point.x, point.y, index))
 		} else if (shape.type === 'line') {
 			const line = shape.array()
 			createControlPoint(line[0][0], line[0][1], 0) // 起點
@@ -178,6 +159,7 @@
 	}
 
 	function onSelect() {
+		draw.off('click')
 		draw.on('click', selectShape)
 	}
 
@@ -187,7 +169,7 @@
 		isDrawing = true
 
 		switch (currentTool) {
-			case 'rect-path':
+			case 'polygon':
 				currentShape = draw
 					.polygon()
 					.plot([
@@ -196,13 +178,6 @@
 						[point.x, point.y],
 						[point.x, point.y]
 					])
-					.fill('none')
-					.stroke({ color: 'white', width: lineWidth })
-				break
-			case 'rect':
-				currentShape = draw
-					.rect()
-					.move(point.x, point.y)
 					.fill('none')
 					.stroke({ color: 'white', width: lineWidth })
 				break
@@ -228,20 +203,13 @@
 		const point = getMousePosition(event)
 
 		switch (currentTool) {
-			case 'rect-path':
+			case 'polygon':
 				currentShape.plot([
 					[currentShape.array()[0][0], currentShape.array()[0][1]],
 					[point.x, currentShape.array()[0][1]],
 					[point.x, point.y],
 					[currentShape.array()[0][0], point.y]
 				])
-				break
-			case 'rect':
-				const width = point.x - currentShape.x()
-				const height = point.y - currentShape.y()
-				currentShape.size(Math.abs(width), Math.abs(height))
-				if (width < 0) currentShape.x(point.x)
-				if (height < 0) currentShape.y(point.y)
 				break
 			case 'line':
 				currentShape.plot(currentShape.array()[0][0], currentShape.array()[0][1], point.x, point.y)
@@ -336,7 +304,7 @@
 	<div class="toolbar">
 		<fieldset>
 			<legend>繪製方式</legend>
-			<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect-path')} />
+			<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('polygon')} />
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>矩形區域</label>
 			<input type="radio" id="line" name="drawtype" on:change={() => setCurrentTool('line')} />
