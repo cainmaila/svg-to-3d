@@ -31,8 +31,8 @@
 			const svg = svgStringToURL(svgString)
 			group = await svgToGroupSync(svg, {
 				lineWidth: 5, // 設置線段厚度和高度
-				wallHeight: 50,
-				doorHigh: 30,
+				wallHeight: 100,
+				doorHigh: 80,
 				color: 0xcccccc
 			})
 		} catch (error: any) {

@@ -1,5 +1,6 @@
-import { Box3, DoubleSide, ExtrudeGeometry, Group, Mesh, MeshPhongMaterial, Shape, Vector2, Vector3 } from "three"
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js"
+import { Box3, ExtrudeGeometry, Group, MeshPhongMaterial, Shape, Vector2, Vector3 } from 'three'
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
+import { ADDITION, SUBTRACTION, Brush, Evaluator } from 'three-bvh-csg'
 
 /**
  * 線條轉外筐
@@ -20,7 +21,6 @@ export function createExtrudedLine(start: Vector2, end: Vector2, width: number) 
     return shape
 }
 
-
 // 創建 SVG 加載器
 const loader = new SVGLoader()
 /**
@@ -32,41 +32,53 @@ const loader = new SVGLoader()
  * @param options.color 顏色
  * @returns Group
  */
-export function svgToGroupSync(svgPath: string, {
-    lineWidth = 5, // 設置線段厚度和高度
-    wallHeight = 100,
-    doorHigh = 50,
-    color = 0xcccccc
-}) {
+export function svgToGroupSync(
+    svgPath: string,
+    {
+        lineWidth = 5, // 設置線段厚度和高度
+        wallHeight = 100,
+        doorHigh = 50,
+        color = 0xcccccc
+    }
+) {
     return new Promise<Group>((resolve, rehect) => {
-        loader.load(svgPath, function (data) {
-            const paths = data.paths
-            const group = new Group()
-            paths.forEach((path) => {
-                switch (path.userData?.node?.getAttribute('data-type')) {
-                    case 'door':
-                        {
-                            const points = path.subPaths[0].getPoints()
-                            for (let i = 0; i < points.length - 1; i++) {
-                                const start = points[i]
-                                const end = points[i + 1]
-                                const shape = createExtrudedLine(start, end, lineWidth * 2)
-                                const geometry = new ExtrudeGeometry(shape, {
-                                    depth: doorHigh,
-                                    bevelEnabled: false
-                                })
-
-                                const material = new MeshPhongMaterial({
-                                    color,
-                                    // side: DoubleSide
-                                })
-                                const mesh = new Mesh(geometry, material)
-                                group.add(mesh)
+        let building: Brush | null = null
+        let doors: Brush | null = null
+        const group = new Group()
+        loader.load(
+            svgPath,
+            function (data) {
+                const paths = data.paths
+                let doorbrush: Brush | null = null
+                let doorallMesh: Brush | null = null
+                let allMesh: Brush | null = null
+                let brush: Brush | null = null
+                paths.forEach((path) => {
+                    switch (path.userData?.node?.getAttribute('data-type')) {
+                        case 'door':
+                            {
+                                const points = path.subPaths[0].getPoints()
+                                const evaluator = new Evaluator()
+                                for (let i = 0; i < points.length - 1; i++) {
+                                    const start = points[i]
+                                    const end = points[i + 1]
+                                    const shape = createExtrudedLine(start, end, lineWidth * 2)
+                                    const geometry = new ExtrudeGeometry(shape, {
+                                        depth: doorHigh,
+                                        bevelEnabled: false
+                                    })
+                                    doorbrush = new Brush(geometry)
+                                    if (doorallMesh) {
+                                        doorallMesh = evaluator.evaluate(doorallMesh, doorbrush, ADDITION)
+                                    } else {
+                                        doorallMesh = doorbrush
+                                    }
+                                }
+                                doors = doorallMesh
                             }
-                        }
-                        break
-                    default:
-                        {
+                            break
+                        default: {
+                            const evaluator = new Evaluator()
                             const points = path.subPaths[0].getPoints()
                             for (let i = 0; i < points.length - 1; i++) {
                                 const start = points[i]
@@ -76,30 +88,41 @@ export function svgToGroupSync(svgPath: string, {
                                     depth: wallHeight,
                                     bevelEnabled: false
                                 })
-
-                                const material = new MeshPhongMaterial({
-                                    color,
-                                    // side: DoubleSide
-                                })
-                                const mesh = new Mesh(geometry, material)
-                                group.add(mesh)
+                                brush = new Brush(geometry)
+                                if (allMesh) {
+                                    allMesh = evaluator.evaluate(allMesh, brush, ADDITION)
+                                } else {
+                                    allMesh = brush
+                                }
                             }
+                            building = allMesh
                         }
+                    }
+                })
+                if (building) {
+                    const evaluator = new Evaluator()
+                    if (doors) building = evaluator.evaluate(building, doors, SUBTRACTION)
+                    building.material = new MeshPhongMaterial({
+                        color
+                    })
+                    group.add(building)
                 }
-            })
-            //把groupr y軸旋轉90度
-            group.rotation.x = -Math.PI / 2
+                //把groupr y軸旋轉90度
+                group.rotation.x = -Math.PI / 2
 
-            //根據Box移到中心
-            const box = new Box3().setFromObject(group)
-            const center = box.getCenter(new Vector3())
-            group.position.x = -center.x
-            group.position.z = -center.z
+                //根據Box移到中心
+                const box = new Box3().setFromObject(group)
+                const center = box.getCenter(new Vector3())
+                group.position.x = -center.x
+                group.position.z = -center.z
 
-            resolve(group)
-        }, undefined, function (error) {
-            rehect(error)
-        })
+                resolve(group)
+            },
+            undefined,
+            function (error) {
+                rehect(error)
+            }
+        )
     })
 }
 
@@ -110,5 +133,5 @@ export function svgToGroupSync(svgPath: string, {
  */
 export function svgStringToURL(svgString: string) {
     // const svg = new DOMParser().parseFromString(svgdata, 'image/svg+xml')
-    return URL.createObjectURL(new Blob([svgString], { type: "image/svg+xml" }))
+    return URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml' }))
 }
