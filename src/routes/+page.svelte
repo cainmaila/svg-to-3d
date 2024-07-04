@@ -256,7 +256,7 @@
 	//刪除選中的形狀
 	function deleteSelected() {
 		if (selectedShape) {
-			removeControlPoints() // 先移除舊的控制點
+			removeControlPoints() // 除舊的控制點
 			selectedShape.remove()
 			selectedShape = null
 		}
