@@ -5,6 +5,7 @@
 	import { get } from 'svelte/store'
 	import { svgString$ } from '$lib/stores'
 	import { goto } from '$app/navigation'
+	import { loadSvgElementToDraw } from '$lib/svgLib'
 
 	//畫布大小
 	const canvasWidth = 800
@@ -33,33 +34,8 @@
 			return
 		}
 		// 將SVG元素的內容添加到繪圖區域
-		const svgChildren = Array.from(svgElement.children)
-		svgChildren.forEach((child: any) => {
-			if (child.tagName.toLowerCase() === 'polygon') {
-				const points = child
-					.getAttribute('points')
-					.split(' ')
-					.map((element: string) => {
-						return element.split(',').map((point) => parseFloat(point))
-					})
-				draw.polygon().plot(points).fill('none').stroke({ color: 'white', width: lineWidth })
-			} else if (child.tagName.toLowerCase() === 'rect') {
-				draw
-					.rect(child.width.baseVal.value, child.height.baseVal.value)
-					.move(child.x.baseVal.value, child.y.baseVal.value)
-					.attr(getAttributes(child))
-			} else if (child.tagName.toLowerCase() === 'line') {
-				draw
-					.line(
-						child.x1.baseVal.value,
-						child.y1.baseVal.value,
-						child.x2.baseVal.value,
-						child.y2.baseVal.value
-					)
-					.attr(getAttributes(child))
-			} else if (child.tagName.toLowerCase() === 'path') {
-				draw.path(child.getAttribute('d')).attr(getAttributes(child))
-			}
+		loadSvgElementToDraw(draw, svgElement, {
+			lineWidth
 		})
 		//監聽Delete鍵，刪除選中的形狀
 		document.addEventListener('keydown', (event) => {
@@ -129,24 +105,6 @@
 	function removeControlPoints() {
 		controlPoints.forEach((point) => point.remove())
 		controlPoints = []
-	}
-
-	// 輔助函數：獲取元素的屬性
-	function getAttributes(element: any) {
-		const attrs = {}
-		for (let attr of element.attributes) {
-			if (
-				attr.name !== 'width' &&
-				attr.name !== 'height' &&
-				attr.name !== 'x' &&
-				attr.name !== 'y'
-			) {
-				// 排除一些不需要的屬性
-				//@ts-ignore
-				attrs[attr.name] = attr.value
-			}
-		}
-		return attrs
 	}
 
 	//設置當前工具
