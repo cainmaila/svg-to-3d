@@ -78,7 +78,11 @@
 	}
 	// 更新 updateShape 函數
 	function updateShape(newX: number, newY: number, index: number) {
-		if (selectedShape.type === 'rect') {
+		if (selectedShape.type === 'polygon') {
+			const points = selectedShape.array()
+			points[index] = [newX, newY]
+			selectedShape.plot(points)
+		} else if (selectedShape.type === 'rect') {
 			const box = selectedShape.bbox()
 			switch (index) {
 				case 0: // 左上
@@ -113,7 +117,10 @@
 	// 添加控制點
 	function addControlPoints(shape: any) {
 		removeControlPoints() // 先移除舊的控制點
-		if (shape.type === 'rect') {
+		if (shape.type === 'polygon') {
+			const points = shape.array()
+			points.forEach((point: any, index: number) => createControlPoint(point[0], point[1], index))
+		} else if (shape.type === 'rect') {
 			const box = shape.bbox()
 			const points = [
 				{ x: box.x, y: box.y }, // 左上
@@ -180,6 +187,18 @@
 		isDrawing = true
 
 		switch (currentTool) {
+			case 'rect-path':
+				currentShape = draw
+					.polygon()
+					.plot([
+						[point.x, point.y],
+						[point.x, point.y],
+						[point.x, point.y],
+						[point.x, point.y]
+					])
+					.fill('none')
+					.stroke({ color: 'white', width: lineWidth })
+				break
 			case 'rect':
 				currentShape = draw
 					.rect()
@@ -209,6 +228,14 @@
 		const point = getMousePosition(event)
 
 		switch (currentTool) {
+			case 'rect-path':
+				currentShape.plot([
+					[currentShape.array()[0][0], currentShape.array()[0][1]],
+					[point.x, currentShape.array()[0][1]],
+					[point.x, point.y],
+					[currentShape.array()[0][0], point.y]
+				])
+				break
 			case 'rect':
 				const width = point.x - currentShape.x()
 				const height = point.y - currentShape.y()
@@ -241,6 +268,7 @@
 			removeControlPoints()
 		}
 		if (
+			clickedElement.instance.type === 'polygon' ||
 			clickedElement.instance.type === 'rect' ||
 			clickedElement.instance.type === 'line' ||
 			clickedElement.instance.type === 'path'
@@ -308,7 +336,7 @@
 	<div class="toolbar">
 		<fieldset>
 			<legend>繪製方式</legend>
-			<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect')} />
+			<input type="radio" id="rect" name="drawtype" on:change={() => setCurrentTool('rect-path')} />
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>矩形區域</label>
 			<input type="radio" id="line" name="drawtype" on:change={() => setCurrentTool('line')} />
