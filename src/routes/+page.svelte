@@ -151,6 +151,11 @@
 					.fill('none')
 					.stroke({ color: 'white', width: lineWidth })
 				break
+			case 'door':
+				currentShape = draw
+					.line(point.x, point.y, point.x, point.y)
+					.stroke({ color: '#00ff00', width: lineWidth * 2 })
+				break
 		}
 	}
 
@@ -176,6 +181,11 @@
 				pathString += ` L${point.x},${point.y}`
 				currentShape.plot(pathString)
 				break
+			case 'door':
+				currentShape
+					.plot(currentShape.array()[0][0], currentShape.array()[0][1], point.x, point.y)
+					.data('type', 'door', true)
+				break
 		}
 	}
 
@@ -190,7 +200,13 @@
 	function selectShape(event: any) {
 		const clickedElement = event.target
 		if (selectedShape) {
-			selectedShape.stroke({ color: 'white' })
+			switch (selectedShape.data('type')) {
+				case 'door':
+					selectedShape.stroke({ color: '#00ff00' })
+					break
+				default:
+					selectedShape.stroke({ color: 'white' })
+			}
 			removeControlPoints()
 		}
 		if (
@@ -276,6 +292,9 @@
 			/>
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>自由繪製</label>
+			<input type="radio" id="door" name="drawtype" on:change={() => setCurrentTool('door')} />
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label>安裝門</label>
 		</fieldset>
 		<button id="deleteBtn" on:click={clear}>清除全部</button>
 		<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
