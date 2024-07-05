@@ -3,8 +3,11 @@
 
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
+	import { get } from 'svelte/store'
+	import { svgString$ } from '$lib/stores'
 
 	let draw: SvgEditor
+	$: draw && draw.loadSvg(get(svgString$))
 
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
@@ -44,7 +47,12 @@
 		<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
 	</div>
 
-	<SvgEditor bind:this={draw} />
+	<SvgEditor
+		bind:this={draw}
+		on:svg={(e) => {
+			svgString$.set(e.detail)
+		}}
+	/>
 	<code>選取物件(黃色標示)，按Delete可刪除</code>
 </main>
 

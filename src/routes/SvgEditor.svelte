@@ -2,9 +2,11 @@
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import { onMount } from 'svelte'
-	import { get } from 'svelte/store'
-	import { svgString$ } from '$lib/stores'
 	import { loadSvgElementToDraw } from '$lib/svgLib'
+	import { createEventDispatcher } from 'svelte'
+
+	const dispatch = createEventDispatcher()
+	//on:svg svgString變化
 
 	export let currentTool = '' //當前選擇的工具
 
@@ -19,15 +21,19 @@
 	let selectedShape: any //選中的形狀
 	let draw: Svg //SVG 畫布
 	let controlPoints: any[] = [] //控制點
-	let drawingArea: HTMLElement //繪圖區域
+	let svgString //SVG 字串
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
 		loadImg('/back.png')
+	})
 
+	//載入SVG
+	export function loadSvg(_svgString: string) {
+		svgString = _svgString
 		// 創建一個臨時的div來解析SVG內容
 		const tempDiv = document.createElement('div')
-		tempDiv.innerHTML = get(svgString$)
+		tempDiv.innerHTML = svgString
 		// 獲取SVG元素
 		const svgElement = tempDiv.querySelector('svg')
 		if (!svgElement) {
@@ -37,7 +43,7 @@
 		loadSvgElementToDraw(draw, svgElement, {
 			lineWidth
 		})
-	})
+	}
 
 	//刪除選中的形狀
 	export function deleteSelected() {
@@ -51,7 +57,7 @@
 	//清除所有形狀
 	export function clear() {
 		draw.clear()
-		svgString$.set('')
+		svgString = ''
 		loadImg('/back.png')
 	}
 
@@ -200,7 +206,8 @@
 	function endDrawing() {
 		isDrawing = false
 		currentShape = null
-		svgString$.set(draw.svg())
+		svgString = draw.svg()
+		dispatch('svg', svgString)
 	}
 
 	//選擇形狀
@@ -261,7 +268,6 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	bind:this={drawingArea}
 	id="drawing"
 	on:click={onSelect}
 	on:mousedown={startDrawing}
