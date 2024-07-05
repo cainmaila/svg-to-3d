@@ -11,7 +11,7 @@
 
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
-		event.key === 'Delete' || (event.key === 'Backspace' && draw.deleteSelected())
+		;(event.key === 'Delete' || event.key === 'Backspace') && draw.deleteSelected()
 	}
 
 	function goto3d() {
