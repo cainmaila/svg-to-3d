@@ -69,6 +69,22 @@
 			draw.on('click', selectShape)
 		}
 	}
+	//清除選擇
+	export function clearSelect() {
+		removeControlPoints()
+		if (selectedShape) {
+			switch (selectedShape.data('type')) {
+				case 'door':
+					selectedShape.stroke({ color: '#00ff00' })
+					break
+				default:
+					selectedShape.stroke({ color: 'white' })
+			}
+			selectedShape = null
+		}
+		svgString = draw.svg()
+		dispatch('svg', svgString)
+	}
 
 	// 創建控制點
 	function createControlPoint(x: number, y: number, index: number) {
@@ -213,16 +229,7 @@
 	//選擇形狀
 	function selectShape(event: any) {
 		const clickedElement = event.target
-		if (selectedShape) {
-			switch (selectedShape.data('type')) {
-				case 'door':
-					selectedShape.stroke({ color: '#00ff00' })
-					break
-				default:
-					selectedShape.stroke({ color: 'white' })
-			}
-			removeControlPoints()
-		}
+		clearSelect()
 		if (
 			clickedElement.instance.type === 'polygon' ||
 			clickedElement.instance.type === 'rect' ||

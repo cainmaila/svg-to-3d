@@ -13,6 +13,11 @@
 	function handleKeydown(event: KeyboardEvent) {
 		event.key === 'Delete' || (event.key === 'Backspace' && draw.deleteSelected())
 	}
+
+	function goto3d() {
+		draw.clearSelect()
+		goto('/svgto3d')
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -44,7 +49,7 @@
 			<label>安裝門</label>
 		</fieldset>
 		<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
-		<button id="generate" on:click={() => goto('/svgto3d')}>生成場域</button>
+		<button id="generate" on:click={goto3d}>生成場域</button>
 	</div>
 
 	<SvgEditor
