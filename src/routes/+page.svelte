@@ -1,10 +1,10 @@
 <script lang="ts">
-	import SvgEditor from './SvgEditor.svelte'
-
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
 	import { get } from 'svelte/store'
 	import { svgString$ } from '$lib/stores'
+
+	import SvgEditor from '$lib/components/SvgEditor.svelte'
 
 	let draw: SvgEditor
 	$: draw && draw.loadSvg(get(svgString$))
