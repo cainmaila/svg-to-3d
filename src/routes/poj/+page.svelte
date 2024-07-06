@@ -31,55 +31,55 @@
 			cctvFar: { value: 0 }
 		},
 		vertexShader: `
-    varying vec3 vWorldPosition;
-    void main() {
-      vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
+            varying vec3 vWorldPosition;
+            void main() {
+            vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
 		fragmentShader: `
-    uniform vec3 cctvPosition;
-    uniform vec3 cctvDirection;
-    uniform float cctvFOV;
-    uniform float cctvAspect;
-    uniform float cctvNear;
-    uniform float cctvFar;
-    varying vec3 vWorldPosition;
+            uniform vec3 cctvPosition;
+            uniform vec3 cctvDirection;
+            uniform float cctvFOV;
+            uniform float cctvAspect;
+            uniform float cctvNear;
+            uniform float cctvFar;
+            varying vec3 vWorldPosition;
 
-    void main() {
-      vec3 toFragment = vWorldPosition - cctvPosition;
+            void main() {
+            vec3 toFragment = vWorldPosition - cctvPosition;
 
-      // 計算在 CCTV 視錐體內的距離
-      float distance = dot(toFragment, normalize(cctvDirection));
+            // 計算在 CCTV 視錐體內的距離
+            float distance = dot(toFragment, normalize(cctvDirection));
 
-      // 檢查是否在近平面和遠平面之間
-      if (distance < cctvNear || distance > cctvFar) {
-        gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
-        return;
-      }
+            // 檢查是否在近平面和遠平面之間
+            if (distance < cctvNear || distance > cctvFar) {
+                gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
+                return;
+            }
 
-      // 計算在 CCTV 視錐體截面上的位置
-      vec3 projection = cctvPosition + normalize(cctvDirection) * distance;
-      vec3 toProjection = vWorldPosition - projection;
+            // 計算在 CCTV 視錐體截面上的位置
+            vec3 projection = cctvPosition + normalize(cctvDirection) * distance;
+            vec3 toProjection = vWorldPosition - projection;
 
-      // 計算視錐體在該距離的半寬和半高
-      float halfHeight = tan(radians(cctvFOV) * 0.5) * distance;
-      float halfWidth = halfHeight * cctvAspect;
+            // 計算視錐體在該距離的半寬和半高
+            float halfHeight = tan(radians(cctvFOV) * 0.5) * distance;
+            float halfWidth = halfHeight * cctvAspect;
 
-      // 檢查是否在視錐體內
-      vec3 cctvRight = normalize(cross(cctvDirection, vec3(0.0, 1.0, 0.0)));
-      vec3 cctvUp = normalize(cross(cctvRight, cctvDirection));
+            // 檢查是否在視錐體內
+            vec3 cctvRight = normalize(cross(cctvDirection, vec3(0.0, 1.0, 0.0)));
+            vec3 cctvUp = normalize(cross(cctvRight, cctvDirection));
 
-      float x = dot(toProjection, cctvRight);
-      float y = dot(toProjection, cctvUp);
+            float x = dot(toProjection, cctvRight);
+            float y = dot(toProjection, cctvUp);
 
-      if (abs(x) <= halfWidth && abs(y) <= halfHeight) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-      } else {
-        gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
-      }
-    }
-  `,
+            if (abs(x) <= halfWidth && abs(y) <= halfHeight) {
+                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            } else {
+                gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
+            }
+            }
+        `,
 		side: THREE.DoubleSide
 	})
 
