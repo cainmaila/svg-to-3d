@@ -19,8 +19,11 @@
 	const grid = new THREE.GridHelper(1000, 100, 0x888888, 0x444444)
 	scene.add(grid)
 
+	//創建Box
+	const boxGeometry = new THREE.BoxGeometry(500, 5, 500)
+
 	// 創建平面
-	const planeGeometry = new THREE.PlaneGeometry(500, 500, 32, 32)
+	// const planeGeometry = new THREE.PlaneGeometry(500, 500, 32, 32)
 	const planeMaterial = new THREE.ShaderMaterial({
 		uniforms: {
 			cctvPositions: { value: [new THREE.Vector3(), new THREE.Vector3()] },
@@ -105,12 +108,13 @@
                 // 可選：使用不同的顏色來表示在不同數量的 CCTV 視野內
                 // gl_FragColor = vec4(float(viewCount) / float(cctvCount), 0.0, 0.0, 1.0);
             }
-        `,
-		side: THREE.DoubleSide
+        `
+		// side: THREE.DoubleSide
 	})
 
-	const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-	plane.rotation.x = -Math.PI / 2
+	// const plane = new THREE.Mesh(planeGeometry, planeMaterial)
+	const plane = new THREE.Mesh(boxGeometry, planeMaterial)
+	// plane.rotation.x = -Math.PI / 2
 	plane.position.y = 0
 	scene.add(plane)
 
