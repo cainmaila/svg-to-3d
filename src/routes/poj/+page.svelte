@@ -3,8 +3,14 @@
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
+	import { get } from 'svelte/store'
+	import { svgString$ } from '$lib/stores'
+	import { goto } from '$app/navigation'
+	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
 
 	let viewerDom: HTMLDivElement
+
+	const svgString = get(svgString$) // 从 store 中获取 svg 字符串
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -16,12 +22,18 @@
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 
-	// 添加網格底座
-	const grid = new THREE.GridHelper(1000, 100, 0x888888, 0x444444)
-	scene.add(grid)
+	if (!svgString) {
+		goto('/', {
+			replaceState: true
+		})
+	}
 
-	// 創建Box
-	const boxGeometry = new THREE.BoxGeometry(500, 5, 500)
+	// 添加網格底座
+	// const building = new THREE.GridHelper(1000, 100, 0x888888, 0x444444)
+	// scene.add(building)
+
+	// // 創建Box
+	// const boxGeometry = new THREE.BoxGeometry(500, 5, 500)
 
 	// 創建平面
 	const planeMaterial = new THREE.ShaderMaterial({
@@ -105,9 +117,9 @@
     `
 	})
 
-	const plane = new THREE.Mesh(boxGeometry, planeMaterial)
-	plane.position.y = 0
-	scene.add(plane)
+	// const plane = new THREE.Mesh(boxGeometry, planeMaterial)
+	// plane.position.y = 0
+	// scene.add(plane)
 
 	// 相機參數
 	const focalLength = 8
@@ -165,15 +177,35 @@
 		controls.enabled = true
 	})
 
-	scene.add(new THREE.AmbientLight(0x404040))
+	// 添加光源
+	// const ambientLight = new THREE.AmbientLight(0x000000)
+	// scene.add(ambientLight)
+
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
 	directionalLight.position.set(1, 1, 1)
 	scene.add(directionalLight)
+	//更美的光源
+	// const light = new THREE.HemisphereLight(0xffffbb, 0x080820)
+	// scene.add(light)
 
 	onMount(() => {
 		viewerDom.appendChild(renderer.domElement)
 		animate()
 	})
+
+	init(svgString)
+	async function init(svgString: string) {
+		const svg = svgStringToURL(svgString)
+		const building = await svgToGroupSync(svg, {
+			lineWidth: 5, // 設置線段厚度和高度
+			wallHeight: 100,
+			doorHigh: 80,
+			color: 0xcccccc
+		})
+		//@ts-ignore
+		building.material = planeMaterial
+		scene.add(building)
+	}
 
 	function animate() {
 		requestAnimationFrame(animate)
