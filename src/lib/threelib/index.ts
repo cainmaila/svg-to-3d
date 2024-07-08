@@ -1,6 +1,8 @@
-import { Box3, ExtrudeGeometry, Group, MeshPhongMaterial, Shape, Vector2, Vector3 } from 'three'
+import { Box3, BoxGeometry, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, Shape, Vector2, Vector3 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { ADDITION, SUBTRACTION, Brush, Evaluator } from 'three-bvh-csg'
+
+const DefaulColor = 0xcccccc
 
 /**
  * 線條轉外筐
@@ -38,7 +40,7 @@ export function svgToGroupSync(
         lineWidth = 5, // 設置線段厚度和高度
         wallHeight = 100,
         doorHigh = 50,
-        color = 0xcccccc
+        color = DefaulColor
     }
 ) {
     return new Promise<Group>((resolve, rehect) => {
@@ -116,7 +118,17 @@ export function svgToGroupSync(
                 group.position.x = -center.x
                 group.position.z = -center.z
 
-                resolve(group)
+                const base = createBaseForObject(group)
+
+                const evaluator = new Evaluator()
+                const baseBrush = new Brush(base.geometry)
+                const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
+                allMesh2.material = new MeshPhongMaterial({
+                    color: DefaulColor
+                })
+
+
+                resolve(allMesh2 as unknown as Group)
             },
             undefined,
             function (error) {
@@ -124,6 +136,35 @@ export function svgToGroupSync(
             }
         )
     })
+}
+
+/**
+ * 創建底座
+ * @param object - 物件
+ * @param thickness - 厚度
+ * @returns
+ */
+function createBaseForObject(object: Object3D, thickness: number = 5.0) {
+    // 創建一個 Box3 來計算物件的邊界框
+    const boundingBox = new Box3().setFromObject(object);
+
+    // 計算邊界框的尺寸
+    const size = boundingBox.getSize(new Vector3());
+    const center = boundingBox.getCenter(new Vector3());
+
+    // 創建底座的幾何體
+    const baseGeometry = new BoxGeometry(size.x, thickness, size.z);
+
+    // 創建底座的材質
+    const baseMaterial = new MeshBasicMaterial({ color: DefaulColor });
+
+    // 創建底座的網格
+    const base = new Mesh(baseGeometry, baseMaterial);
+
+    // 設置底座的位置，使其位於物件的下方
+    base.position.set(center.x, boundingBox.min.y - thickness / 2, center.z);
+
+    return base;
 }
 
 /**
