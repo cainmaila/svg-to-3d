@@ -47,6 +47,9 @@ export function svgToGroupSync(
         let building: Brush | null = null
         let doors: Brush | null = null
         const group = new Group()
+        const material = new MeshPhongMaterial({
+            color
+        })
         loader.load(
             svgPath,
             function (data) {
@@ -104,9 +107,7 @@ export function svgToGroupSync(
                 if (building) {
                     const evaluator = new Evaluator()
                     if (doors) building = evaluator.evaluate(building, doors, SUBTRACTION)
-                    building.material = new MeshPhongMaterial({
-                        color
-                    })
+                    building.material = material
                     group.add(building)
                 }
                 //把groupr y軸旋轉90度
@@ -123,9 +124,7 @@ export function svgToGroupSync(
                 const evaluator = new Evaluator()
                 const baseBrush = new Brush(base.geometry)
                 const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
-                allMesh2.material = new MeshPhongMaterial({
-                    color: DefaulColor
-                })
+                allMesh2.material = material
 
 
                 resolve(allMesh2 as unknown as Group)
