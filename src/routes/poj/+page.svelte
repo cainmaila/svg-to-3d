@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte'
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 
 	let viewerDom: HTMLDivElement
 
@@ -94,9 +95,9 @@
             }
 
             if (viewCount == 2) {
-                gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0); // 黃色
-            } else if (viewCount == 1) {
                 gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // 紅色
+            } else if (viewCount == 1) {
+                gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0); // 黃色
             } else {
                 gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0); // 默認顏色
             }
@@ -131,6 +132,38 @@
 	scene.add(cctv2)
 	const cctvHelper2 = new THREE.CameraHelper(cctv2)
 	scene.add(cctvHelper2)
+
+	// 创建 TransformControls
+	const transformControls = new TransformControls(camera, renderer.domElement)
+	transformControls.attach(cctv)
+	scene.add(transformControls)
+
+	// 设置 TransformControls 模式为 "translate"（平移），"rotate"（旋转），或 "scale"（缩放）
+	transformControls.setMode('translate')
+
+	// 添加键盘事件来切换模式
+	window.addEventListener('keydown', function (event) {
+		switch (event.key) {
+			case 't': // 平移
+				transformControls.setMode('translate')
+				break
+			case 'r': // 旋转
+				transformControls.setMode('rotate')
+				break
+			case 's': // 缩放
+				transformControls.setMode('scale')
+				break
+		}
+	})
+
+	// 禁用 OrbitControls 当 TransformControls 被激活时
+	transformControls.addEventListener('mouseDown', function () {
+		controls.enabled = false
+	})
+
+	transformControls.addEventListener('mouseUp', function () {
+		controls.enabled = true
+	})
 
 	scene.add(new THREE.AmbientLight(0x404040))
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
