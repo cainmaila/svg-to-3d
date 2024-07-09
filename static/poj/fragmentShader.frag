@@ -1,9 +1,9 @@
-uniform vec3 cctvPositions[2];
-uniform vec3 cctvDirections[2];
-uniform float cctvFOVs[2];
-uniform float cctvAspects[2];
-uniform float cctvNears[2];
-uniform float cctvFars[2];
+uniform vec3 cctvPositions[1];
+uniform vec3 cctvDirections[1];
+uniform float cctvFOVs[1];
+uniform float cctvAspects[1];
+uniform float cctvNears[1];
+uniform float cctvFars[1];
 uniform int cctvCount;
 uniform vec3 ambientLightColor;
 uniform vec3 directionalLightColor;

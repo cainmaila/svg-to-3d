@@ -17,7 +17,7 @@
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000)
 	const renderer = new THREE.WebGLRenderer({ antialias: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
-	camera.position.set(0, 100, 200)
+	camera.position.set(0, 200, 200)
 
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
@@ -81,18 +81,18 @@
 	const far = 1000
 
 	const cctv = new THREE.PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
-	cctv.position.set(100, 200, -50)
+	cctv.position.set(250, 100, -50)
 	cctv.lookAt(0, 0, 0)
 	scene.add(cctv)
 	const cctvHelper = new THREE.CameraHelper(cctv)
 	scene.add(cctvHelper)
 
-	const cctv2 = new THREE.PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
-	cctv2.position.set(-100, 200, -50)
-	cctv2.lookAt(50, 0, 0)
-	scene.add(cctv2)
-	const cctvHelper2 = new THREE.CameraHelper(cctv2)
-	scene.add(cctvHelper2)
+	// const cctv2 = new THREE.PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
+	// cctv2.position.set(-100, 200, -50)
+	// cctv2.lookAt(50, 0, 0)
+	// scene.add(cctv2)
+	// const cctvHelper2 = new THREE.CameraHelper(cctv2)
+	// scene.add(cctvHelper2)
 
 	// 创建 TransformControls
 	const transformControls = new TransformControls(camera, renderer.domElement)
@@ -148,17 +148,17 @@
 	function animate() {
 		requestAnimationFrame(animate)
 		planeMaterial.uniforms.cctvPositions.value[0].copy(cctv.position)
-		planeMaterial.uniforms.cctvPositions.value[1].copy(cctv2.position)
+		// planeMaterial.uniforms.cctvPositions.value[1].copy(cctv2.position)
 		cctv.getWorldDirection(planeMaterial.uniforms.cctvDirections.value[0])
-		cctv2.getWorldDirection(planeMaterial.uniforms.cctvDirections.value[1])
+		// cctv2.getWorldDirection(planeMaterial.uniforms.cctvDirections.value[1])
 		planeMaterial.uniforms.cctvFOVs.value[0] = cctv.fov
-		planeMaterial.uniforms.cctvFOVs.value[1] = cctv2.fov
+		// planeMaterial.uniforms.cctvFOVs.value[1] = cctv2.fov
 		planeMaterial.uniforms.cctvAspects.value[0] = cctv.aspect
-		planeMaterial.uniforms.cctvAspects.value[1] = cctv2.aspect
+		// planeMaterial.uniforms.cctvAspects.value[1] = cctv2.aspect
 		planeMaterial.uniforms.cctvNears.value[0] = cctv.near
-		planeMaterial.uniforms.cctvNears.value[1] = cctv2.near
+		// planeMaterial.uniforms.cctvNears.value[1] = cctv2.near
 		planeMaterial.uniforms.cctvFars.value[0] = cctv.far
-		planeMaterial.uniforms.cctvFars.value[1] = cctv2.far
+		// planeMaterial.uniforms.cctvFars.value[1] = cctv2.far
 		// 更新平行光方向
 		directionalLight.getWorldDirection(planeMaterial.uniforms.directionalLightDirection.value)
 		controls.update()
