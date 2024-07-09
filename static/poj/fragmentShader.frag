@@ -5,6 +5,9 @@ uniform float cctvAspects[2];
 uniform float cctvNears[2];
 uniform float cctvFars[2];
 uniform int cctvCount;
+uniform vec3 ambientLightColor;
+uniform vec3 directionalLightColor;
+uniform vec3 directionalLightDirection;
 
 varying vec3 vWorldPosition;
 varying vec3 vNormal;
@@ -48,11 +51,19 @@ void main() {
         }
     }
 
+     // 环境光
+    vec3 ambientColor = ambientLightColor;
+     // 平行光
+    float directionalIntensity = max(dot(vNormal, normalize(directionalLightDirection)), 0.0);
+    vec3 directionalColor = directionalLightColor * directionalIntensity;
+
+     // 合并所有光照
+    vec3 finalColor = ambientColor + directionalColor;
     if(viewCount == 2) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // 紅色
+        gl_FragColor = vec4(finalColor * vec3(1.0, 0.0, 0.0), 1.0); // 红色
     } else if(viewCount == 1) {
-        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0); // 黃色
+        gl_FragColor = vec4(finalColor * vec3(1.0, 1.0, 0.0), 1.0); // 黄色
     } else {
-        gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0); // 默認顏色
+        gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜色
     }
 }

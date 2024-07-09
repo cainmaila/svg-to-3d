@@ -35,6 +35,17 @@
 	// // 創建Box
 	// const boxGeometry = new THREE.BoxGeometry(500, 5, 500)
 
+	// 添加光源
+	const ambientLight = new THREE.AmbientLight(0xffffff)
+	scene.add(ambientLight)
+
+	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
+	directionalLight.position.set(1, 1, 1)
+	scene.add(directionalLight)
+	//更美的光源
+	const light = new THREE.HemisphereLight(0xffffbb, 0x080820)
+	scene.add(light)
+
 	// 創建平面
 	const planeMaterial = new THREE.ShaderMaterial({
 		uniforms: {
@@ -44,7 +55,10 @@
 			cctvAspects: { value: [0, 0] },
 			cctvNears: { value: [0, 0] },
 			cctvFars: { value: [0, 0] },
-			cctvCount: { value: 2 }
+			cctvCount: { value: 2 },
+			ambientLightColor: { value: ambientLight.color },
+			directionalLightColor: { value: directionalLight.color },
+			directionalLightDirection: { value: new THREE.Vector3() }
 		},
 		vertexShader: $vertexShader$,
 		fragmentShader: $fragmentShader$
@@ -110,17 +124,6 @@
 		controls.enabled = true
 	})
 
-	// 添加光源
-	const ambientLight = new THREE.AmbientLight(0x000000)
-	scene.add(ambientLight)
-
-	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-	directionalLight.position.set(1, 1, 1)
-	scene.add(directionalLight)
-	//更美的光源
-	const light = new THREE.HemisphereLight(0xffffbb, 0x080820)
-	scene.add(light)
-
 	onMount(() => {
 		viewerDom.appendChild(renderer.domElement)
 		animate()
@@ -154,6 +157,8 @@
 		planeMaterial.uniforms.cctvNears.value[1] = cctv2.near
 		planeMaterial.uniforms.cctvFars.value[0] = cctv.far
 		planeMaterial.uniforms.cctvFars.value[1] = cctv2.far
+		// 更新平行光方向
+		directionalLight.getWorldDirection(planeMaterial.uniforms.directionalLightDirection.value)
 		controls.update()
 		renderer.render(scene, camera)
 	}
