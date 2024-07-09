@@ -43,8 +43,8 @@
 	directionalLight.position.set(1, 1, 1)
 	scene.add(directionalLight)
 	//更美的光源
-	const light = new THREE.HemisphereLight(0xffffbb, 0x080820)
-	scene.add(light)
+	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
+	scene.add(hemisphereLight)
 
 	// 創建平面
 	const planeMaterial = new THREE.ShaderMaterial({
@@ -58,7 +58,9 @@
 			cctvCount: { value: 2 },
 			ambientLightColor: { value: ambientLight.color },
 			directionalLightColor: { value: directionalLight.color },
-			directionalLightDirection: { value: new THREE.Vector3() }
+			directionalLightDirection: { value: new THREE.Vector3() },
+			hemisphereLightSkyColor: { value: hemisphereLight.color },
+			hemisphereLightGroundColor: { value: hemisphereLight.groundColor }
 		},
 		vertexShader: $vertexShader$,
 		fragmentShader: $fragmentShader$

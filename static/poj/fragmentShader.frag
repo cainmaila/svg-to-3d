@@ -8,6 +8,8 @@ uniform int cctvCount;
 uniform vec3 ambientLightColor;
 uniform vec3 directionalLightColor;
 uniform vec3 directionalLightDirection;
+uniform vec3 hemisphereLightSkyColor;
+uniform vec3 hemisphereLightGroundColor;
 
 varying vec3 vWorldPosition;
 varying vec3 vNormal;
@@ -56,9 +58,12 @@ void main() {
      // 平行光
     float directionalIntensity = max(dot(vNormal, normalize(directionalLightDirection)), 0.0);
     vec3 directionalColor = directionalLightColor * directionalIntensity;
+    // 半球光
+    float hemiIntensity = 0.5 + 0.5 * dot(vNormal, vec3(0.0, 1.0, 0.0));
+    vec3 hemiColor = mix(hemisphereLightGroundColor, hemisphereLightSkyColor, hemiIntensity);
 
      // 合并所有光照
-    vec3 finalColor = ambientColor + directionalColor;
+    vec3 finalColor = ambientColor + directionalColor + hemiColor;
     if(viewCount == 2) {
         gl_FragColor = vec4(finalColor * vec3(1.0, 0.0, 0.0), 1.0); // 红色
     } else if(viewCount == 1) {
