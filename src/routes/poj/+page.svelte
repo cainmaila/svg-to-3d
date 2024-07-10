@@ -96,6 +96,7 @@
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
 		scene.overrideMaterial = new THREE.MeshDepthMaterial()
+		// scene.overrideMaterial.wireframe = true
 		for (let i = 0; i < 1; i++) {
 			renderer.setRenderTarget(shadowMaps[i])
 			renderer.render(scene, shadowCameras[i])
@@ -214,8 +215,8 @@
 			shadowMatrix.multiplyMatrices(shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse)
 			planeMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
 		}
-		controls.update()
 		renderShadowMaps() // 渲染阴影贴图
+		controls.update()
 		renderer.render(scene, camera)
 	}
 
