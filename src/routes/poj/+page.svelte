@@ -53,8 +53,8 @@
 	const fovVerticalRadians = 2 * Math.atan(sensorHeight / (2 * focalLength))
 	const fovVerticalDegrees = fovVerticalRadians * (180 / Math.PI)
 	const aspect = sensorWidth / sensorHeight
-	const near = 0.1
-	const far = 10000
+	const near = 50
+	const far = 1000
 
 	const cctv = new THREE.PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
 	cctv.position.set(250, 100, -50)
@@ -76,26 +76,40 @@
 	scene.add(transformControls)
 
 	//創建深度紋理
-	const shadowMapSize = 1024
+	const shadowMapSize = 2048
 	const shadowCameras: THREE.PerspectiveCamera[] = []
 	const shadowMaps: THREE.WebGLRenderTarget[] = []
 	shadowCameras.push(cctv)
 
-	const xplan = new THREE.PlaneGeometry(500, 500)
-	//貼上shadowMaps[0]
+	// const xplan = new THREE.PlaneGeometry(1024, 1024)
+	// //貼上shadowMaps[0]
 
-	const xplaneMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-	const xplane = new THREE.Mesh(xplan, xplaneMaterial)
-	xplane.position.y = 100
-	xplane.position.z = -200
-	scene.add(xplane)
+	// const xplaneMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+	// const xplane = new THREE.Mesh(xplan, xplaneMaterial)
+	// xplane.position.y = 100
+	// xplane.position.z = -200
+	// scene.add(xplane)
+
+	const depthMaterial = new THREE.ShaderMaterial({
+		vertexShader: `
+        void main() {
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+		fragmentShader: `
+        void main() {
+            gl_FragColor = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
+        }
+    `
+	})
 
 	//選染深度紋理
 	function renderShadowMaps() {
 		const initialClearColor = renderer.getClearColor(new THREE.Color())
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
-		scene.overrideMaterial = new THREE.MeshDepthMaterial()
+		// scene.overrideMaterial = new THREE.MeshDepthMaterial()
+		scene.overrideMaterial = depthMaterial
 		// scene.overrideMaterial.wireframe = true
 		for (let i = 0; i < 1; i++) {
 			renderer.setRenderTarget(shadowMaps[i])
@@ -105,8 +119,8 @@
 		renderer.setClearColor(initialClearColor, initialClearAlpha)
 		renderer.setRenderTarget(null)
 
-		const xplaneMaterial = new THREE.MeshBasicMaterial({ map: shadowMaps[0].texture })
-		xplane.material = xplaneMaterial
+		// const xplaneMaterial = new THREE.MeshBasicMaterial({ map: shadowMaps[0].texture })
+		// xplane.material = xplaneMaterial
 	}
 
 	const shadowMap = new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
@@ -184,6 +198,8 @@
 			doorHigh: 80,
 			color: 0xcccccc
 		})
+		building.castShadow = true // 投射陰影
+		building.receiveShadow = true // 接收陰影
 		//@ts-ignore
 		building.material = planeMaterial
 		scene.add(building)
@@ -191,7 +207,6 @@
 
 	function animate() {
 		requestAnimationFrame(animate)
-
 		planeMaterial.uniforms.cctvPositions.value[0].copy(cctv.position)
 		// planeMaterial.uniforms.cctvPositions.value[1].copy(cctv2.position)
 		cctv.getWorldDirection(planeMaterial.uniforms.cctvDirections.value[0])

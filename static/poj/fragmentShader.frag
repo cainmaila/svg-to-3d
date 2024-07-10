@@ -1,3 +1,4 @@
+precision highp float;
 uniform vec3 cctvPositions[1];
 uniform vec3 cctvDirections[1];
 uniform float cctvFOVs[1];
@@ -43,7 +44,7 @@ bool getShadow(vec4 fragPosLightSpace, sampler2D shadowMap) {
     float currentDepth = projCoords.z;
 
   // 检查当前片段是否在阴影中
-    float bias = 0.005;
+    float bias = 0.01;
     return currentDepth - bias > closestDepth;
 }
 
@@ -56,21 +57,31 @@ void main() {
     int viewCount = 0;
 
     for(int i = 0; i < cctvCount; i++) {
-        vec3 toFragment = vWorldPosition - cctvPositions[i];
-        float distance = dot(toFragment, normalize(cctvDirections[i]));
+        // vec3 toFragment = vWorldPosition - cctvPositions[i];
+        // float distance = dot(toFragment, normalize(cctvDirections[i]));
 
-        if(dot(vNormal, normalize(cctvDirections[i])) > 0.0) {
+        // if(dot(vNormal, normalize(cctvDirections[i])) > 0.0) { // 与摄像头方向相反
+        //     viewCount = 2;
+        //     continue;
+        // }
+
+        vec3 toCCTV = normalize(cctvPositions[i] - vWorldPosition);
+        if(dot(vNormal, toCCTV) < 0.0) { // 面背向CCTV
+            viewCount = 2;
             continue;
         }
 
         if(isInCCTVView(cctvPositions[i], cctvDirections[i], cctvFOVs[i], cctvAspects[i], cctvNears[i], cctvFars[i])) {
+             // 计算阴影
+            vec4 fragPosLightSpace = shadowMatrices[0] * vec4(vWorldPosition, 1.0);
+            bool shadow = getShadow(fragPosLightSpace, shadowMaps[0]);
+            if(shadow)
+                continue;
             viewCount++;
             inAnyView = true;
         }
     }
-    // 计算阴影
-    // vec4 fragPosLightSpace = shadowMatrices[0] * vec4(vWorldPosition, 1.0);
-    // bool shadow = getShadow(fragPosLightSpace, shadowMaps[0]);
+
     // for(int i = 0; i < cctvCount; i++) {
     //     shadow = getShadow(cctvPositions[i], shadowMaps[i]);
     // }
@@ -89,11 +100,7 @@ void main() {
     if(viewCount == 2) {
         gl_FragColor = vec4(finalColor * vec3(1.0, 0.0, 0.0), 1.0); // 红色
     } else if(viewCount == 1) {
-        // if(!shadow) {
         gl_FragColor = vec4(finalColor * vec3(1.0, 1.0, 0.0), 1.0); // 黄色
-        // } else {
-        //     gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜
-        // }
     } else {
         gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜色
     }
