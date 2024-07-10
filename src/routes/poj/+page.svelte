@@ -46,30 +46,6 @@
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	scene.add(hemisphereLight)
 
-	// 創建平面
-	const planeMaterial = new THREE.ShaderMaterial({
-		uniforms: {
-			cctvPositions: { value: [new THREE.Vector3(), new THREE.Vector3()] },
-			cctvDirections: { value: [new THREE.Vector3(), new THREE.Vector3()] },
-			cctvFOVs: { value: [0, 0] },
-			cctvAspects: { value: [0, 0] },
-			cctvNears: { value: [0, 0] },
-			cctvFars: { value: [0, 0] },
-			cctvCount: { value: 2 },
-			ambientLightColor: { value: ambientLight.color },
-			directionalLightColor: { value: directionalLight.color },
-			directionalLightDirection: { value: new THREE.Vector3() },
-			hemisphereLightSkyColor: { value: hemisphereLight.color },
-			hemisphereLightGroundColor: { value: hemisphereLight.groundColor }
-		},
-		vertexShader: $vertexShader$,
-		fragmentShader: $fragmentShader$
-	})
-
-	// const plane = new THREE.Mesh(boxGeometry, planeMaterial)
-	// plane.position.y = 0
-	// scene.add(plane)
-
 	// 相機參數
 	const focalLength = 8
 	const sensorWidth = 4.8
@@ -78,7 +54,7 @@
 	const fovVerticalDegrees = fovVerticalRadians * (180 / Math.PI)
 	const aspect = sensorWidth / sensorHeight
 	const near = 0.1
-	const far = 1000
+	const far = 10000
 
 	const cctv = new THREE.PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
 	cctv.position.set(250, 100, -50)
@@ -98,6 +74,73 @@
 	const transformControls = new TransformControls(camera, renderer.domElement)
 	transformControls.attach(cctv)
 	scene.add(transformControls)
+
+	//創建深度紋理
+	const shadowMapSize = 1024
+	const shadowCameras: THREE.PerspectiveCamera[] = []
+	const shadowMaps: THREE.WebGLRenderTarget[] = []
+	shadowCameras.push(cctv)
+
+	const xplan = new THREE.PlaneGeometry(500, 500)
+	//貼上shadowMaps[0]
+
+	const xplaneMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+	const xplane = new THREE.Mesh(xplan, xplaneMaterial)
+	xplane.position.y = 100
+	xplane.position.z = -200
+	scene.add(xplane)
+
+	//選染深度紋理
+	function renderShadowMaps() {
+		const initialClearColor = renderer.getClearColor(new THREE.Color())
+		const initialClearAlpha = renderer.getClearAlpha()
+		renderer.setClearColor(0xffffff, 1)
+		scene.overrideMaterial = new THREE.MeshDepthMaterial()
+		for (let i = 0; i < 1; i++) {
+			renderer.setRenderTarget(shadowMaps[i])
+			renderer.render(scene, shadowCameras[i])
+		}
+		scene.overrideMaterial = null
+		renderer.setClearColor(initialClearColor, initialClearAlpha)
+		renderer.setRenderTarget(null)
+
+		const xplaneMaterial = new THREE.MeshBasicMaterial({ map: shadowMaps[0].texture })
+		xplane.material = xplaneMaterial
+	}
+
+	const shadowMap = new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
+		minFilter: THREE.LinearFilter,
+		magFilter: THREE.LinearFilter,
+		format: THREE.RGBAFormat
+	})
+	shadowMaps.push(shadowMap)
+
+	// 創建平面
+	const planeMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+			cctvPositions: { value: [new THREE.Vector3(), new THREE.Vector3()] },
+			cctvDirections: { value: [new THREE.Vector3(), new THREE.Vector3()] },
+			cctvFOVs: { value: [0, 0] },
+			cctvAspects: { value: [0, 0] },
+			cctvNears: { value: [0, 0] },
+			cctvFars: { value: [0, 0] },
+			cctvCount: { value: 1 },
+			ambientLightColor: { value: ambientLight.color },
+			directionalLightColor: { value: directionalLight.color },
+			directionalLightDirection: { value: new THREE.Vector3() },
+			hemisphereLightSkyColor: { value: hemisphereLight.color },
+			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
+			shadowMaps: { value: shadowMaps.map((map) => map.texture) },
+			// shadowMatrices: { value: shadowCameras.map(() => new THREE.Matrix4()) }
+			shadowMatrices: { value: [new THREE.Matrix4()] }
+		},
+		vertexShader: $vertexShader$,
+		fragmentShader: $fragmentShader$
+	})
+
+	// const plane = new THREE.Mesh(boxGeometry, planeMaterial)
+	// plane.position.y = 0
+	// scene.add(plane)
 
 	// 设置 TransformControls 模式为 "translate"（平移），"rotate"（旋转），或 "scale"（缩放）
 	transformControls.setMode('translate')
@@ -147,6 +190,7 @@
 
 	function animate() {
 		requestAnimationFrame(animate)
+
 		planeMaterial.uniforms.cctvPositions.value[0].copy(cctv.position)
 		// planeMaterial.uniforms.cctvPositions.value[1].copy(cctv2.position)
 		cctv.getWorldDirection(planeMaterial.uniforms.cctvDirections.value[0])
@@ -161,7 +205,17 @@
 		// planeMaterial.uniforms.cctvFars.value[1] = cctv2.far
 		// 更新平行光方向
 		directionalLight.getWorldDirection(planeMaterial.uniforms.directionalLightDirection.value)
+		// 更新阴影矩阵
+		for (let i = 0; i < 1; i++) {
+			const shadowCamera = shadowCameras[i]
+			shadowCamera.updateMatrixWorld()
+			// 计算并更新阴影矩阵
+			const shadowMatrix = new THREE.Matrix4()
+			shadowMatrix.multiplyMatrices(shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse)
+			planeMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
+		}
 		controls.update()
+		renderShadowMaps() // 渲染阴影贴图
 		renderer.render(scene, camera)
 	}
 
