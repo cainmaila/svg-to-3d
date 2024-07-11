@@ -1,4 +1,4 @@
-import { PerspectiveCamera } from "three"
+import { LinearFilter, PerspectiveCamera, RGBAFormat, WebGLRenderTarget } from "three"
 
 type I_CCTV_SETTING = {
     focalLength: number
@@ -32,4 +32,20 @@ export function convertCctvToCamera(cctvSetting: I_CCTV_SETTING): PerspectiveCam
     const fovVerticalDegrees = fovVerticalRadians * ANGLE // 垂直視角
     const aspect = sensorWidth / sensorHeight // 寬高比
     return new PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
+}
+
+
+//創建深度紋理
+const shadowMapSize = 2048
+export function createDepthTexture(shadowCameras: PerspectiveCamera[]) {
+    const shadowMaps: WebGLRenderTarget[] = shadowCameras.map(() => {
+        return new WebGLRenderTarget(shadowMapSize, shadowMapSize, {
+            minFilter: LinearFilter,
+            magFilter: LinearFilter,
+            format: RGBAFormat
+        })
+    })
+    return {
+        shadowCameras, shadowMaps
+    }
 }

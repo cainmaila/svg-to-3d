@@ -59,24 +59,18 @@
 	const transformControls = new TransformControls(camera, renderer.domElement)
 	transformControls.attach(cctv1)
 	scene.add(transformControls)
+	const shadowCameras: THREE.PerspectiveCamera[] = []
+	shadowCameras.push(cctv1)
+	shadowCameras.push(cctv2)
 	//創建深度紋理
 	const shadowMapSize = 2048
-	const shadowCameras: THREE.PerspectiveCamera[] = []
-	const shadowMaps: THREE.WebGLRenderTarget[] = []
-	shadowCameras.push(cctv1)
-	const shadowMap = new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
-		minFilter: THREE.LinearFilter,
-		magFilter: THREE.LinearFilter,
-		format: THREE.RGBAFormat
+	const shadowMaps: THREE.WebGLRenderTarget[] = shadowCameras.map(() => {
+		return new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
+			minFilter: THREE.LinearFilter,
+			magFilter: THREE.LinearFilter,
+			format: THREE.RGBAFormat
+		})
 	})
-	shadowMaps.push(shadowMap)
-	shadowCameras.push(cctv2)
-	const shadowMap2 = new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
-		minFilter: THREE.LinearFilter,
-		magFilter: THREE.LinearFilter,
-		format: THREE.RGBAFormat
-	})
-	shadowMaps.push(shadowMap2)
 	//創建投影貼圖
 	const projectionMaterial = new THREE.ShaderMaterial({
 		uniforms: {
