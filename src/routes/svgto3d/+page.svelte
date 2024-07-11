@@ -273,9 +273,17 @@
 	// 將天空盒添加到場景
 	scene.add(skyBox)
 
+	function onWindowResize() {
+		camera.aspect = window.innerWidth / window.innerHeight
+		camera.updateProjectionMatrix()
+		renderer.setSize(window.innerWidth, window.innerHeight)
+	}
+	window.addEventListener('resize', onWindowResize, false)
+
 	onDestroy(() => {
 		renderer.domElement.remove()
 		window.removeEventListener('keydown', transformControlsChange)
 		transformControls.dispose()
+		window.removeEventListener('resize', onWindowResize)
 	})
 </script>
