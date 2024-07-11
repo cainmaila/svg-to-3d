@@ -11,7 +11,8 @@ uniform vec3 directionalLightColor;
 uniform vec3 directionalLightDirection;
 uniform vec3 hemisphereLightSkyColor;
 uniform vec3 hemisphereLightGroundColor;
-uniform sampler2D shadowMaps[1];
+uniform sampler2D shadowMaps1;
+uniform sampler2D shadowMaps2;
 uniform mat4 shadowMatrices[1];
 
 varying vec3 vWorldPosition;
@@ -65,14 +66,22 @@ void main() {
 
         vec3 toCCTV = normalize(cctvPositions[i] - vWorldPosition);
         if(dot(vNormal, toCCTV) < 0.0) { // 面背向CCTV
-            viewCount = 2;
+            // viewCount = 2;
             continue;
         }
 
         if(isInCCTVView(cctvPositions[i], cctvDirections[i], cctvFOVs[i], cctvAspects[i], cctvNears[i], cctvFars[i])) {
              // 计算阴影
             vec4 fragPosLightSpace = shadowMatrices[i] * vec4(vWorldPosition, 1.0);
-            bool shadow = getShadow(fragPosLightSpace, shadowMaps[i]);
+            bool shadow;
+            switch(i) {  //sampler2D 不支持数组索引，所以只能写死 QQ
+                case 0:
+                    shadow = getShadow(fragPosLightSpace, shadowMaps1);
+                    break;
+                case 1:
+                    shadow = getShadow(fragPosLightSpace, shadowMaps2);
+                    break;
+            }
             if(shadow)
                 continue;
             viewCount++;

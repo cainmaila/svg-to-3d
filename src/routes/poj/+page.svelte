@@ -8,14 +8,16 @@
 	import { goto } from '$app/navigation'
 	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
 	import { fragmentShader$, vertexShader$ } from '$lib/stores'
+	import { depthMaterial } from '$lib/threelib/materialLib'
+	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
 	let viewerDom: HTMLDivElement
 
 	const svgString = get(svgString$) // 从 store 中获取 svg 字符串
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
-	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000)
-	const renderer = new THREE.WebGLRenderer({ antialias: true })
+	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 5000)
+	const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	camera.position.set(0, 200, 200)
 
@@ -39,24 +41,20 @@
 	const ambientLight = new THREE.AmbientLight(0xffffff)
 	scene.add(ambientLight)
 
-	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-	directionalLight.position.set(1, 1, 1)
+	const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0)
+	directionalLight.position.set(1, 0, 1)
 	scene.add(directionalLight)
 	//更美的光源
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	scene.add(hemisphereLight)
 
-	// 相機參數
-	const focalLength = 8
-	const sensorWidth = 4.8
-	const sensorHeight = 3.6
-	const fovVerticalRadians = 2 * Math.atan(sensorHeight / (2 * focalLength))
-	const fovVerticalDegrees = fovVerticalRadians * (180 / Math.PI)
-	const aspect = sensorWidth / sensorHeight
-	const near = 50
-	const far = 1000
-
-	const cctv = new THREE.PerspectiveCamera(fovVerticalDegrees, aspect, near, far)
+	const cctv = convertCctvToCamera({
+		focalLength: 8, // 焦距
+		sensorWidth: 4.8, // 传感器宽度
+		sensorHeight: 3.6, // 传感器高度
+		near: 50, // 近裁剪面
+		far: 1000 // 远裁剪面
+	})
 	cctv.position.set(250, 100, -50)
 	cctv.lookAt(0, 0, 0)
 	scene.add(cctv)
@@ -90,20 +88,7 @@
 	// xplane.position.z = -200
 	// scene.add(xplane)
 
-	const depthMaterial = new THREE.ShaderMaterial({
-		vertexShader: `
-        void main() {
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-		fragmentShader: `
-        void main() {
-            gl_FragColor = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
-        }
-    `
-	})
-
-	//選染深度紋理
+	//render深度紋理
 	function renderShadowMaps() {
 		const initialClearColor = renderer.getClearColor(new THREE.Color())
 		const initialClearAlpha = renderer.getClearAlpha()
@@ -145,7 +130,7 @@
 			directionalLightDirection: { value: new THREE.Vector3() },
 			hemisphereLightSkyColor: { value: hemisphereLight.color },
 			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
-			shadowMaps: { value: shadowMaps.map((map) => map.texture) },
+			shadowMaps1: { value: shadowMaps[0].texture },
 			// shadowMatrices: { value: shadowCameras.map(() => new THREE.Matrix4()) }
 			shadowMatrices: { value: [new THREE.Matrix4()] }
 		},
