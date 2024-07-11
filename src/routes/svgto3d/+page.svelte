@@ -19,6 +19,7 @@
 	document.body.appendChild(renderer.domElement)
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
+	controls.maxDistance = 1000 // 最大缩放距离
 	// 添加光源
 	const ambientLight = new THREE.AmbientLight(0xffffff)
 	// scene.add(ambientLight)
@@ -224,6 +225,53 @@
 	transformControls.addEventListener('mouseUp', function () {
 		controls.enabled = true
 	})
+
+	// 頂點着色器
+	const vertexShader = `
+  varying vec3 vWorldPosition;
+  void main() {
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vWorldPosition = worldPosition.xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+	// 片段着色器
+	const fragmentShader = `
+  uniform vec3 topColor;
+  uniform vec3 bottomColor;
+  uniform float offset;
+  uniform float exponent;
+  varying vec3 vWorldPosition;
+  void main() {
+    float h = normalize(vWorldPosition + offset).y;
+    gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+  }
+`
+
+	// 自定義材質
+	const uniforms = {
+		topColor: { value: new THREE.Color(0x87ceeb) }, // 天空的淺藍色
+		bottomColor: { value: new THREE.Color(0x000000) }, // 低處的白色
+		offset: { value: 33 },
+		exponent: { value: 0.6 }
+	}
+
+	const skyMaterial = new THREE.ShaderMaterial({
+		vertexShader: vertexShader,
+		fragmentShader: fragmentShader,
+		uniforms: uniforms,
+		side: THREE.BackSide
+	})
+
+	// 创建天空盒几何体
+	const skyGeometry = new THREE.SphereGeometry(1000, 32, 15)
+
+	// 创建天空盒
+	const skyBox = new THREE.Mesh(skyGeometry, skyMaterial)
+
+	// 將天空盒添加到場景
+	scene.add(skyBox)
 
 	onDestroy(() => {
 		renderer.domElement.remove()
