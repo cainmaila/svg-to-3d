@@ -34,7 +34,7 @@
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 100, // 近裁剪面
-		far: 500 // 远裁剪面
+		far: 1000 // 远裁剪面
 	})
 	cctv1.position.set(250, 100, -50)
 	cctv1.lookAt(0, 0, 0)
@@ -47,7 +47,7 @@
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 100, // 近裁剪面
-		far: 500 // 远裁剪面
+		far: 1000 // 远裁剪面
 	})
 	cctv2.position.set(-250, 100, 0)
 	cctv2.lookAt(0, 0, 100)
