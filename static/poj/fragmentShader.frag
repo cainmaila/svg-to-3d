@@ -96,9 +96,9 @@ void main() {
      // 合并所有光照
     vec3 finalColor = ambientColor + directionalColor + hemiColor;
     if(viewCount >= 2) {
-        gl_FragColor = vec4(finalColor * vec3(1.0, 0.0, 0.0), 1.0); // 红色
+        gl_FragColor = vec4(finalColor * vec3(0.5, 0.0, 0.0), 1.0); // 红色
     } else if(viewCount == 1) {
-        gl_FragColor = vec4(finalColor * vec3(1.0, 1.0, 0.0), 1.0); // 黄色
+        gl_FragColor = vec4(finalColor * vec3(0.5, 0.5, 0.0), 1.0); // 黄色
     } else {
         gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜色
     }
