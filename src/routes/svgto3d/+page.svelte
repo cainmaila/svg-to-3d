@@ -202,8 +202,6 @@
 	// 设置 TransformControls 模式为 "translate"（平移），"rotate"（旋转），或 "scale"（缩放）
 	transformControls.setMode('translate')
 	// 添加键盘事件来切换模式
-	window.addEventListener('keydown', transformControlsChange)
-
 	function transformControlsChange(event: KeyboardEvent) {
 		switch (event.key) {
 			case 't': // 平移
@@ -278,12 +276,11 @@
 		camera.updateProjectionMatrix()
 		renderer.setSize(window.innerWidth, window.innerHeight)
 	}
-	window.addEventListener('resize', onWindowResize, false)
 
 	onDestroy(() => {
 		renderer.domElement.remove()
-		window.removeEventListener('keydown', transformControlsChange)
 		transformControls.dispose()
-		window.removeEventListener('resize', onWindowResize)
 	})
 </script>
+
+<svelte:window on:resize|passive={onWindowResize} on:keydown={transformControlsChange} />
