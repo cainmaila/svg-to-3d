@@ -11,6 +11,8 @@
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 
+	let selectCCTV: string = ''
+
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000)
@@ -61,61 +63,69 @@
 	shadowCameras.push(cctv2)
 	// 创建 TransformControls
 	const transformControls = new TransformControls(camera, renderer.domElement)
-	// transformControls.attach(cctv1)
 	scene.add(transformControls)
 	// 禁用 OrbitControls 当 TransformControls 被激活时
 	transformControls.addEventListener('dragging-changed', function (event) {
 		controls.enabled = !event.value
 	})
 	//攝影機物件
-	const cctv1obj = new THREE.Mesh(
-		new THREE.BoxGeometry(5, 5, 12),
-		new THREE.MeshBasicMaterial({ color: 0xff0000 })
-	)
-	//複製攝影機位置包含旋轉
-	moveCctv1()
-	scene.add(cctv1obj)
-	transformControls.addEventListener('objectChange', () => {
-		moveCctv1()
-		moveCctv2()
+	const cctvObjs = [
+		new THREE.Mesh(
+			new THREE.BoxGeometry(5, 5, 12),
+			new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		),
+		new THREE.Mesh(
+			new THREE.BoxGeometry(5, 5, 12),
+			new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		)
+	]
+	cctvObjs.forEach((cctvObj, ind) => {
+		cctvObj.name = `cctv${ind + 1}`
+		scene.add(cctvObj)
+		moveCctv(ind)
 	})
-	function moveCctv1() {
-		cctv1obj.position.copy(cctv1.position)
-		cctv1obj.quaternion.copy(cctv1.quaternion)
+	//複製攝影機位置包含旋轉
+	function moveCctv(ind: number) {
+		cctvObjs[ind].position.copy(shadowCameras[ind].position)
+		cctvObjs[ind].quaternion.copy(shadowCameras[ind].quaternion)
 	}
-
-	const cctv2obj = new THREE.Mesh(
-		new THREE.BoxGeometry(5, 5, 12),
-		new THREE.MeshBasicMaterial({ color: 0xff0000 })
-	)
-	moveCctv2()
-	scene.add(cctv2obj)
-	function moveCctv2() {
-		cctv2obj.position.copy(cctv2.position)
-		cctv2obj.quaternion.copy(cctv2.quaternion)
+	transformControls.addEventListener('objectChange', () => {
+		const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
+		moveCctv(selectIndex)
+	})
+	//選擇cctv
+	$: {
+		switch (selectCCTV) {
+			case 'cctv1':
+				_clearSelectCCTV()
+				transformControls.attach(cctv1)
+				cctvHelper1.visible = true
+				break
+			case 'cctv2':
+				_clearSelectCCTV()
+				transformControls.attach(cctv2)
+				cctvHelper2.visible = true
+				break
+		}
+	}
+	function _clearSelectCCTV() {
+		cctvHelper1.visible = false
+		cctvHelper2.visible = false
+		transformControls.detach()
 	}
 	//點選畫面ray到cctvObj
 	const raycaster = new THREE.Raycaster()
 	const mouse = new THREE.Vector2()
-	window.addEventListener('click', (event) => {
+	function onRayCCTV(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 		raycaster.setFromCamera(mouse, camera)
-		const intersects = raycaster.intersectObject(cctv1obj)
+		const intersects = raycaster.intersectObjects(cctvObjs)
 		if (intersects.length > 0) {
-			transformControls.attach(cctv1)
-			cctvHelper2.visible = false
-			cctvHelper1.visible = true
-			return
+			const obj = intersects[0].object
+			selectCCTV = obj.name
 		}
-		const intersects2 = raycaster.intersectObject(cctv2obj)
-		if (intersects2.length > 0) {
-			transformControls.attach(cctv2)
-			cctvHelper1.visible = false
-			cctvHelper2.visible = true
-			return
-		}
-	})
+	}
 	//創建深度紋理
 	const shadowMapSize = 2048
 	const shadowMaps: THREE.WebGLRenderTarget[] = shadowCameras.map(() => {
@@ -279,4 +289,8 @@
 	})
 </script>
 
-<svelte:window on:resize|passive={onWindowResize} on:keydown={transformControlsChange} />
+<svelte:window
+	on:resize|passive={onWindowResize}
+	on:keydown={transformControlsChange}
+	on:click={onRayCCTV}
+/>
