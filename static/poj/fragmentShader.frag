@@ -57,8 +57,6 @@ void main() {
     int viewCount = 0;
 
     for(int i = 0; i < cctvCount; i++) {
-        // vec3 toFragment = vWorldPosition - cctvPositions[i];
-        // float distance = dot(toFragment, normalize(cctvDirections[i]));
 
         // if(dot(vNormal, normalize(cctvDirections[i])) > 0.0) { // 与摄像头方向相反
         //     viewCount = 2;
@@ -73,18 +71,14 @@ void main() {
 
         if(isInCCTVView(cctvPositions[i], cctvDirections[i], cctvFOVs[i], cctvAspects[i], cctvNears[i], cctvFars[i])) {
              // 计算阴影
-            vec4 fragPosLightSpace = shadowMatrices[0] * vec4(vWorldPosition, 1.0);
-            bool shadow = getShadow(fragPosLightSpace, shadowMaps[0]);
+            vec4 fragPosLightSpace = shadowMatrices[i] * vec4(vWorldPosition, 1.0);
+            bool shadow = getShadow(fragPosLightSpace, shadowMaps[i]);
             if(shadow)
                 continue;
             viewCount++;
             inAnyView = true;
         }
     }
-
-    // for(int i = 0; i < cctvCount; i++) {
-    //     shadow = getShadow(cctvPositions[i], shadowMaps[i]);
-    // }
 
      // 环境光
     vec3 ambientColor = ambientLightColor;
@@ -97,7 +91,7 @@ void main() {
 
      // 合并所有光照
     vec3 finalColor = ambientColor + directionalColor + hemiColor;
-    if(viewCount == 2) {
+    if(viewCount >= 2) {
         gl_FragColor = vec4(finalColor * vec3(1.0, 0.0, 0.0), 1.0); // 红色
     } else if(viewCount == 1) {
         gl_FragColor = vec4(finalColor * vec3(1.0, 1.0, 0.0), 1.0); // 黄色
