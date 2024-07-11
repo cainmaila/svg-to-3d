@@ -3,6 +3,6 @@
 </script>
 
 <svelte:head>
-	<title>SVG to 3D</title>
+	<title>場域設置 & CCTV配置規劃</title>
 </svelte:head>
 <slot />
