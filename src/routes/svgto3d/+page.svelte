@@ -26,8 +26,9 @@
 	directionalLight.position.set(1, 1, 1)
 	// scene.add(directionalLight)
 	const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0xffffff)
-	// scene.add(hemisphereLight)
-	// 添加CCTV
+	hemisphereLight.position.set(0, 200, 0)
+	scene.add(hemisphereLight)
+	// 添加CCTV1
 	const cctv1 = convertCctvToCamera({
 		focalLength: 8, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
@@ -40,6 +41,20 @@
 	scene.add(cctv1)
 	const cctvHelper1 = new THREE.CameraHelper(cctv1)
 	scene.add(cctvHelper1)
+	// 添加CCTV2
+	const cctv2 = convertCctvToCamera({
+		focalLength: 8, // 焦距
+		sensorWidth: 4.8, // 传感器宽度
+		sensorHeight: 3.6, // 传感器高度
+		near: 50, // 近裁剪面
+		far: 1000 // 远裁剪面
+	})
+	cctv2.position.set(-250, 100, 0)
+	cctv2.lookAt(0, 0, 0)
+	scene.add(cctv2)
+	const cctvHelper2 = new THREE.CameraHelper(cctv2)
+	scene.add(cctvHelper2)
+
 	// 创建 TransformControls
 	const transformControls = new TransformControls(camera, renderer.domElement)
 	transformControls.attach(cctv1)
@@ -55,6 +70,13 @@
 		format: THREE.RGBAFormat
 	})
 	shadowMaps.push(shadowMap)
+	shadowCameras.push(cctv2)
+	const shadowMap2 = new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
+		minFilter: THREE.LinearFilter,
+		magFilter: THREE.LinearFilter,
+		format: THREE.RGBAFormat
+	})
+	shadowMaps.push(shadowMap2)
 	//創建投影貼圖
 	const projectionMaterial = new THREE.ShaderMaterial({
 		uniforms: {
@@ -64,14 +86,15 @@
 			cctvAspects: { value: [0, 0] },
 			cctvNears: { value: [0, 0] },
 			cctvFars: { value: [0, 0] },
-			cctvCount: { value: 1 },
+			cctvCount: { value: 2 },
 			ambientLightColor: { value: ambientLight.color },
 			directionalLightColor: { value: directionalLight.color },
 			directionalLightDirection: { value: new THREE.Vector3() },
 			hemisphereLightSkyColor: { value: hemisphereLight.color },
 			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
 			shadowMaps1: { value: shadowMaps[0].texture },
-			shadowMatrices: { value: [new THREE.Matrix4()] }
+			shadowMaps2: { value: shadowMaps[1].texture },
+			shadowMatrices: { value: [new THREE.Matrix4(), new THREE.Matrix4()] }
 		},
 		vertexShader: $vertexShader$,
 		fragmentShader: $fragmentShader$
@@ -136,10 +159,17 @@
 		projectionMaterial.uniforms.cctvNears.value[0] = cctv1.near
 		projectionMaterial.uniforms.cctvFars.value[0] = cctv1.far
 
+		projectionMaterial.uniforms.cctvPositions.value[1].copy(cctv2.position)
+		cctv2.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[1])
+		projectionMaterial.uniforms.cctvFOVs.value[1] = cctv2.fov
+		projectionMaterial.uniforms.cctvAspects.value[1] = cctv2.aspect
+		projectionMaterial.uniforms.cctvNears.value[1] = cctv2.near
+		projectionMaterial.uniforms.cctvFars.value[1] = cctv2.far
+
 		// 更新平行光方向
 		directionalLight.getWorldDirection(projectionMaterial.uniforms.directionalLightDirection.value)
 		// 更新阴影矩阵
-		for (let i = 0; i < 1; i++) {
+		for (let i = 0; i < 2; i++) {
 			const shadowCamera = shadowCameras[i]
 			shadowCamera.updateMatrixWorld()
 			// 计算并更新阴影矩阵
@@ -160,7 +190,7 @@
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
 		scene.overrideMaterial = depthMaterial
-		for (let i = 0; i < 1; i++) {
+		for (let i = 0; i < 2; i++) {
 			renderer.setRenderTarget(shadowMaps[i])
 			renderer.render(scene, shadowCameras[i])
 		}

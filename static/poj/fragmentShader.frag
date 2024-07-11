@@ -1,10 +1,10 @@
 precision highp float;
-uniform vec3 cctvPositions[1];
-uniform vec3 cctvDirections[1];
-uniform float cctvFOVs[1];
-uniform float cctvAspects[1];
-uniform float cctvNears[1];
-uniform float cctvFars[1];
+uniform vec3 cctvPositions[2];
+uniform vec3 cctvDirections[2];
+uniform float cctvFOVs[2];
+uniform float cctvAspects[2];
+uniform float cctvNears[2];
+uniform float cctvFars[2];
 uniform int cctvCount;
 uniform vec3 ambientLightColor;
 uniform vec3 directionalLightColor;
@@ -13,7 +13,7 @@ uniform vec3 hemisphereLightSkyColor;
 uniform vec3 hemisphereLightGroundColor;
 uniform sampler2D shadowMaps1;
 uniform sampler2D shadowMaps2;
-uniform mat4 shadowMatrices[1];
+uniform mat4 shadowMatrices[2];
 
 varying vec3 vWorldPosition;
 varying vec3 vNormal;
