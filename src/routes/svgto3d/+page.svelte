@@ -140,7 +140,7 @@
 		const box = new THREE.Box3().setFromObject(build)
 		const center = box.getCenter(new THREE.Vector3())
 		const size = box.getSize(new THREE.Vector3())
-		const maxDim = Math.max(size.x, size.y, size.z)
+		const maxDim = Math.max(size.x, size.y, size.z) * 0.5
 
 		camera.position.set(center.x, center.y + maxDim / 2, center.z + maxDim)
 		camera.lookAt(center)
@@ -215,7 +215,6 @@
 				break
 		}
 	}
-
 	// 禁用 OrbitControls 当 TransformControls 被激活时
 	transformControls.addEventListener('mouseDown', function () {
 		controls.enabled = false
