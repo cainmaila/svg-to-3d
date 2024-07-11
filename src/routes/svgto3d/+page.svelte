@@ -4,7 +4,7 @@
 	import { get } from 'svelte/store'
 	import { onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
+	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
 	import { svgString$ } from '$lib/stores'
 	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
@@ -224,52 +224,8 @@
 		controls.enabled = true
 	})
 
-	// 頂點着色器
-	const vertexShader = `
-  varying vec3 vWorldPosition;
-  void main() {
-    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-    vWorldPosition = worldPosition.xyz;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`
-
-	// 片段着色器
-	const fragmentShader = `
-  uniform vec3 topColor;
-  uniform vec3 bottomColor;
-  uniform float offset;
-  uniform float exponent;
-  varying vec3 vWorldPosition;
-  void main() {
-    float h = normalize(vWorldPosition + offset).y;
-    gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
-  }
-`
-
-	// 自定義材質
-	const uniforms = {
-		topColor: { value: new THREE.Color(0x87ceeb) }, // 天空的淺藍色
-		bottomColor: { value: new THREE.Color(0x000000) }, // 低處的白色
-		offset: { value: 33 },
-		exponent: { value: 0.6 }
-	}
-
-	const skyMaterial = new THREE.ShaderMaterial({
-		vertexShader: vertexShader,
-		fragmentShader: fragmentShader,
-		uniforms: uniforms,
-		side: THREE.BackSide
-	})
-
-	// 创建天空盒几何体
-	const skyGeometry = new THREE.SphereGeometry(1000, 32, 15)
-
-	// 创建天空盒
-	const skyBox = new THREE.Mesh(skyGeometry, skyMaterial)
-
 	// 將天空盒添加到場景
-	scene.add(skyBox)
+	scene.add(generateSkyBox())
 
 	function onWindowResize() {
 		camera.aspect = window.innerWidth / window.innerHeight
