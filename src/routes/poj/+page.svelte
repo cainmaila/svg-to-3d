@@ -132,7 +132,7 @@
 			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
 			shadowMaps1: { value: shadowMaps[0].texture },
 			// shadowMatrices: { value: shadowCameras.map(() => new THREE.Matrix4()) }
-			shadowMatrices: { value: [new THREE.Matrix4()] }
+			shadowMatrices: { value: [new THREE.Matrix4(), new THREE.Matrix4()] }
 		},
 		vertexShader: $vertexShader$,
 		fragmentShader: $fragmentShader$

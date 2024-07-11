@@ -59,11 +59,6 @@ void main() {
 
     for(int i = 0; i < cctvCount; i++) {
 
-        // if(dot(vNormal, normalize(cctvDirections[i])) > 0.0) { // 与摄像头方向相反
-        //     viewCount = 2;
-        //     continue;
-        // }
-
         vec3 toCCTV = normalize(cctvPositions[i] - vWorldPosition);
         if(dot(vNormal, toCCTV) < 0.0) { // 面背向CCTV
             // viewCount = 2;
