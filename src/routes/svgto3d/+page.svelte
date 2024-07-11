@@ -41,6 +41,7 @@
 	scene.add(cctv1)
 	const cctvHelper1 = new THREE.CameraHelper(cctv1)
 	scene.add(cctvHelper1)
+	cctvHelper1.visible = false
 	// 添加CCTV2
 	const cctv2 = convertCctvToCamera({
 		focalLength: 8, // 焦距
@@ -54,14 +55,67 @@
 	scene.add(cctv2)
 	const cctvHelper2 = new THREE.CameraHelper(cctv2)
 	scene.add(cctvHelper2)
-
-	// 创建 TransformControls
-	const transformControls = new TransformControls(camera, renderer.domElement)
-	transformControls.attach(cctv1)
-	scene.add(transformControls)
+	cctvHelper2.visible = false
 	const shadowCameras: THREE.PerspectiveCamera[] = []
 	shadowCameras.push(cctv1)
 	shadowCameras.push(cctv2)
+	// 创建 TransformControls
+	const transformControls = new TransformControls(camera, renderer.domElement)
+	// transformControls.attach(cctv1)
+	scene.add(transformControls)
+	// 禁用 OrbitControls 当 TransformControls 被激活时
+	transformControls.addEventListener('dragging-changed', function (event) {
+		controls.enabled = !event.value
+	})
+	//攝影機物件
+	const cctv1obj = new THREE.Mesh(
+		new THREE.BoxGeometry(5, 5, 12),
+		new THREE.MeshBasicMaterial({ color: 0xff0000 })
+	)
+	//複製攝影機位置包含旋轉
+	moveCctv1()
+	scene.add(cctv1obj)
+	transformControls.addEventListener('objectChange', () => {
+		moveCctv1()
+		moveCctv2()
+	})
+	function moveCctv1() {
+		cctv1obj.position.copy(cctv1.position)
+		cctv1obj.quaternion.copy(cctv1.quaternion)
+	}
+
+	const cctv2obj = new THREE.Mesh(
+		new THREE.BoxGeometry(5, 5, 12),
+		new THREE.MeshBasicMaterial({ color: 0xff0000 })
+	)
+	moveCctv2()
+	scene.add(cctv2obj)
+	function moveCctv2() {
+		cctv2obj.position.copy(cctv2.position)
+		cctv2obj.quaternion.copy(cctv2.quaternion)
+	}
+	//點選畫面ray到cctvObj
+	const raycaster = new THREE.Raycaster()
+	const mouse = new THREE.Vector2()
+	window.addEventListener('click', (event) => {
+		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+		raycaster.setFromCamera(mouse, camera)
+		const intersects = raycaster.intersectObject(cctv1obj)
+		if (intersects.length > 0) {
+			transformControls.attach(cctv1)
+			cctvHelper2.visible = false
+			cctvHelper1.visible = true
+			return
+		}
+		const intersects2 = raycaster.intersectObject(cctv2obj)
+		if (intersects2.length > 0) {
+			transformControls.attach(cctv2)
+			cctvHelper1.visible = false
+			cctvHelper2.visible = true
+			return
+		}
+	})
 	//創建深度紋理
 	const shadowMapSize = 2048
 	const shadowMaps: THREE.WebGLRenderTarget[] = shadowCameras.map(() => {
@@ -209,13 +263,6 @@
 				break
 		}
 	}
-	// 禁用 OrbitControls 当 TransformControls 被激活时
-	transformControls.addEventListener('mouseDown', function () {
-		controls.enabled = false
-	})
-	transformControls.addEventListener('mouseUp', function () {
-		controls.enabled = true
-	})
 
 	// 將天空盒添加到場景
 	scene.add(generateSkyBox())
