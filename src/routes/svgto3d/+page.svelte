@@ -20,14 +20,13 @@
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 	// 添加光源
-	const ambientLight = new THREE.AmbientLight(0x000000)
+	const ambientLight = new THREE.AmbientLight(0xffffff)
 	// scene.add(ambientLight)
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0)
-	directionalLight.position.set(1, 1, 1)
+	directionalLight.position.set(1, 0, 1)
 	// scene.add(directionalLight)
-	const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0xffffff)
-	hemisphereLight.position.set(0, 200, 0)
-	scene.add(hemisphereLight)
+	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
+	// scene.add(hemisphereLight)
 	// 添加CCTV1
 	const cctv1 = convertCctvToCamera({
 		focalLength: 8, // 焦距
