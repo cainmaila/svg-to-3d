@@ -25,6 +25,7 @@ export function createExtrudedLine(start: Vector2, end: Vector2, width: number) 
 
 // 創建 SVG 加載器
 const loader = new SVGLoader()
+
 /**
  * 將 SVG 轉換為 Group
  * @param svgPath SVG檔案路徑
@@ -37,13 +38,13 @@ const loader = new SVGLoader()
 export function svgToGroupSync(
     svgPath: string,
     {
-        lineWidth = 5, // 設置線段厚度和高度
+        lineWidth = 5,
         wallHeight = 100,
         doorHigh = 50,
         color = DefaulColor
     }
 ) {
-    return new Promise<Group>((resolve, rehect) => {
+    return new Promise<Group>((resolve, reject) => {
         let building: Brush | null = null
         let doors: Brush | null = null
         const group = new Group()
@@ -58,11 +59,26 @@ export function svgToGroupSync(
                 let doorallMesh: Brush | null = null
                 let allMesh: Brush | null = null
                 let brush: Brush | null = null
+
+                // 獲取 SVG 的邊界框
+                const svgBounds = new Box3()
+                paths.forEach(path => {
+                    path.subPaths.forEach(subPath => {
+                        subPath.getPoints().forEach(point => {
+                            svgBounds.expandByPoint(new Vector3(point.x, point.y, 0))
+                        })
+                    })
+                })
+                const svgHeight = svgBounds.max.y - svgBounds.min.y
+
                 paths.forEach((path) => {
+                    const points = path.subPaths[0].getPoints().map(point =>
+                        new Vector2(point.x, svgHeight - point.y)  // 翻轉 Y 坐標
+                    )
+
                     switch (path.userData?.node?.getAttribute('data-type')) {
                         case 'door':
                             {
-                                const points = path.subPaths[0].getPoints()
                                 const evaluator = new Evaluator()
                                 for (let i = 0; i < points.length - 1; i++) {
                                     const start = points[i]
@@ -84,7 +100,6 @@ export function svgToGroupSync(
                             break
                         default: {
                             const evaluator = new Evaluator()
-                            const points = path.subPaths[0].getPoints()
                             for (let i = 0; i < points.length - 1; i++) {
                                 const start = points[i]
                                 const end = points[i + 1]
@@ -110,10 +125,11 @@ export function svgToGroupSync(
                     building.material = material
                     group.add(building)
                 }
-                //把groupr y軸旋轉90度
+
+                // 將 group 旋轉以使其在 XZ 平面上
                 group.rotation.x = -Math.PI / 2
 
-                //根據Box移到中心
+                // 根據Box移到中心
                 const box = new Box3().setFromObject(group)
                 const center = box.getCenter(new Vector3())
                 group.position.x = -center.x
@@ -126,12 +142,14 @@ export function svgToGroupSync(
                 const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
                 allMesh2.material = material
 
+                // 更新世界矩陣
+                allMesh2.updateMatrixWorld(true)
 
                 resolve(allMesh2 as unknown as Group)
             },
             undefined,
             function (error) {
-                rehect(error)
+                reject(error)
             }
         )
     })
@@ -165,7 +183,6 @@ function createBaseForObject(object: Object3D, thickness: number = 5.0) {
 
     return base;
 }
-
 /**
  * 將 SVG 字串轉換為 URL
  * @param svgString
