@@ -25,7 +25,7 @@
 
 	onMount(() => {
 		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
-		loadImg('/back.png')
+		loadImg('/back3.png')
 	})
 
 	//載入SVG
@@ -58,7 +58,7 @@
 	export function clear() {
 		draw.clear()
 		svgString = ''
-		loadImg('/back.png')
+		loadImg('/back3.png')
 	}
 
 	//設置當前工具
