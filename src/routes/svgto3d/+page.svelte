@@ -32,10 +32,10 @@
 	// scene.add(hemisphereLight)
 	// 添加CCTV1
 	const cctv1 = convertCctvToCamera({
-		focalLength: 4, // 焦距
+		focalLength: 8, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
-		near: 100, // 近裁剪面
+		near: 50, // 近裁剪面
 		far: 1000 // 远裁剪面
 	})
 	cctv1.position.set(250, 100, -50)
@@ -49,7 +49,7 @@
 		focalLength: 8, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
-		near: 100, // 近裁剪面
+		near: 50, // 近裁剪面
 		far: 1000 // 远裁剪面
 	})
 	cctv2.position.set(-250, 100, 0)
