@@ -27,6 +27,15 @@
 			<legend>繪製方式</legend>
 			<input
 				type="radio"
+				id="view"
+				name="drawtype"
+				on:change={() => draw.setCurrentTool('view')}
+				checked
+			/>
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label>拖曳場景</label>
+			<input
+				type="radio"
 				id="rect"
 				name="drawtype"
 				on:change={() => draw.setCurrentTool('polygon')}

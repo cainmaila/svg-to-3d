@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
+	import '@svgdotjs/svg.panzoom.js'
 	import { onMount } from 'svelte'
 	import { loadSvgElementToDraw } from '$lib/svgLib'
 	import { createEventDispatcher } from 'svelte'
@@ -8,7 +9,7 @@
 	const dispatch = createEventDispatcher()
 	//on:svg svgString變化
 
-	export let currentTool = '' //當前選擇的工具
+	export let currentTool = 'view' //當前選擇的工具
 
 	//畫布大小
 	const canvasWidth = window.innerWidth
@@ -24,7 +25,11 @@
 	let svgString //SVG 字串
 
 	onMount(() => {
-		draw = SVG().addTo('#drawing').size(canvasWidth, canvasHeight) //初始化SVG 畫布
+		draw = SVG()
+			.addTo('#drawing')
+			.size(canvasWidth, canvasHeight)
+			.viewbox(`0 0 ${canvasWidth} ${canvasHeight}`)
+			.panZoom({ zoomMin: 0.5, zoomMax: 2 }) //初始化SVG 畫布
 		loadImg('/back3.png')
 	})
 
@@ -68,6 +73,7 @@
 		if (tool === 'select') {
 			draw.on('click', selectShape)
 		}
+		draw.panZoom(tool === 'view' ? { zoomMin: 0.8, zoomMax: 1.5 } : false)
 	}
 	//清除選擇
 	export function clearSelect() {

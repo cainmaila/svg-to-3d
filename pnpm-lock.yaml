@@ -23,6 +23,9 @@ importers:
       '@svgdotjs/svg.js':
         specifier: ^3.2.4
         version: 3.2.4
+      '@svgdotjs/svg.panzoom.js':
+        specifier: ^2.1.2
+        version: 2.1.2
       '@types/eslint':
         specifier: ^8.56.7
         version: 8.56.10
@@ -410,6 +413,9 @@ packages:
 
   '@svgdotjs/svg.js@3.2.4':
     resolution: {integrity: sha512-BjJ/7vWNowlX3Z8O4ywT58DqbNRyYlkk6Yz/D13aB7hGmfQTvGX4Tkgtm/ApYlu9M7lCQi15xUEidqMUmdMYwg==}
+
+  '@svgdotjs/svg.panzoom.js@2.1.2':
+    resolution: {integrity: sha512-0Nzo2TRlTebW3pzfAPtHx8Ye7Y3kuMEkK7hwVJi0SgQUB/vstjg7fvCJxB++EqsuDEetP0/SC+4CpLMVm6Lh2g==}
 
   '@tweenjs/tween.js@23.1.2':
     resolution: {integrity: sha512-kMCNaZCJugWI86xiEHaY338CU5JpD0B97p1j1IKNn/Zto8PgACjQx0UxbHjmOcLl/dDOBnItwD07KmCs75pxtQ==}
@@ -1753,6 +1759,10 @@ snapshots:
       '@svgdotjs/svg.js': 3.2.4
 
   '@svgdotjs/svg.js@3.2.4': {}
+
+  '@svgdotjs/svg.panzoom.js@2.1.2':
+    dependencies:
+      '@svgdotjs/svg.js': 3.2.4
 
   '@tweenjs/tween.js@23.1.2': {}
 
