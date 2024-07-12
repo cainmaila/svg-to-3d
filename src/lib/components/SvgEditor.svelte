@@ -11,8 +11,8 @@
 	export let currentTool = '' //當前選擇的工具
 
 	//畫布大小
-	const canvasWidth = 800
-	const canvasHeight = 500
+	const canvasWidth = window.innerWidth
+	const canvasHeight = window.innerHeight
 	const lineWidth = 5 //線條寬度
 
 	let isDrawing = false //是否正在繪製
@@ -262,7 +262,9 @@
 			// 創建一個新的圖片元素並設置為背景
 			const background = draw.image(path)
 			//縮到畫布大小
-			background.size(canvasWidth, canvasHeight)
+			background.size(canvasWidth * 0.8, canvasHeight * 0.8)
+			//置中
+			background.center(canvasWidth / 2, canvasHeight / 2)
 			background.back() // 將圖片移到最底層
 
 			// 可選：調整圖片透明度，使其更容易描繪
@@ -286,9 +288,8 @@
 <style lang="postcss">
 	#drawing {
 		position: relative;
-		border: 1px solid #ccc;
-		width: 800px;
-		height: 500px;
+		height: 100dvh;
+		box-sizing: border-box;
 		user-select: none;
 		-webkit-user-drag: none;
 		& svg {

@@ -21,7 +21,7 @@
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
-<main class="container">
+<main>
 	<div class="toolbar">
 		<fieldset>
 			<legend>繪製方式</legend>
@@ -48,8 +48,10 @@
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>安裝門</label>
 		</fieldset>
-		<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
-		<button id="generate" on:click={goto3d}>生成場域</button>
+		<div class="button">
+			<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
+			<button id="generate" on:click={goto3d}>生成場域</button>
+		</div>
 	</div>
 
 	<SvgEditor
@@ -62,7 +64,31 @@
 </main>
 
 <style lang="postcss">
+	.toolbar {
+		font-size: smaller;
+		position: absolute;
+		top: 0;
+		height: 50px;
+		z-index: 100;
+		display: inline-box;
+		pointer-events: none;
+		& .button {
+			display: flex;
+		}
+		& input {
+			pointer-events: auto;
+		}
+	}
 	.toolbar button {
+		font-size: smaller;
 		margin: 5px;
+		pointer-events: auto;
+	}
+	code {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		z-index: 100;
+		pointer-events: none;
 	}
 </style>
