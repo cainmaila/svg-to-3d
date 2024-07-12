@@ -2,12 +2,13 @@
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
 	import { get } from 'svelte/store'
-	import { svgString$ } from '$lib/stores'
+	import { svgString$, backgroundImg$ } from '$lib/stores'
 
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
 
 	let draw: SvgEditor
 	$: draw && draw.loadSvg(get(svgString$))
+	$: draw && draw.loadImg(get(backgroundImg$))
 
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
@@ -17,6 +18,25 @@
 	function goto3d() {
 		draw.clearSelect()
 		goto('/svgto3d')
+	}
+	//開啟一張圖片
+	function loadImage() {
+		const input = document.createElement('input')
+		input.type = 'file'
+		input.accept = 'image/*'
+		input.onchange = (e) => {
+			//@ts-ignore
+			const file = (e.target as HTMLInputElement).files[0]
+			const reader = new FileReader()
+			reader.onload = (e) => {
+				//@ts-ignore
+				draw.loadImg(e.target.result as string)
+				//@ts-ignore
+				backgroundImg$.set(e.target.result as string)
+			}
+			reader.readAsDataURL(file)
+		}
+		input.click()
 	}
 </script>
 
@@ -33,7 +53,7 @@
 				checked
 			/>
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>拖曳場景</label>
+			<label>檢視場景</label>
 			<input
 				type="radio"
 				id="rect"
@@ -58,6 +78,7 @@
 			<label>安裝門</label>
 		</fieldset>
 		<div class="button">
+			<button id="loadimageBtn" on:click={loadImage}>載入圖</button>
 			<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
 			<button id="generate" on:click={goto3d}>生成場域</button>
 		</div>

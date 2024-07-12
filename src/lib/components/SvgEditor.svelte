@@ -23,6 +23,8 @@
 	let draw: Svg //SVG 畫布
 	let controlPoints: any[] = [] //控制點
 	let svgString //SVG 字串
+	let background: any //背景圖片
+	let backgroundImg: string = ''
 
 	onMount(() => {
 		draw = SVG()
@@ -30,7 +32,6 @@
 			.size(canvasWidth, canvasHeight)
 			.viewbox(`0 0 ${canvasWidth} ${canvasHeight}`)
 			.panZoom({ zoomMin: 0.5, zoomMax: 2 }) //初始化SVG 畫布
-		loadImg('/back3.png')
 	})
 
 	//載入SVG
@@ -63,7 +64,7 @@
 	export function clear() {
 		draw.clear()
 		svgString = ''
-		loadImg('/back3.png')
+		loadImg(backgroundImg)
 	}
 
 	//設置當前工具
@@ -260,13 +261,14 @@
 		}
 	}
 
-	async function loadImg(path: string) {
+	export async function loadImg(path: string) {
+		background?.remove()
 		const img = new Image()
 		img.onload = function (e) {
 			// 調整繪圖區域大小以匹配圖片
 			// draw.size(img.width, img.height)
 			// 創建一個新的圖片元素並設置為背景
-			const background = draw.image(path)
+			background = draw.image(path)
 			//縮到畫布大小
 			background.size(canvasWidth * 0.8, canvasHeight * 0.8)
 			//置中
@@ -276,6 +278,7 @@
 			// 可選：調整圖片透明度，使其更容易描繪
 			background.opacity(0.3)
 		}
+		backgroundImg = path
 		img.src = path
 	}
 </script>
