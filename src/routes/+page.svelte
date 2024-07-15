@@ -168,18 +168,6 @@
 		z-index: 100;
 		pointer-events: none;
 	}
-	.scaleMod {
-		display: flex;
-		align-items: center;
-
-		& input {
-			width: 100px;
-		}
-		& * {
-			font-size: smaller;
-			color: red;
-		}
-	}
 	.toolbar {
 		font-size: smaller;
 		position: absolute;
