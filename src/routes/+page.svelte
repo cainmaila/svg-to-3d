@@ -8,19 +8,20 @@
 
 	let draw: SvgEditor
 	$: draw && loadSvg()
+	let scelerRatio = 10 / 500 //預設比例尺為1:50
 
+	//載入SVG
 	function loadSvg() {
 		draw.loadSvg(get(svgString$))
 		const bg = get(backgroundImg$)
 		//@ts-ignore
 		bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
 	}
-
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
 		;(event.key === 'Delete' || event.key === 'Backspace') && draw.deleteSelected()
 	}
-
+	//前往3D頁面
 	function goto3d() {
 		draw.clearSelect()
 		goto('/svgto3d')
@@ -42,50 +43,78 @@
 		}
 		input.click()
 	}
-
 	//將背景圖片存入store
 	function saveBackgroundToStore(e: CustomEvent) {
 		backgroundImg$.set(e.detail)
+	}
+	//比例尺變動
+	function onScalce(e: CustomEvent) {
+		console.log('比例尺變動', e.detail)
 	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 <main>
 	<div class="toolbar">
-		<fieldset>
-			<legend>繪製方式</legend>
-			<input
-				type="radio"
-				id="view"
-				name="drawtype"
-				on:change={() => draw.setCurrentTool('view')}
-				checked
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>檢視場景</label>
-			<input
-				type="radio"
-				id="rect"
-				name="drawtype"
-				on:change={() => draw.setCurrentTool('polygon')}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>矩形區域</label>
-			<input type="radio" id="line" name="drawtype" on:change={() => draw.setCurrentTool('line')} />
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>直線</label>
-			<input
-				type="radio"
-				id="freeDraw"
-				name="drawtype"
-				on:change={() => draw.setCurrentTool('freeDraw')}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>自由繪製</label>
-			<input type="radio" id="door" name="drawtype" on:change={() => draw.setCurrentTool('door')} />
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>安裝門</label>
-		</fieldset>
+		<div class="top">
+			<fieldset>
+				<legend>繪製方式</legend>
+				<input
+					type="radio"
+					id="view"
+					name="drawtype"
+					on:change={() => draw.setCurrentTool('view')}
+					checked
+				/>
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>檢視場景</label>
+				<input
+					type="radio"
+					id="rect"
+					name="drawtype"
+					on:change={() => draw.setCurrentTool('polygon')}
+				/>
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>矩形區域</label>
+				<input
+					type="radio"
+					id="line"
+					name="drawtype"
+					on:change={() => draw.setCurrentTool('line')}
+				/>
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>直線</label>
+				<input
+					type="radio"
+					id="freeDraw"
+					name="drawtype"
+					on:change={() => draw.setCurrentTool('freeDraw')}
+				/>
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>自由繪製</label>
+				<input
+					type="radio"
+					id="door"
+					name="drawtype"
+					on:change={() => draw.setCurrentTool('door')}
+				/>
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>安裝門</label>
+				<input
+					type="radio"
+					id="scale"
+					name="drawtype"
+					on:change={() => draw.setCurrentTool('scale')}
+				/>
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>比例尺</label>
+			</fieldset>
+			<div class="scaleMod">
+				<input type="number" value="10" />
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<label>M</label>
+			</div>
+		</div>
 		<div class="button">
 			<button id="loadimageBtn" on:click={loadImage}>載入圖</button>
 			<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
@@ -99,19 +128,47 @@
 			svgString$.set(e.detail)
 		}}
 		on:background={saveBackgroundToStore}
+		on:scale={onScalce}
 	/>
-	<code>選取物件(黃色標示)，按Delete可刪除</code>
+	<code id="mamo">選取物件(黃色標示)，按Delete可刪除</code>
 </main>
 
 <style lang="postcss">
+	#mamo {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		z-index: 100;
+		pointer-events: none;
+	}
+	.scaleMod {
+		display: flex;
+		align-items: center;
+
+		& input {
+			width: 100px;
+		}
+		& * {
+			font-size: smaller;
+			color: red;
+		}
+	}
 	.toolbar {
 		font-size: smaller;
 		position: absolute;
 		top: 0;
+		left: 10px;
+		right: 10px;
 		height: 50px;
 		z-index: 100;
 		display: inline-box;
 		pointer-events: none;
+		& .top {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+		}
 		& .button {
 			display: flex;
 		}
@@ -123,12 +180,5 @@
 		font-size: smaller;
 		margin: 5px;
 		pointer-events: auto;
-	}
-	code {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		z-index: 100;
-		pointer-events: none;
 	}
 </style>

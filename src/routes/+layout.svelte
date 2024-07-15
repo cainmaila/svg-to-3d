@@ -2,7 +2,7 @@
 	import './app.css'
 	//禁止右鍵菜單
 	document.oncontextmenu = function () {
-		return false
+		// return false
 	}
 </script>
 

@@ -77,6 +77,8 @@ export function svgToGroupSync(
                     )
 
                     switch (path.userData?.node?.getAttribute('data-type')) {
+                        case 'scaler': //比例尺不繪製
+                            break
                         case 'door':
                             {
                                 const evaluator = new Evaluator()

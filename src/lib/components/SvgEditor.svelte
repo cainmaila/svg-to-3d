@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { nodes } from './../../../.svelte-kit/generated/client/app.js'
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import '@svgdotjs/svg.panzoom.js'
@@ -32,6 +31,9 @@
 		y: number
 		src: string
 	} //背景圖片路徑
+	let scaleLength: number //比例尺長度
+
+	$: dispatch('scale', scaleLength) //發送比例尺變動事件
 
 	onMount(() => {
 		draw = SVG()
@@ -56,6 +58,7 @@
 		loadSvgElementToDraw(draw, svgElement, {
 			lineWidth
 		})
+		// scaleLine = draw.findOne('[data-type="scaler"]') //取得比例尺
 	}
 
 	//刪除選中的形狀
@@ -199,6 +202,11 @@
 					.line(point.x, point.y, point.x, point.y)
 					.stroke({ color: '#00ff00', width: lineWidth * 2 })
 				break
+			case 'scale':
+				currentShape = draw
+					.line(point.x, point.y, point.x, point.y)
+					.stroke({ color: '#ff0000', width: lineWidth })
+				break
 		}
 	}
 
@@ -229,11 +237,32 @@
 					.plot(currentShape.array()[0][0], currentShape.array()[0][1], point.x, point.y)
 					.data('type', 'door', true)
 				break
+			case 'scale':
+				currentShape
+					.plot(currentShape.array()[0][0], currentShape.array()[0][1], point.x, point.y)
+					.data('type', 'scaler', true)
+				break
 		}
+	}
+
+	//計算比例尺的長度
+	function calculateScaleLength(scaleLine: any) {
+		scaleLength = Math.sqrt(
+			Math.pow(scaleLine.array()[0][0] - scaleLine.array()[1][0], 2) +
+				Math.pow(scaleLine.array()[0][1] - scaleLine.array()[1][1], 2)
+		)
 	}
 
 	//結束繪製
 	function endDrawing() {
+		switch (currentTool) {
+			case 'scale': //比例尺繪製完成
+				if (currentShape) {
+					calculateScaleLength(currentShape)
+					currentShape.remove()
+				}
+				break
+		}
 		isDrawing = false
 		currentShape = null
 		svgString = draw.svg()
