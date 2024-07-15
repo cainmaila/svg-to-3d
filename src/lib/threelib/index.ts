@@ -38,10 +38,11 @@ const loader = new SVGLoader()
 export function svgToGroupSync(
     svgPath: string,
     {
-        lineWidth = 5,
-        wallHeight = 100,
-        doorHigh = 50,
-        color = DefaulColor
+        lineWidth = 10,
+        wallHeight = 300,
+        doorHigh = 200,
+        color = DefaulColor,
+        scale = 1
     }
 ) {
     return new Promise<Group>((resolve, reject) => {
@@ -65,15 +66,15 @@ export function svgToGroupSync(
                 paths.forEach(path => {
                     path.subPaths.forEach(subPath => {
                         subPath.getPoints().forEach(point => {
-                            svgBounds.expandByPoint(new Vector3(point.x, point.y, 0))
+                            svgBounds.expandByPoint(new Vector3(point.x * scale, point.y * scale, 0))
                         })
                     })
                 })
-                const svgHeight = svgBounds.max.y - svgBounds.min.y
+                const svgHeight = svgBounds.max.y * scale - svgBounds.min.y * scale
 
                 paths.forEach((path) => {
                     const points = path.subPaths[0].getPoints().map(point =>
-                        new Vector2(point.x, svgHeight - point.y)  // 翻轉 Y 坐標
+                        new Vector2(point.x * scale, svgHeight - point.y * scale)  // 翻轉 Y 坐標
                     )
 
                     switch (path.userData?.node?.getAttribute('data-type')) {
@@ -246,7 +247,7 @@ export function generateSkyBox({
         side: BackSide
     })
     // 创建天空盒几何体
-    const skyGeometry = new SphereGeometry(1000, 32, 15)
+    const skyGeometry = new SphereGeometry(100000, 32, 15)
     // 创建天空盒
     return new Mesh(skyGeometry, skyMaterial)
 }

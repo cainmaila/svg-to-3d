@@ -9,19 +9,19 @@
 	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
-	import { fragmentShader$, vertexShader$ } from '$lib/stores'
+	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 
 	let selectCCTV: string = ''
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
-	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000)
+	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000)
 	const renderer = new THREE.WebGLRenderer({ antialias: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	document.body.appendChild(renderer.domElement)
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
-	controls.maxDistance = 1000 // 最大缩放距离
+	controls.maxDistance = 10000 // 最大缩放距离
 	// 添加光源
 	const ambientLight = new THREE.AmbientLight(0xffffff)
 	// scene.add(ambientLight)
@@ -35,11 +35,11 @@
 		focalLength: 8, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
-		near: 50, // 近裁剪面
-		far: 1000 // 远裁剪面
+		near: 5, // 近裁剪面
+		far: 3000 // 远裁剪面
 	})
-	cctv1.position.set(250, 100, -50)
-	cctv1.lookAt(0, 0, 0)
+	cctv1.position.set(500, 300, -350)
+	cctv1.lookAt(0, 100, 0)
 	scene.add(cctv1)
 	const cctvHelper1 = new THREE.CameraHelper(cctv1)
 	scene.add(cctvHelper1)
@@ -49,11 +49,11 @@
 		focalLength: 8, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
-		near: 50, // 近裁剪面
-		far: 1000 // 远裁剪面
+		near: 5, // 近裁剪面
+		far: 3000 // 远裁剪面
 	})
-	cctv2.position.set(-250, 100, 0)
-	cctv2.lookAt(0, 0, 100)
+	cctv2.position.set(-500, 300, 500)
+	cctv2.lookAt(0, -100, 100)
 	scene.add(cctv2)
 	const cctvHelper2 = new THREE.CameraHelper(cctv2)
 	scene.add(cctvHelper2)
@@ -71,11 +71,11 @@
 	//攝影機物件
 	const cctvObjs = [
 		new THREE.Mesh(
-			new THREE.BoxGeometry(5, 5, 12),
+			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
 		),
 		new THREE.Mesh(
-			new THREE.BoxGeometry(5, 5, 12),
+			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
 		)
 	]
@@ -131,8 +131,8 @@
 	const shadowMaps: THREE.WebGLRenderTarget[] = shadowCameras.map(() => {
 		return new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
 			minFilter: THREE.LinearFilter,
-			magFilter: THREE.LinearFilter,
-			format: THREE.RGBAFormat
+			magFilter: THREE.LinearFilter
+			// format: THREE.RGBAFormat
 		})
 	})
 	//創建投影貼圖
@@ -171,10 +171,11 @@
 		try {
 			const svg = svgStringToURL(svgString)
 			build = await svgToGroupSync(svg, {
-				lineWidth: 5, // 設置線段厚度和高度
-				wallHeight: 100,
-				doorHigh: 80,
-				color: 0xcccccc
+				lineWidth: 10, // 設置線段厚度和高度
+				wallHeight: 300,
+				doorHigh: 200,
+				color: 0xcccccc,
+				scale: $scalceSize$ // 縮放比例
 			})
 		} catch (error: any) {
 			goto('', {

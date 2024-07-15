@@ -2,7 +2,7 @@
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
 	import { get } from 'svelte/store'
-	import { svgString$, backgroundImg$ } from '$lib/stores'
+	import { svgString$, backgroundImg$, scalceSize$ } from '$lib/stores'
 
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
 
@@ -11,7 +11,6 @@
 	let scalceModeOpen = false
 	let scaleLengthSetting = 0 //比例尺的真實長度 m
 	let measurementLength = 0 //比例尺的畫面長度 px
-	let scaleBase = 1 //比例尺的基準長度 px
 
 	//載入SVG
 	function loadSvg() {
@@ -52,19 +51,17 @@
 	}
 	//比例尺變動
 	function onMeaurement(e: CustomEvent) {
-		if (e.detail === 0) {
-			return
-		}
+		if (e.detail === 0) return //避掉不需要的點擊事件
 		if (scaleLengthSetting === 0) {
 			//@ts-ignore
-			scaleLengthSetting = (e.detail / 10).toFixed(2) * 1
+			scaleLengthSetting = (e.detail / 100).toFixed(2) * 1
 		}
 		measurementLength = e.detail
 		scalceModeOpen = true
 	}
-
+	//設定比例尺
 	function settingScale() {
-		scaleBase = (scaleLengthSetting / measurementLength) * 100
+		$scalceSize$ = (scaleLengthSetting * 100) / measurementLength
 		scalceModeOpen = false
 	}
 </script>
@@ -145,7 +142,7 @@
 		}}
 		on:background={saveBackgroundToStore}
 		on:measurement={onMeaurement}
-		{scaleBase}
+		scaleBase={$scalceSize$}
 	/>
 	<code id="mamo">選取物件(黃色標示)，按Delete可刪除</code>
 	<dialog open={scalceModeOpen}>

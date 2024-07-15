@@ -11,3 +11,6 @@ export const backgroundImg$ = persisted<{
 export const svgString$ = persisted('svgString', '')
 export const vertexShader$ = writable('')
 export const fragmentShader$ = writable('')
+
+//比例尺
+export const scalceSize$ = persisted<number>('scalceSize', 1)
