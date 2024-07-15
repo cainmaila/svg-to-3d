@@ -122,11 +122,6 @@
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>比例尺</label>
 			</fieldset>
-			<div class="scaleMod">
-				<input type="number" value="10" />
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>M</label>
-			</div>
 		</div>
 		<div class="button">
 			<button id="loadimageBtn" on:click={loadImage}>載入圖</button>
