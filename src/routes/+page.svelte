@@ -7,8 +7,14 @@
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
 
 	let draw: SvgEditor
-	$: draw && draw.loadSvg(get(svgString$))
-	$: draw && draw.loadImg(get(backgroundImg$))
+	$: draw && loadSvg()
+
+	function loadSvg() {
+		draw.loadSvg(get(svgString$))
+		const bg = get(backgroundImg$)
+		//@ts-ignore
+		bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
+	}
 
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
@@ -31,12 +37,15 @@
 			reader.onload = (e) => {
 				//@ts-ignore
 				draw.loadImg(e.target.result as string)
-				//@ts-ignore
-				backgroundImg$.set(e.target.result as string)
 			}
 			reader.readAsDataURL(file)
 		}
 		input.click()
+	}
+
+	//將背景圖片存入store
+	function saveBackgroundToStore(e: CustomEvent) {
+		backgroundImg$.set(e.detail)
 	}
 </script>
 
@@ -89,6 +98,7 @@
 		on:svg={(e) => {
 			svgString$.set(e.detail)
 		}}
+		on:background={saveBackgroundToStore}
 	/>
 	<code>選取物件(黃色標示)，按Delete可刪除</code>
 </main>

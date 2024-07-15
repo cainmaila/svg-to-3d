@@ -1,7 +1,13 @@
 import { persisted } from 'svelte-persisted-store'
 import { writable } from 'svelte/store'
 
-export const backgroundImg$ = persisted('backgroundImg', '/back3.png')
+export const backgroundImg$ = persisted<{
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+    src: string
+} | null>('backgroundImg', null)
 export const svgString$ = persisted('svgString', '')
 export const vertexShader$ = writable('')
 export const fragmentShader$ = writable('')

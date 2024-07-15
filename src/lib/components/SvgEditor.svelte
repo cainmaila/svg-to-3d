@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { nodes } from './../../../.svelte-kit/generated/client/app.js'
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import '@svgdotjs/svg.panzoom.js'
@@ -24,7 +25,13 @@
 	let controlPoints: any[] = [] //控制點
 	let svgString //SVG 字串
 	let background: any //背景圖片
-	let backgroundImg: string = ''
+	let backgroundImg: {
+		width: number
+		height: number
+		x: number
+		y: number
+		src: string
+	} //背景圖片路徑
 
 	onMount(() => {
 		draw = SVG()
@@ -64,7 +71,7 @@
 	export function clear() {
 		draw.clear()
 		svgString = ''
-		loadImg(backgroundImg)
+		settingBackground(backgroundImg)
 	}
 
 	//設置當前工具
@@ -261,6 +268,43 @@
 		}
 	}
 
+	//底圖設置事件
+	function dispatchSettingBackground(background: any) {
+		dispatch('background', {
+			width: background.width(),
+			height: background.height(),
+			x: background.x(),
+			y: background.y(),
+			src: background.node.href.baseVal
+		})
+	}
+
+	/**
+	 * 設置背景圖片
+	 * @param param0 - 背景圖片的寬度、高度、位置和路徑
+	 */
+	export function settingBackground({
+		width,
+		height,
+		x,
+		y,
+		src
+	}: {
+		width: number
+		height: number
+		x: number
+		y: number
+		src: string
+	}) {
+		background?.remove()
+		background = draw.image(src)
+		background.size(width, height)
+		background.move(x, y)
+		background.back()
+		background.opacity(0.3)
+		backgroundImg = { width, height, x, y, src }
+	}
+
 	export async function loadImg(path: string) {
 		background?.remove()
 		const img = new Image()
@@ -277,8 +321,8 @@
 
 			// 可選：調整圖片透明度，使其更容易描繪
 			background.opacity(0.3)
+			dispatchSettingBackground(background) //發送底圖設置事件
 		}
-		backgroundImg = path
 		img.src = path
 	}
 </script>
