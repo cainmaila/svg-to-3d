@@ -31,9 +31,14 @@
 		y: number
 		src: string
 	} //背景圖片路徑
-	let scaleLength: number //比例尺長度
+	let measurementLength: number //測量長度
 
-	$: dispatch('scale', scaleLength) //發送比例尺變動事件
+	export let scaleBase = 1 //比例尺100px的實際長度
+	let viewrScaleLevel = 1 //比例尺的縮放等級
+	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
+
+	$: dispatch('measurement', measurementLength) //發送測量長度
+	$: viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
 
 	onMount(() => {
 		draw = SVG()
@@ -41,6 +46,15 @@
 			.size(canvasWidth, canvasHeight)
 			.viewbox(`0 0 ${canvasWidth} ${canvasHeight}`)
 			.panZoom({ zoomMin: 0.5, zoomMax: 2 }) //初始化SVG 畫布
+		// 在縮放事件中更新比例尺
+		draw.on('zoom', (e: any) => {
+			//@ts-ignore
+			viewrScaleLevel = e.detail?.level || 1
+		})
+
+		return () => {
+			draw.off('zoom')
+		}
 	})
 
 	//載入SVG
@@ -202,7 +216,7 @@
 					.line(point.x, point.y, point.x, point.y)
 					.stroke({ color: '#00ff00', width: lineWidth * 2 })
 				break
-			case 'scale':
+			case 'measurement':
 				currentShape = draw
 					.line(point.x, point.y, point.x, point.y)
 					.stroke({ color: '#ff0000', width: lineWidth })
@@ -237,17 +251,17 @@
 					.plot(currentShape.array()[0][0], currentShape.array()[0][1], point.x, point.y)
 					.data('type', 'door', true)
 				break
-			case 'scale':
+			case 'measurement':
 				currentShape
 					.plot(currentShape.array()[0][0], currentShape.array()[0][1], point.x, point.y)
-					.data('type', 'scaler', true)
+					.data('type', 'measurement', true)
 				break
 		}
 	}
 
-	//計算比例尺的長度
-	function calculateScaleLength(scaleLine: any) {
-		scaleLength = Math.sqrt(
+	//計算測量的長度
+	function calculateMeasurementh(scaleLine: any) {
+		measurementLength = Math.sqrt(
 			Math.pow(scaleLine.array()[0][0] - scaleLine.array()[1][0], 2) +
 				Math.pow(scaleLine.array()[0][1] - scaleLine.array()[1][1], 2)
 		)
@@ -256,9 +270,9 @@
 	//結束繪製
 	function endDrawing() {
 		switch (currentTool) {
-			case 'scale': //比例尺繪製完成
+			case 'measurement': //測量完成
 				if (currentShape) {
-					calculateScaleLength(currentShape)
+					calculateMeasurementh(currentShape)
 					currentShape.remove()
 				}
 				break
@@ -366,6 +380,10 @@
 	on:mouseup={endDrawing}
 	on:mouseleave={endDrawing}
 ></div>
+<div id="scale-bar">
+	<div id="scale-text">{viewScaleWidth.toFixed(2)} 公尺</div>
+	<div id="scale-line"></div>
+</div>
 
 <style lang="postcss">
 	#drawing {
@@ -378,6 +396,29 @@
 			position: absolute;
 			left: 0;
 			top: 0;
+		}
+	}
+	#scale-bar {
+		position: fixed;
+		right: 20px;
+		bottom: 20px;
+		padding: 5px;
+		font-family: Arial, sans-serif;
+		font-size: 12px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		color: rgb(255, 255, 255);
+		pointer-events: none;
+		& #scale-line {
+			width: 200px;
+			height: 8px;
+			/* background-color: #ffffff; */
+			border: 1px solid #ffffff;
+			border-top: none;
+		}
+		& #scale-text {
+			transform: translate(-4px, 0);
 		}
 	}
 </style>

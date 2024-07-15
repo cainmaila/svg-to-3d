@@ -8,7 +8,10 @@
 
 	let draw: SvgEditor
 	$: draw && loadSvg()
-	let scelerRatio = 10 / 500 //預設比例尺為1:50
+	let scalceModeOpen = false
+	let scaleLengthSetting = 0 //比例尺的真實長度 m
+	let measurementLength = 0 //比例尺的畫面長度 px
+	let scaleBase = 1 //比例尺的基準長度 px
 
 	//載入SVG
 	function loadSvg() {
@@ -48,8 +51,21 @@
 		backgroundImg$.set(e.detail)
 	}
 	//比例尺變動
-	function onScalce(e: CustomEvent) {
-		console.log('比例尺變動', e.detail)
+	function onMeaurement(e: CustomEvent) {
+		if (e.detail === 0) {
+			return
+		}
+		if (scaleLengthSetting === 0) {
+			//@ts-ignore
+			scaleLengthSetting = (e.detail / 10).toFixed(2) * 1
+		}
+		measurementLength = e.detail
+		scalceModeOpen = true
+	}
+
+	function settingScale() {
+		scaleBase = (scaleLengthSetting / measurementLength) * 100
+		scalceModeOpen = false
 	}
 </script>
 
@@ -104,7 +120,7 @@
 					type="radio"
 					id="scale"
 					name="drawtype"
-					on:change={() => draw.setCurrentTool('scale')}
+					on:change={() => draw.setCurrentTool('measurement')}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>比例尺</label>
@@ -128,12 +144,31 @@
 			svgString$.set(e.detail)
 		}}
 		on:background={saveBackgroundToStore}
-		on:scale={onScalce}
+		on:measurement={onMeaurement}
+		{scaleBase}
 	/>
 	<code id="mamo">選取物件(黃色標示)，按Delete可刪除</code>
+	<dialog open={scalceModeOpen}>
+		<article id="settingDistance">
+			<form on:submit={settingScale}>
+				<label for="scale">比例尺設定 </label>
+				<input type="number" bind:value={scaleLengthSetting} step="0.01" />公尺
+				<button type="submit">設定</button>
+			</form>
+		</article>
+	</dialog>
 </main>
 
 <style lang="postcss">
+	#settingDistance {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		& input {
+			width: 150px;
+			margin: 0 10px;
+		}
+	}
 	#mamo {
 		position: absolute;
 		bottom: 0;
