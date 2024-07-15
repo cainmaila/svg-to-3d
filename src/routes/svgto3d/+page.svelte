@@ -131,8 +131,10 @@
 	const shadowMaps: THREE.WebGLRenderTarget[] = shadowCameras.map(() => {
 		return new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
 			minFilter: THREE.LinearFilter,
-			magFilter: THREE.LinearFilter
-			// format: THREE.RGBAFormat
+			magFilter: THREE.LinearFilter,
+			format: THREE.RGBAFormat,
+			type: THREE.FloatType, // 使用浮點數格式提高精度
+			anisotropy: 16 // 啟用各向異性過濾
 		})
 	})
 	//創建投影貼圖
