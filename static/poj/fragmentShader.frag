@@ -45,7 +45,8 @@ bool getShadow(vec4 fragPosLightSpace, sampler2D shadowMap) {
     float currentDepth = projCoords.z;
 
   // 检查当前片段是否在阴影中
-    float bias = 0.002;
+    // float bias = 0.002;
+    float bias = 0.005;
     return currentDepth - bias > closestDepth;
 }
 
