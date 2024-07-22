@@ -1,6 +1,33 @@
 import { BackSide, Box3, BoxGeometry, Color, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, ShaderMaterial, Shape, SphereGeometry, Vector2, Vector3 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { ADDITION, SUBTRACTION, Brush, Evaluator } from 'three-bvh-csg'
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
+const exporter = new GLTFExporter();
+
+/**
+ * 將物件轉換為 GLB 格式
+ * @param obj
+ * @returns
+ */
+export function generateGLB(obj: Group): Promise<string> {
+    return new Promise((resolve, reject) => {
+        exporter.parse(obj, (gltf) => {
+            if (gltf instanceof ArrayBuffer) {
+                const blob = new Blob([gltf], { type: 'application/octet-stream' });
+                resolve(URL.createObjectURL(blob));
+            } else {
+                // 處理其他類型的 result
+                reject(new Error('Unexpected result type'));
+            }
+        }, error => {
+            reject(error)
+        }, { binary: true });
+    })
+
+}
+
+
+
 
 const DefaulColor = 0xcccccc
 
@@ -251,3 +278,4 @@ export function generateSkyBox({
     // 创建天空盒
     return new Mesh(skyGeometry, skyMaterial)
 }
+

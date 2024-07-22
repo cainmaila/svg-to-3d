@@ -2,7 +2,7 @@
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { get } from 'svelte/store'
-	import { onDestroy } from 'svelte'
+	import { onDestroy, onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
 	import { svgString$ } from '$lib/stores'
@@ -10,15 +10,21 @@
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
+	import { generateGLB } from '$lib/threelib'
 
 	let selectCCTV: string = ''
+	let downloadGLB: string = ''
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000)
 	const renderer = new THREE.WebGLRenderer({ antialias: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
-	document.body.appendChild(renderer.domElement)
+
+	onMount(() => {
+		document.getElementById('Viewer')?.appendChild(renderer.domElement)
+	})
+
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.maxDistance = 10000 // 最大缩放距离
@@ -207,6 +213,12 @@
 		camera.lookAt(center)
 		controls.target.copy(center)
 		controls.update()
+		//設置可下載的glb
+		try {
+			downloadGLB = await generateGLB(build)
+		} catch (error) {
+			alert('轉換匯出模型失敗')
+		}
 	}
 
 	// 渲染循環
@@ -297,3 +309,29 @@
 	on:keydown={transformControlsChange}
 	on:click={onRayCCTV}
 />
+<div id="Viewer"></div>
+{#if downloadGLB}
+	<div id="UI">
+		<a role="button" href={downloadGLB} download="area.glb">匯出模型</a>
+	</div>
+{/if}
+
+<style lang="postcss">
+	#Viewer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 1;
+	}
+	#UI {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 100;
+		pointer-events: none;
+		& a {
+			margin: 10px;
+			pointer-events: auto;
+		}
+	}
+</style>
