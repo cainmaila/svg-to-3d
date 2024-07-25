@@ -3,16 +3,16 @@
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
-	import { get } from 'svelte/store'
-	import { svgString$ } from '$lib/stores'
-	import { goto } from '$app/navigation'
 	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
 	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
 	let viewerDom: HTMLDivElement
 
-	const svgString = get(svgString$) // 从 store 中获取 svg 字符串
+	export let data: {
+		svgString: string
+	}
+	const { svgString } = data
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -23,12 +23,6 @@
 
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
-
-	if (!svgString) {
-		goto('/', {
-			replaceState: true
-		})
-	}
 
 	// 添加光源
 	const ambientLight = new THREE.AmbientLight(0xffffff)
