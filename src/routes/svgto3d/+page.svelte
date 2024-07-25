@@ -1,16 +1,19 @@
 <script lang="ts">
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-	import { get } from 'svelte/store'
 	import { onDestroy, onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
-	import { svgString$ } from '$lib/stores'
 	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
+
+	export let data: {
+		svgString: string
+	}
+	let { svgString } = data
 
 	let selectCCTV: string = ''
 	let downloadGLB: string = ''
@@ -168,13 +171,6 @@
 
 	init()
 	async function init() {
-		const svgString = get(svgString$)
-		if (!svgString) {
-			goto('/', {
-				replaceState: true
-			})
-			return
-		}
 		let build
 		try {
 			const svg = svgStringToURL(svgString)
@@ -186,7 +182,8 @@
 				scale: $scalceSize$ // 縮放比例
 			})
 		} catch (error: any) {
-			goto('', {
+			alert(error.message || error)
+			goto('/', {
 				replaceState: true
 			})
 			return

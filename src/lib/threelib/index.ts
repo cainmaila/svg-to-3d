@@ -90,13 +90,16 @@ export function svgToGroupSync(
 
                 // 獲取 SVG 的邊界框
                 const svgBounds = new Box3()
+                let count = 0
                 paths.forEach(path => {
+                    count++
                     path.subPaths.forEach(subPath => {
                         subPath.getPoints().forEach(point => {
                             svgBounds.expandByPoint(new Vector3(point.x * scale, point.y * scale, 0))
                         })
                     })
                 })
+                if (count === 0) throw new Error('SVG 沒有路徑')
                 const svgHeight = svgBounds.max.y * scale - svgBounds.min.y * scale
 
                 paths.forEach((path) => {

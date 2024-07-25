@@ -1,6 +1,18 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
 	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 	import * as THREE from 'three'
+
+	export let data: {
+		svgString: string
+	}
+	const { svgString } = data
+	if (!svgString) {
+		goto('/', {
+			replaceState: true
+		})
+	}
+
 	let loading = true
 	let loadingCount = 0
 	const loader = new THREE.FileLoader()
