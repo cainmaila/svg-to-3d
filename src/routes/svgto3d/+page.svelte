@@ -115,6 +115,8 @@
 				transformControls.attach(cctv2)
 				cctvHelper2.visible = true
 				break
+			default:
+				_clearSelectCCTV()
 		}
 	}
 	function _clearSelectCCTV() {
@@ -133,6 +135,8 @@
 		if (intersects.length > 0) {
 			const obj = intersects[0].object
 			selectCCTV = obj.name
+		} else {
+			selectCCTV = ''
 		}
 	}
 	//創建深度紋理
