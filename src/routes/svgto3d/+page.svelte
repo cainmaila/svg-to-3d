@@ -10,6 +10,14 @@
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
 
+	// const oupPutMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 })
+	//反應陰影的材質
+	const oupPutMaterial = new THREE.MeshStandardMaterial({
+		color: 0xaaaaaa,
+		roughness: 0.5,
+		metalness: 0.5
+	})
+
 	export let data: {
 		svgString: string
 	}
@@ -216,7 +224,18 @@
 		controls.update()
 		//設置可下載的glb
 		try {
+			// oupPutMaterial
+			build.traverse((child) => {
+				if (child instanceof THREE.Mesh) {
+					child.material = oupPutMaterial
+				}
+			})
 			downloadGLB = await generateGLB(build)
+			build.traverse((child) => {
+				if (child instanceof THREE.Mesh) {
+					child.material = projectionMaterial
+				}
+			})
 		} catch (error) {
 			alert('轉換匯出模型失敗')
 		}
