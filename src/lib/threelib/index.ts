@@ -2,6 +2,7 @@ import { BackSide, Box3, BoxGeometry, Color, ExtrudeGeometry, Group, Mesh, MeshB
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { ADDITION, SUBTRACTION, Brush, Evaluator } from 'three-bvh-csg'
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 const exporter = new GLTFExporter();
 
 /**
@@ -21,7 +22,10 @@ export function generateGLB(obj: Group): Promise<string> {
             }
         }, error => {
             reject(error)
-        }, { binary: true });
+        }, {
+            binary: true, forceIndices: true, onlyVisible: false,
+            truncateDrawRange: false,
+        });
     })
 
 }
@@ -176,6 +180,12 @@ export function svgToGroupSync(
                 // 更新世界矩陣
                 allMesh2.updateMatrixWorld(true)
 
+                allMesh2.traverse((child) => {
+                    if (child instanceof Mesh) {
+                        child.geometry = BufferGeometryUtils.mergeVertices(child.geometry)
+                        child.material = material
+                    }
+                })
                 resolve(allMesh2 as unknown as Group)
             },
             undefined,
