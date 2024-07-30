@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Svg } from '@svgdotjs/svg.js'
-import { get } from 'svelte/store';
 
 /**
  * 將SVG元素的內容添加到繪圖區域
