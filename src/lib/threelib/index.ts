@@ -56,6 +56,7 @@ export function createExtrudedLine(start: Vector2, end: Vector2, width: number) 
 
 // 創建 SVG 加載器
 const loader = new SVGLoader()
+const evaluator = new Evaluator()
 
 /**
  * 將 SVG 轉換為 Group
@@ -95,6 +96,7 @@ export function svgToGroupSync(
                 // 獲取 SVG 的邊界框
                 const svgBounds = new Box3()
                 let count = 0
+                // 獲取所有路徑的邊界框, 並計算縮放比例
                 paths.forEach(path => {
                     count++
                     path.subPaths.forEach(subPath => {
@@ -110,11 +112,24 @@ export function svgToGroupSync(
                     const points = path.subPaths[0].getPoints().map(point =>
                         new Vector2(point.x * scale, svgHeight - point.y * scale)  // 翻轉 Y 坐標
                     )
-
                     switch (path.userData?.node?.getAttribute('data-type')) {
+                        case 'box': //繪製一個BoxGeometry
+                            {
+                                const shape = new Shape()
+                                shape.moveTo(points[0].x, points[0].y)
+                                shape.lineTo(points[1].x, points[1].y)
+                                shape.lineTo(points[2].x, points[2].y)
+                                shape.lineTo(points[3].x, points[3].y)
+                                shape.lineTo(points[0].x, points[0].y)
+                                const geometry = new ExtrudeGeometry(shape, {
+                                    depth: 100,
+                                    bevelEnabled: false
+                                })
+                                group.add(new Mesh(geometry, material))
+                            }
+                            break
                         case 'door':
                             {
-                                const evaluator = new Evaluator()
                                 for (let i = 0; i < points.length - 1; i++) {
                                     const start = points[i]
                                     const end = points[i + 1]
@@ -134,7 +149,6 @@ export function svgToGroupSync(
                             }
                             break
                         default: {
-                            const evaluator = new Evaluator()
                             for (let i = 0; i < points.length - 1; i++) {
                                 const start = points[i]
                                 const end = points[i + 1]
@@ -155,38 +169,30 @@ export function svgToGroupSync(
                     }
                 })
                 if (building) {
-                    const evaluator = new Evaluator()
                     if (doors) building = evaluator.evaluate(building, doors, SUBTRACTION)
                     building.material = material
-                    group.add(building)
+                    const base = createBaseForObject(building)
+                    const baseBrush = new Brush(base.geometry)
+                    const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
+                    allMesh2.material = material
+                    group.add(allMesh2)
                 }
-
                 // 將 group 旋轉以使其在 XZ 平面上
                 group.rotation.x = -Math.PI / 2
-
                 // 根據Box移到中心
                 const box = new Box3().setFromObject(group)
                 const center = box.getCenter(new Vector3())
                 group.position.x = -center.x
                 group.position.z = -center.z
-
-                const base = createBaseForObject(group)
-
-                const evaluator = new Evaluator()
-                const baseBrush = new Brush(base.geometry)
-                const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
-                allMesh2.material = material
-
                 // 更新世界矩陣
-                allMesh2.updateMatrixWorld(true)
-
-                allMesh2.traverse((child) => {
+                group.updateMatrixWorld(true)
+                group.traverse((child) => {
                     if (child instanceof Mesh) {
                         child.geometry = BufferGeometryUtils.mergeVertices(child.geometry)
                         child.material = material
                     }
                 })
-                resolve(allMesh2 as unknown as Group)
+                resolve(group)
             },
             undefined,
             function (error) {
@@ -211,17 +217,13 @@ function createBaseForObject(object: Object3D, thickness: number = 5.0) {
     const center = boundingBox.getCenter(new Vector3());
 
     // 創建底座的幾何體
-    const baseGeometry = new BoxGeometry(size.x, thickness, size.z);
-
+    const baseGeometry = new BoxGeometry(size.x, size.y, thickness);
+    // 設置底座的位置，使其位於物件的下方
+    baseGeometry.translate(center.x, center.y, boundingBox.min.z - thickness / 2);
     // 創建底座的材質
     const baseMaterial = new MeshBasicMaterial({ color: DefaulColor });
-
     // 創建底座的網格
     const base = new Mesh(baseGeometry, baseMaterial);
-
-    // 設置底座的位置，使其位於物件的下方
-    base.position.set(center.x, boundingBox.min.y - thickness / 2, center.z);
-
     return base;
 }
 /**
