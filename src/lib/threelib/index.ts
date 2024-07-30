@@ -107,7 +107,7 @@ export function svgToGroupSync(
                 })
                 if (count === 0) throw new Error('SVG 沒有路徑')
                 const svgHeight = svgBounds.max.y * scale - svgBounds.min.y * scale
-
+                count = 0
                 paths.forEach((path) => {
                     const points = path.subPaths[0].getPoints().map(point =>
                         new Vector2(point.x * scale, svgHeight - point.y * scale)  // 翻轉 Y 坐標
@@ -115,6 +115,7 @@ export function svgToGroupSync(
                     switch (path.userData?.node?.getAttribute('data-type')) {
                         case 'box': //繪製一個BoxGeometry
                             {
+                                count++
                                 const shape = new Shape()
                                 shape.moveTo(points[0].x, points[0].y)
                                 shape.lineTo(points[1].x, points[1].y)
@@ -125,7 +126,9 @@ export function svgToGroupSync(
                                     depth: 100,
                                     bevelEnabled: false
                                 })
-                                group.add(new Mesh(geometry, material))
+                                const mesh = new Mesh(geometry, material)
+                                mesh.name = `Box_${count}`
+                                group.add(mesh)
                             }
                             break
                         case 'door':
@@ -175,6 +178,7 @@ export function svgToGroupSync(
                     const baseBrush = new Brush(base.geometry)
                     const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
                     allMesh2.material = material
+                    allMesh2.name = 'Background'
                     group.add(allMesh2)
                 }
                 // 將 group 旋轉以使其在 XZ 平面上
