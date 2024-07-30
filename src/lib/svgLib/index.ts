@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Svg } from '@svgdotjs/svg.js'
+import { get } from 'svelte/store';
 
 /**
  * 將SVG元素的內容添加到繪圖區域
@@ -16,6 +17,7 @@ export function loadSvgElementToDraw(
 	// 將SVG元素的內容添加到繪圖區域
 	const svgChildren = Array.from(svgElement.children)
 	svgChildren.forEach((child: any) => {
+		const type = child.getAttribute('data-type')
 		if (child.tagName.toLowerCase() === 'polygon') {
 			const points = child
 				.getAttribute('points')
@@ -25,10 +27,11 @@ export function loadSvgElementToDraw(
 				})
 			draw.polygon().plot(points).fill('none').stroke({ color: 'white', width: lineWidth })
 		} else if (child.tagName.toLowerCase() === 'rect') {
-			draw
+			const rect = draw
 				.rect(child.width.baseVal.value, child.height.baseVal.value)
 				.move(child.x.baseVal.value, child.y.baseVal.value)
 				.attr(getAttributes(child))
+			if (type === 'box') rect.draggable() // 如果是box，則添加拖動功能
 		} else if (child.tagName.toLowerCase() === 'line') {
 			draw
 				.line(

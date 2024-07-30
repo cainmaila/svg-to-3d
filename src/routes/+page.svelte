@@ -136,7 +136,7 @@
 			<button
 				class="secondary"
 				on:click={() => draw.setCurrentTool('putBox')}
-				disabled={viewTool === 'putBox'}>放置設備</button
+				disabled={viewTool === 'putBox'}>放置設備5x5</button
 			>
 			<span>放置設備前請先確定比例尺</span>
 		</div>

@@ -6,6 +6,8 @@
 	import { loadSvgElementToDraw } from '$lib/svgLib'
 	import { createEventDispatcher } from 'svelte'
 
+	const BOX_SIZE = 5 //放置的Box大小 m
+
 	const dispatch = createEventDispatcher()
 	//on:svg svgString變化
 
@@ -109,6 +111,9 @@
 			switch (selectedShape.data('type')) {
 				case 'door':
 					selectedShape.stroke({ color: '#00ff00' })
+					break
+				case 'box':
+					selectedShape.fill({ color: 'white' })
 					break
 				default:
 					selectedShape.stroke({ color: 'white' })
@@ -223,11 +228,20 @@
 					.line(point.x, point.y, point.x, point.y)
 					.stroke({ color: '#ff0000', width: lineWidth })
 				break
-			case 'putBox':
-				console.log('放置事件!', point)
+			case 'putBox': //放置Box設備
+				putBox(point)
 				setCurrentTool('view')
 				break
 		}
+	}
+
+	//繪製一個Box在場域中
+	function putBox(point: { x: number; y: number }) {
+		const size = (BOX_SIZE / scaleBase) * 100
+		const box = draw.rect(size, size).fill('white').stroke('none')
+		box.move(point.x - (size >> 1), point.y - (size >> 1))
+		box.data('type', 'box')
+		box.draggable()
 	}
 
 	//繪製中
@@ -292,6 +306,13 @@
 	//選擇形狀
 	function selectShape(event: any) {
 		const clickedElement = event.target
+		const { type } = clickedElement.instance.data()
+		switch (type) {
+			case 'box':
+				selectedShape = clickedElement.instance
+				selectedShape.fill({ color: 'yellow' })
+				return //如果是Box設備，不需要選擇形狀
+		}
 		clearSelect()
 		if (
 			clickedElement.instance.type === 'polygon' ||
