@@ -136,7 +136,7 @@ export function svgToGroupSync(
                                 for (let i = 0; i < points.length - 1; i++) {
                                     const start = points[i]
                                     const end = points[i + 1]
-                                    const shape = createExtrudedLine(start, end, lineWidth * 2)
+                                    const shape = createExtrudedLine(start, end, lineWidth * 3)
                                     const geometry = new ExtrudeGeometry(shape, {
                                         depth: doorHigh,
                                         bevelEnabled: false
