@@ -305,6 +305,7 @@
 
 	//選擇形狀
 	function selectShape(event: any) {
+		clearSelect()
 		const clickedElement = event.target
 		const { type } = clickedElement.instance.data()
 		switch (type) {
@@ -313,7 +314,6 @@
 				selectedShape.fill({ color: 'yellow' })
 				return //如果是Box設備，不需要選擇形狀
 		}
-		clearSelect()
 		if (
 			clickedElement.instance.type === 'polygon' ||
 			clickedElement.instance.type === 'rect' ||
