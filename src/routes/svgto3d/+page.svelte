@@ -21,6 +21,7 @@
 	export let data: {
 		svgString: string
 	}
+	let nowGenerate = true //是否正在生成模型
 	let { svgString } = data
 
 	let selectCCTV: string = ''
@@ -185,6 +186,7 @@
 	async function init() {
 		let build
 		try {
+			nowGenerate = true
 			const svg = svgStringToURL(svgString)
 			build = await svgToGroupSync(svg, {
 				lineWidth: 10, // 設置線段厚度和高度
@@ -193,6 +195,7 @@
 				color: 0xcccccc,
 				scale: $scalceSize$ // 縮放比例
 			})
+			nowGenerate = false
 		} catch (error: any) {
 			alert(error.message || error)
 			goto('/', {
@@ -330,6 +333,9 @@
 	on:click={onRayCCTV}
 />
 <div id="Viewer"></div>
+{#if nowGenerate}
+	<div class="nowGenerate">模型生成中，請稍等...</div>
+{/if}
 {#if downloadGLB}
 	<div id="UI">
 		<a role="button" href={downloadGLB} download="area.glb">匯出模型</a>
@@ -353,5 +359,16 @@
 			margin: 10px;
 			pointer-events: auto;
 		}
+	}
+	.nowGenerate {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 100;
+		background-color: rgba(0, 0, 0, 0.5);
+		color: white;
+		padding: 10px;
+		border-radius: 5px;
 	}
 </style>
