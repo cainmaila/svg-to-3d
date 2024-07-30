@@ -9,7 +9,9 @@
 	const dispatch = createEventDispatcher()
 	//on:svg svgString變化
 
-	export let currentTool = 'view' //當前選擇的工具
+	export let currentTool = 'view' //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
+
+	$: dispatch('tool', currentTool) //發送當前工具
 
 	//畫布大小
 	const canvasWidth = window.innerWidth
@@ -220,6 +222,10 @@
 				currentShape = draw
 					.line(point.x, point.y, point.x, point.y)
 					.stroke({ color: '#ff0000', width: lineWidth })
+				break
+			case 'putBox':
+				console.log('放置事件!', point)
+				setCurrentTool('view')
 				break
 		}
 	}

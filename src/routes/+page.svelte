@@ -11,6 +11,7 @@
 	let scalceModeOpen = false
 	let scaleLengthSetting = 0 //比例尺的真實長度 m
 	let measurementLength = 0 //比例尺的畫面長度 px
+	let viewTool = 'view' //預設為檢視模式
 
 	//載入SVG
 	function loadSvg() {
@@ -127,6 +128,11 @@
 			<button id="loadimageBtn" on:click={loadImage}>載入圖</button>
 			<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
 			<button id="generate" on:click={goto3d}>生成場域</button>
+			<button
+				class="secondary"
+				on:click={() => draw.setCurrentTool('putBox')}
+				disabled={viewTool === 'putBox'}>放置設備</button
+			>
 		</div>
 	</div>
 
@@ -137,6 +143,9 @@
 		}}
 		on:background={saveBackgroundToStore}
 		on:measurement={onMeaurement}
+		on:tool={(e) => {
+			viewTool = e.detail
+		}}
 		scaleBase={$scalceSize$}
 	/>
 	<code id="mamo">選取物件(黃色標示)，按Delete可刪除</code>
