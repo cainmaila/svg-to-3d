@@ -6,7 +6,7 @@
 	import { loadSvgElementToDraw } from '$lib/svgLib'
 	import { createEventDispatcher } from 'svelte'
 
-	const BOX_SIZE = 5 //放置的Box大小 m
+	const BOX_SIZE = 2 //放置的Box大小 m
 
 	const dispatch = createEventDispatcher()
 	//on:svg svgString變化
