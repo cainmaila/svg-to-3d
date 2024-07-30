@@ -53,12 +53,10 @@ void main() {
     if(!gl_FrontFacing) {
         discard;
     }
-
     bool inAnyView = false;
     int viewCount = 0;
 
     for(int i = 0; i < cctvCount; i++) {
-
         vec3 toCCTV = normalize(cctvPositions[i] - vWorldPosition);
         if(dot(vNormal, toCCTV) < 0.0) { // 面背向CCTV
             // viewCount = 2;
