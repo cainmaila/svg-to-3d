@@ -78,7 +78,7 @@
 					id="view"
 					name="drawtype"
 					on:change={() => draw.setCurrentTool('view')}
-					checked
+					checked={viewTool === 'view'}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>檢視場景</label>
@@ -87,6 +87,7 @@
 					id="rect"
 					name="drawtype"
 					on:change={() => draw.setCurrentTool('polygon')}
+					checked={viewTool === 'rect'}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>矩形區域</label>
@@ -95,6 +96,7 @@
 					id="line"
 					name="drawtype"
 					on:change={() => draw.setCurrentTool('line')}
+					checked={viewTool === 'line'}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>直線</label>
@@ -103,6 +105,7 @@
 					id="freeDraw"
 					name="drawtype"
 					on:change={() => draw.setCurrentTool('freeDraw')}
+					checked={viewTool === 'freeDraw'}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>自由繪製</label>
@@ -111,6 +114,7 @@
 					id="door"
 					name="drawtype"
 					on:change={() => draw.setCurrentTool('door')}
+					checked={viewTool === 'door'}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>安裝門</label>
@@ -119,6 +123,7 @@
 					id="scale"
 					name="drawtype"
 					on:change={() => draw.setCurrentTool('measurement')}
+					checked={viewTool === 'scale'}
 				/>
 				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label>比例尺</label>
@@ -133,6 +138,7 @@
 				on:click={() => draw.setCurrentTool('putBox')}
 				disabled={viewTool === 'putBox'}>放置設備</button
 			>
+			<span>放置設備前請先確定比例尺</span>
 		</div>
 	</div>
 
