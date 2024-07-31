@@ -1,24 +1,23 @@
 <script lang="ts">
 	import '@svgdotjs/svg.draggable.js'
-	import { goto } from '$app/navigation'
 	import { get } from 'svelte/store'
+	import { goto } from '$app/navigation'
 	import { svgString$, backgroundImg$, scalceSize$ } from '$lib/stores'
 
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
 	import ToolBar from './ToolBar.svelte'
 
 	let draw: SvgEditor
-	$: draw && loadSvg()
 	let scalceModeOpen = false
 	let scaleLengthSetting = 0 //比例尺的真實長度 m
 	let measurementLength = 0 //比例尺的畫面長度 px
 	let viewTool = 'view' //預設為檢視模式
+	$: draw && loadSvg()
 
 	//載入SVG
 	function loadSvg() {
 		draw.loadSvg(get(svgString$))
 		const bg = get(backgroundImg$)
-		//@ts-ignore
 		bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
 	}
 	//監聽Delete鍵，刪除選中的形狀
@@ -66,7 +65,6 @@
 		$scalceSize$ = (scaleLengthSetting * 100) / measurementLength
 		scalceModeOpen = false
 	}
-
 	//工具變動
 	function onToolChangeHandler(e: CustomEvent) {
 		draw.setCurrentTool(e.detail)
