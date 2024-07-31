@@ -335,6 +335,7 @@
 	on:click={onRayCCTV}
 />
 <div id="Viewer"></div>
+<div id="CCTV_Info"></div>
 
 <style lang="postcss">
 	#Viewer {
@@ -342,5 +343,17 @@
 		top: 0;
 		left: 0;
 		z-index: 1;
+	}
+	#CCTV_Info {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 100;
+		min-width: 100px;
+		min-height: 50px;
+		padding: 10px;
+		background-color: rgba(0, 0, 0, 0.5);
+		border-radius: 10px;
+		font-size: small;
 	}
 </style>
