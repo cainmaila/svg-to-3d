@@ -335,7 +335,9 @@
 	on:click={onRayCCTV}
 />
 <div id="Viewer"></div>
-<div id="CCTV_Info"></div>
+<div id="CCTV_Info">
+	<p>{selectCCTV}</p>
+</div>
 
 <style lang="postcss">
 	#Viewer {
