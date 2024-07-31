@@ -5,6 +5,7 @@
 	import { svgString$, backgroundImg$, scalceSize$ } from '$lib/stores'
 
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
+	import ToolBar from './ToolBar.svelte'
 
 	let draw: SvgEditor
 	$: draw && loadSvg()
@@ -65,83 +66,23 @@
 		$scalceSize$ = (scaleLengthSetting * 100) / measurementLength
 		scalceModeOpen = false
 	}
+
+	//工具變動
+	function onToolChangeHandler(e: CustomEvent) {
+		draw.setCurrentTool(e.detail)
+		viewTool = e.detail
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 <main>
-	<div class="toolbar">
-		<div class="top">
-			<fieldset>
-				<legend>繪製方式</legend>
-				<input
-					type="radio"
-					id="view"
-					name="drawtype"
-					on:change={() => draw.setCurrentTool('view')}
-					checked={viewTool === 'view'}
-				/>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>檢視場景</label>
-				<input
-					type="radio"
-					id="rect"
-					name="drawtype"
-					on:change={() => draw.setCurrentTool('polygon')}
-					checked={viewTool === 'rect'}
-				/>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>矩形區域</label>
-				<input
-					type="radio"
-					id="line"
-					name="drawtype"
-					on:change={() => draw.setCurrentTool('line')}
-					checked={viewTool === 'line'}
-				/>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>直線</label>
-				<input
-					type="radio"
-					id="freeDraw"
-					name="drawtype"
-					on:change={() => draw.setCurrentTool('freeDraw')}
-					checked={viewTool === 'freeDraw'}
-				/>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>自由繪製</label>
-				<input
-					type="radio"
-					id="door"
-					name="drawtype"
-					on:change={() => draw.setCurrentTool('door')}
-					checked={viewTool === 'door'}
-				/>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>安裝門</label>
-				<input
-					type="radio"
-					id="scale"
-					name="drawtype"
-					on:change={() => draw.setCurrentTool('measurement')}
-					checked={viewTool === 'scale'}
-				/>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label>比例尺</label>
-			</fieldset>
-		</div>
-		<div class="button">
-			<button id="loadimageBtn" on:click={loadImage}>載入圖</button>
-			<button id="deleteBtn" on:click={draw.clear}>清除全部</button>
-			<button id="generate" on:click={goto3d}>生成場域</button>
-			<button
-				class="secondary"
-				on:click={() => draw.setCurrentTool('putBox')}
-				disabled={viewTool === 'putBox'}>放置設備2x2</button
-			>
-			<span>放置設備前請先確定比例尺</span>
-		</div>
-	</div>
-
+	<ToolBar
+		tool={viewTool}
+		on:tool={onToolChangeHandler}
+		on:loadBg={loadImage}
+		on:clear={draw.clear}
+		on:build={goto3d}
+	/>
 	<SvgEditor
 		bind:this={draw}
 		on:svg={(e) => {
@@ -182,33 +123,5 @@
 		left: 0;
 		z-index: 100;
 		pointer-events: none;
-	}
-	.toolbar {
-		font-size: smaller;
-		position: absolute;
-		top: 0;
-		left: 10px;
-		right: 10px;
-		height: 50px;
-		z-index: 100;
-		display: inline-box;
-		pointer-events: none;
-		& .top {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			width: 100%;
-		}
-		& .button {
-			display: flex;
-		}
-		& input {
-			pointer-events: auto;
-		}
-	}
-	.toolbar button {
-		font-size: smaller;
-		margin: 5px;
-		pointer-events: auto;
 	}
 </style>
