@@ -4,7 +4,7 @@
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
-	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
+	import { CCTVCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
@@ -12,8 +12,6 @@
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
-
-	// const oupPutMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 })
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
@@ -27,7 +25,7 @@
 	export let downloadGLB: string = ''
 	let { svgString } = data
 
-	let selectCCTV: string = ''
+	let selectCCTV: string = '' //選擇的cctv
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -44,15 +42,15 @@
 	controls.maxDistance = 10000 // 最大缩放距离
 	// 添加光源
 	const ambientLight = new THREE.AmbientLight(0xffffff)
-	// scene.add(ambientLight)
+	scene.add(ambientLight)
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0)
 	directionalLight.position.set(1, 0, 1)
-	// scene.add(directionalLight)
+	scene.add(directionalLight)
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
-	// scene.add(hemisphereLight)
+	scene.add(hemisphereLight)
 	// 添加CCTV1
-	const cctv1 = convertCctvToCamera({
-		focalLength: 8, // 焦距
+	const cctv1 = new CCTVCamera({
+		focalLength: 4, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 5, // 近裁剪面
@@ -64,9 +62,10 @@
 	const cctvHelper1 = new THREE.CameraHelper(cctv1)
 	scene.add(cctvHelper1)
 	cctvHelper1.visible = false
+
 	// 添加CCTV2
-	const cctv2 = convertCctvToCamera({
-		focalLength: 8, // 焦距
+	const cctv2 = new CCTVCamera({
+		focalLength: 4, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 5, // 近裁剪面
