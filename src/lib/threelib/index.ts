@@ -112,6 +112,13 @@ export function svgToGroupSync(
                     const points = path.subPaths[0].getPoints().map(point =>
                         new Vector2(point.x * scale, svgHeight - point.y * scale)  // 翻轉 Y 坐標
                     )
+                    if (points.length < 2) return // 忽略不完整的路徑
+                    //計算points長度
+                    // const length = points.reduce((acc, point, index) => {
+                    //     if (index === 0) return acc
+                    //     return acc + point.distanceTo(points[index - 1])
+                    // }, 0)
+
                     switch (path.userData?.node?.getAttribute('data-type')) {
                         case 'box': //繪製一個BoxGeometry
                             {
@@ -142,6 +149,7 @@ export function svgToGroupSync(
                                         bevelEnabled: false
                                     })
                                     doorbrush = new Brush(geometry)
+                                    doorbrush.updateMatrixWorld();
                                     if (doorallMesh) {
                                         doorallMesh = evaluator.evaluate(doorallMesh, doorbrush, ADDITION)
                                     } else {
@@ -161,6 +169,7 @@ export function svgToGroupSync(
                                     bevelEnabled: false
                                 })
                                 brush = new Brush(geometry)
+                                brush.updateMatrixWorld();
                                 if (allMesh) {
                                     allMesh = evaluator.evaluate(allMesh, brush, ADDITION)
                                 } else {
@@ -176,6 +185,7 @@ export function svgToGroupSync(
                     building.material = material
                     const base = createBaseForObject(building)
                     const baseBrush = new Brush(base.geometry)
+                    baseBrush.updateMatrixWorld();
                     const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
                     allMesh2.material = material
                     allMesh2.name = 'Background'
