@@ -77,6 +77,7 @@
 			lineWidth
 		})
 		// scaleLine = draw.findOne('[data-type="scaler"]') //取得比例尺
+		dispatch('svg', svgString)
 	}
 
 	//刪除選中的形狀
@@ -90,9 +91,11 @@
 
 	//清除所有形狀
 	export function clear() {
+		const bg = draw.findOne('[data-type="bg"]')?.clone() as Image //取得背景圖片
 		draw.clear()
 		svgString = ''
-		settingBackground(backgroundImg)
+		bg && draw.add(bg)
+		// settingBackground(backgroundImg)
 	}
 
 	//設置當前工具

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import '@svgdotjs/svg.draggable.js'
-	import { get } from 'svelte/store'
 	import { goto } from '$app/navigation'
+	import { page } from '$app/stores'
 	import { svgString$, backgroundImg$, scalceSize$ } from '$lib/stores'
 
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
 	import ToolBar from './ToolBar.svelte'
+	import { get } from 'svelte/store'
 
 	let draw: SvgEditor
 	let scalceModeOpen = false
@@ -15,10 +16,20 @@
 	$: draw && loadSvg()
 
 	//載入SVG
-	function loadSvg() {
-		draw.loadSvg(get(svgString$))
-		const bg = get(backgroundImg$)
-		bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
+	async function loadSvg() {
+		const file = $page.url.searchParams.get('file')
+		switch (file) {
+			case 'tomo':
+				const svg = await fetch('/area/3f.svg').then((res) => res.text())
+				draw.loadSvg(svg)
+				break
+			default:
+				const svgString = get(svgString$)
+				svgString && draw.loadSvg(svgString)
+				// const bg = get(backgroundImg$)
+				// bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
+				break
+		}
 	}
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
@@ -49,6 +60,7 @@
 	//將背景圖片存入store
 	function saveBackgroundToStore(e: CustomEvent) {
 		backgroundImg$.set(e.detail)
+		console.log(1111, e.detail)
 	}
 	//比例尺變動
 	function onMeaurement(e: CustomEvent) {
