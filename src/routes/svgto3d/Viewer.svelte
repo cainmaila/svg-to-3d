@@ -198,10 +198,11 @@
 			})
 			dispatch(MODLE_READY) // 通知父組件已經準備好
 		} catch (error: any) {
-			alert(error.message || error)
-			goto('/', {
-				replaceState: true
-			})
+			console.log(error)
+			// alert(error.message || error)
+			// goto('/', {
+			// 	replaceState: true
+			// })
 			return
 		}
 

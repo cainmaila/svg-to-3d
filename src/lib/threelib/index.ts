@@ -118,7 +118,6 @@ export function svgToGroupSync(
                     //     if (index === 0) return acc
                     //     return acc + point.distanceTo(points[index - 1])
                     // }, 0)
-
                     switch (path.userData?.node?.getAttribute('data-type')) {
                         case 'box': //繪製一個BoxGeometry
                             {
@@ -168,6 +167,7 @@ export function svgToGroupSync(
                                     depth: wallHeight,
                                     bevelEnabled: false
                                 })
+                                if (!geometry) continue
                                 brush = new Brush(geometry)
                                 brush.updateMatrixWorld();
                                 if (allMesh) {
@@ -175,6 +175,7 @@ export function svgToGroupSync(
                                 } else {
                                     allMesh = brush
                                 }
+
                             }
                             building = allMesh
                         }

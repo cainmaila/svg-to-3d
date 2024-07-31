@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
@@ -20,12 +21,20 @@
 		const file = $page.url.searchParams.get('file')
 		switch (file) {
 			case 'tomo':
-				const svg = await fetch('/area/3f.svg').then((res) => res.text())
+				const svg = await fetch('/area/a.svg').then((res) => res.text())
 				draw.loadSvg(svg)
 				break
 			default:
 				const svgString = get(svgString$)
-				svgString && draw.loadSvg(svgString)
+				try {
+					const svgOb = SVG(svgString)
+					const _num = svgOb.node.childElementCount
+					if (_num === 0) throw new Error('沒東西')
+					draw.loadSvg(svgString)
+				} catch (error) {
+					draw.loadImg('/demo.png')
+				}
+				// svgString && draw.loadSvg(svgString)
 				// const bg = get(backgroundImg$)
 				// bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
 				break
@@ -60,7 +69,7 @@
 	//將背景圖片存入store
 	function saveBackgroundToStore(e: CustomEvent) {
 		backgroundImg$.set(e.detail)
-		console.log(1111, e.detail)
+		console.log('將背景圖片存入store', e.detail)
 	}
 	//比例尺變動
 	function onMeaurement(e: CustomEvent) {
