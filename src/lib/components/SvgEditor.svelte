@@ -62,6 +62,7 @@
 
 	//載入SVG
 	export function loadSvg(_svgString: string) {
+		clear(true)
 		svgString = _svgString
 		// 創建一個臨時的div來解析SVG內容
 		const tempDiv = document.createElement('div')
@@ -75,7 +76,6 @@
 		loadSvgElementToDraw(draw, svgElement, {
 			lineWidth
 		})
-		// scaleLine = draw.findOne('[data-type="scaler"]') //取得比例尺
 		dispatch('svg', svgString)
 		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
 		bg && dispatchSettingBackground(bg)
@@ -90,13 +90,16 @@
 		}
 	}
 
-	//清除所有形狀
-	export function clear() {
+	/**
+	 * 清除畫布
+	 * @param clearBg - 是否清除背景圖片
+	 */
+	export function clear(clearBg = false) {
 		const bg = draw.findOne('[data-type="bg"]')?.clone() //取得背景圖片
 		draw.clear()
 		svgString = ''
 		//@ts-ignore
-		bg && draw.add(bg)
+		bg && !clearBg && draw.add(bg)
 		// settingBackground(backgroundImg)
 	}
 
@@ -402,6 +405,19 @@
 		}
 		img.src = path
 	}
+	//拖放文件 並載入
+	function loadFile(event: DragEvent) {
+		event.preventDefault()
+		const file = event.dataTransfer?.files[0]
+		if (!file) return
+		const reader = new FileReader()
+		reader.onload = (e) => {
+			//讀取svg文件，變成svg字符串
+			const svgString = e.target?.result as string
+			loadSvg(svgString)
+		}
+		reader.readAsText(file)
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -413,6 +429,9 @@
 	on:mousemove={drawing}
 	on:mouseup={endDrawing}
 	on:mouseleave={endDrawing}
+	on:dragover|preventDefault
+	on:dragleave|preventDefault
+	on:drop|preventDefault={loadFile}
 ></div>
 <div id="scale-bar">
 	<div id="scale-text">{viewScaleWidth.toFixed(2)} 公尺</div>
