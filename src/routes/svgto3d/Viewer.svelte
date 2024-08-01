@@ -9,7 +9,6 @@
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
-	import { string } from 'three/examples/jsm/nodes/Nodes.js'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好

@@ -4,7 +4,7 @@
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { generateSkyBox } from '$lib/threelib'
-	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
+	import { CCTVCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$ } from '$lib/stores'
@@ -49,7 +49,7 @@
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	// scene.add(hemisphereLight)
 	// 添加CCTV1
-	const cctv1 = convertCctvToCamera({
+	const cctv1 = new CCTVCamera({
 		focalLength: 4, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
@@ -63,7 +63,7 @@
 	scene.add(cctvHelper1)
 	cctvHelper1.visible = false
 	// 添加CCTV2
-	const cctv2 = convertCctvToCamera({
+	const cctv2 = new CCTVCamera({
 		focalLength: 6, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度

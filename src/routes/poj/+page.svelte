@@ -6,7 +6,7 @@
 	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
 	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 	import { depthMaterial } from '$lib/threelib/materialLib'
-	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
+	import { CCTVCamera } from '$lib/threelib/cctvLib'
 	let viewerDom: HTMLDivElement
 
 	export let data: {
@@ -35,7 +35,7 @@
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	scene.add(hemisphereLight)
 
-	const cctv = convertCctvToCamera({
+	const cctv = new CCTVCamera({
 		focalLength: 8, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
