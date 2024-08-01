@@ -12,6 +12,10 @@
 	//on:svg svgString變化
 
 	export let currentTool = 'view' //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
+	export let scaleBase = 1 //比例尺每px的實際cm長度
+
+	let viewrScaleLevel = 1 //比例尺的縮放等級
+	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
 
 	$: dispatch('tool', currentTool) //發送當前工具
 
@@ -37,10 +41,6 @@
 	} //背景圖片路徑
 	let measurementLength: number //測量長度
 
-	export let scaleBase = 1 //比例尺100px的實際長度
-	let viewrScaleLevel = 1 //比例尺的縮放等級
-	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
-
 	$: dispatch('measurement', measurementLength) //發送測量長度
 	$: viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
 
@@ -55,7 +55,6 @@
 			//@ts-ignore
 			viewrScaleLevel = e.detail?.level || 1
 		})
-
 		return () => {
 			draw.off('zoom')
 		}

@@ -104,7 +104,15 @@
 	<SvgEditor
 		bind:this={draw}
 		on:svg={(e) => {
-			svgString$.set(e.detail)
+			const svg = SVG(e.detail)
+			const scalerNode = svg.findOne('[data-type="scaler"]')
+			if (scalerNode) {
+				scalceSize$.set(Number(scalerNode.data('scaler')))
+			} else {
+				//@ts-ignore
+				svg.defs().rect(0, 0, 0, 0).data('type', 'scaler').data('scaler', $scalceSize$)
+			}
+			svgString$.set(svg.svg())
 		}}
 		on:background={saveBackgroundToStore}
 		on:measurement={onMeaurement}
