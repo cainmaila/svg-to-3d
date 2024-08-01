@@ -50,7 +50,7 @@
 	scene.add(hemisphereLight)
 	// 添加CCTV1
 	const cctv1 = new CCTVCamera({
-		focalLength: 4, // 焦距
+		focalLength: 6, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 5, // 近裁剪面
@@ -119,11 +119,13 @@
 				_clearSelectCCTV()
 				transformControls.attach(cctv1)
 				cctvHelper1.visible = true
+				selectCCTVSeting.focalLength = cctv1.focalLength
 				break
 			case 'cctv2':
 				_clearSelectCCTV()
 				transformControls.attach(cctv2)
 				cctvHelper2.visible = true
+				selectCCTVSeting.focalLength = cctv2.focalLength
 				break
 			default:
 				_clearSelectCCTV()
@@ -326,6 +328,21 @@
 		renderer.domElement.remove()
 		transformControls.dispose()
 	})
+
+	let selectCCTVSeting = {
+		focalLength: 4
+	}
+	$: changeCCTVfocalLength(selectCCTV)
+	function changeCCTVfocalLength(cctvName: string) {
+		switch (cctvName) {
+			case 'cctv1':
+				cctv1.focalLength = selectCCTVSeting.focalLength
+				break
+			case 'cctv2':
+				cctv2.focalLength = selectCCTVSeting.focalLength
+				break
+		}
+	}
 </script>
 
 <svelte:window
@@ -336,6 +353,30 @@
 <div id="Viewer"></div>
 <div id="CCTV_Info">
 	<p>{selectCCTV}</p>
+	{#if selectCCTV}
+		<label for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
+		<input
+			type="range"
+			min="2.8"
+			max="6.0"
+			step="0.1"
+			value={selectCCTVSeting.focalLength}
+			on:input={(e) => {
+				switch (selectCCTV) {
+					case 'cctv1':
+						// @ts-ignore
+						cctv1.focalLength = parseFloat(e.target.value)
+						cctvHelper1.update()
+						break
+					case 'cctv2':
+						// @ts-ignore
+						cctv2.focalLength = parseFloat(e.target.value)
+						cctvHelper2.update()
+						break
+				}
+			}}
+		/>
+	{/if}
 </div>
 
 <style lang="postcss">

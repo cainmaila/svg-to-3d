@@ -25,6 +25,9 @@ export class CCTVCamera extends PerspectiveCamera {
         const fovVerticalDegrees = fovVerticalRadians * ANGLE // 垂直視角
         const aspect = sensorWidth / sensorHeight // 寬高比
         super(fovVerticalDegrees, aspect, near, far)
+        this._focalLength = focalLength
+        this._sensorWidth = sensorWidth
+        this._sensorHeight = sensorHeight
     }
     /**
      * 焦距
