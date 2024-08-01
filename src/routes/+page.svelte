@@ -90,6 +90,18 @@
 		draw.setCurrentTool(e.detail)
 		viewTool = e.detail
 	}
+	//下載SVG
+	function downloadSvg() {
+		const svg = SVG($svgString$)
+		const svgString = svg.svg()
+		const blob = new Blob([svgString], { type: 'image/svg+xml' })
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = 'drawing.svg'
+		a.click()
+		URL.revokeObjectURL(url)
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -100,6 +112,7 @@
 		on:loadBg={loadImage}
 		on:clear={draw.clear}
 		on:build={goto3d}
+		on:download={downloadSvg}
 	/>
 	<SvgEditor
 		bind:this={draw}
