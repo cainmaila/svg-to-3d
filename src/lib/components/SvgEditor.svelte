@@ -12,6 +12,10 @@
 	//on:svg svgString變化
 
 	export let currentTool = 'view' //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
+	export let scaleBase = 1 //比例尺每px的實際cm長度
+
+	let viewrScaleLevel = 1 //比例尺的縮放等級
+	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
 
 	$: dispatch('tool', currentTool) //發送當前工具
 
@@ -37,10 +41,6 @@
 	} //背景圖片路徑
 	let measurementLength: number //測量長度
 
-	export let scaleBase = 1 //比例尺100px的實際長度
-	let viewrScaleLevel = 1 //比例尺的縮放等級
-	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
-
 	$: dispatch('measurement', measurementLength) //發送測量長度
 	$: viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
 
@@ -55,7 +55,6 @@
 			//@ts-ignore
 			viewrScaleLevel = e.detail?.level || 1
 		})
-
 		return () => {
 			draw.off('zoom')
 		}
@@ -63,6 +62,7 @@
 
 	//載入SVG
 	export function loadSvg(_svgString: string) {
+		clear(true)
 		svgString = _svgString
 		// 創建一個臨時的div來解析SVG內容
 		const tempDiv = document.createElement('div')
@@ -76,7 +76,9 @@
 		loadSvgElementToDraw(draw, svgElement, {
 			lineWidth
 		})
-		// scaleLine = draw.findOne('[data-type="scaler"]') //取得比例尺
+		dispatch('svg', svgString)
+		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
+		bg && dispatchSettingBackground(bg)
 	}
 
 	//刪除選中的形狀
@@ -88,11 +90,17 @@
 		}
 	}
 
-	//清除所有形狀
-	export function clear() {
+	/**
+	 * 清除畫布
+	 * @param clearBg - 是否清除背景圖片
+	 */
+	export function clear(clearBg = false) {
+		const bg = draw.findOne('[data-type="bg"]')?.clone() //取得背景圖片
 		draw.clear()
 		svgString = ''
-		settingBackground(backgroundImg)
+		//@ts-ignore
+		bg && !clearBg && draw.add(bg)
+		// settingBackground(backgroundImg)
 	}
 
 	//設置當前工具
@@ -376,7 +384,8 @@
 	}
 
 	export async function loadImg(path: string) {
-		background?.remove()
+		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
+		bg && bg.remove()
 		const img = new Image()
 		img.onload = function (e) {
 			// 調整繪圖區域大小以匹配圖片
@@ -391,9 +400,23 @@
 
 			// 可選：調整圖片透明度，使其更容易描繪
 			background.opacity(0.3)
+			background.data('type', 'bg')
 			dispatchSettingBackground(background) //發送底圖設置事件
 		}
 		img.src = path
+	}
+	//拖放文件 並載入
+	function loadFile(event: DragEvent) {
+		event.preventDefault()
+		const file = event.dataTransfer?.files[0]
+		if (!file) return
+		const reader = new FileReader()
+		reader.onload = (e) => {
+			//讀取svg文件，變成svg字符串
+			const svgString = e.target?.result as string
+			loadSvg(svgString)
+		}
+		reader.readAsText(file)
 	}
 </script>
 
@@ -406,6 +429,9 @@
 	on:mousemove={drawing}
 	on:mouseup={endDrawing}
 	on:mouseleave={endDrawing}
+	on:dragover|preventDefault
+	on:dragleave|preventDefault
+	on:drop|preventDefault={loadFile}
 ></div>
 <div id="scale-bar">
 	<div id="scale-text">{viewScaleWidth.toFixed(2)} 公尺</div>

@@ -3,29 +3,29 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
-	import { CCTVCamera } from '$lib/threelib/cctvLib'
+	import { generateSkyBox } from '$lib/threelib'
+	import { convertCctvToCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
-	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
+	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+	const loader = new GLTFLoader()
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
+
+	// const oupPutMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 })
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
 		roughness: 0.5,
 		metalness: 0.5
 	})
-
-	export let data: {
-		svgString: string
-	}
 	export let downloadGLB: string = ''
-	let { svgString } = data
 
-	let selectCCTV: string = '' //選擇的cctv
+	let selectCCTV: string = ''
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -42,37 +42,36 @@
 	controls.maxDistance = 10000 // 最大缩放距离
 	// 添加光源
 	const ambientLight = new THREE.AmbientLight(0xffffff)
-	scene.add(ambientLight)
+	// scene.add(ambientLight)
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0)
 	directionalLight.position.set(1, 0, 1)
-	scene.add(directionalLight)
+	// scene.add(directionalLight)
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
-	scene.add(hemisphereLight)
+	// scene.add(hemisphereLight)
 	// 添加CCTV1
-	const cctv1 = new CCTVCamera({
+	const cctv1 = convertCctvToCamera({
 		focalLength: 4, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 5, // 近裁剪面
 		far: 3000 // 远裁剪面
 	})
-	cctv1.position.set(500, 300, -350)
-	cctv1.lookAt(0, 100, 0)
+	cctv1.position.set(1200, 300, 600)
+	cctv1.lookAt(0, -100, 0)
 	scene.add(cctv1)
 	const cctvHelper1 = new THREE.CameraHelper(cctv1)
 	scene.add(cctvHelper1)
 	cctvHelper1.visible = false
-
 	// 添加CCTV2
-	const cctv2 = new CCTVCamera({
-		focalLength: 4, // 焦距
+	const cctv2 = convertCctvToCamera({
+		focalLength: 6, // 焦距
 		sensorWidth: 4.8, // 传感器宽度
 		sensorHeight: 3.6, // 传感器高度
 		near: 5, // 近裁剪面
 		far: 3000 // 远裁剪面
 	})
-	cctv2.position.set(-500, 300, 500)
-	cctv2.lookAt(0, -100, 100)
+	cctv2.position.set(-200, 300, 500)
+	cctv2.lookAt(500, 100, 500)
 	scene.add(cctv2)
 	const cctvHelper2 = new THREE.CameraHelper(cctv2)
 	scene.add(cctvHelper2)
@@ -187,14 +186,9 @@
 	async function init() {
 		let build
 		try {
-			const svg = svgStringToURL(svgString)
-			build = await svgToGroupSync(svg, {
-				lineWidth: 10, // 設置線段厚度和高度
-				wallHeight: 300,
-				doorHigh: 200,
-				color: 0xcccccc,
-				scale: $scalceSize$ // 縮放比例
-			})
+			//載入GLB
+			const gltf = await loader.loadAsync('tomo_3f.glb')
+			build = gltf.scene
 			dispatch(MODLE_READY) // 通知父組件已經準備好
 		} catch (error: any) {
 			alert(error.message || error)
@@ -219,7 +213,7 @@
 		const box = new THREE.Box3().setFromObject(build)
 		const center = box.getCenter(new THREE.Vector3())
 		const size = box.getSize(new THREE.Vector3())
-		const maxDim = Math.max(size.x * 0.5, size.y, size.z)
+		const maxDim = Math.max(size.x, size.y, size.z)
 
 		camera.position.set(center.x, center.y + maxDim / 2, center.z + maxDim)
 		camera.lookAt(center)
@@ -334,9 +328,6 @@
 	on:click={onRayCCTV}
 />
 <div id="Viewer"></div>
-<div id="CCTV_Info">
-	<p>{selectCCTV}</p>
-</div>
 
 <style lang="postcss">
 	#Viewer {
@@ -344,17 +335,5 @@
 		top: 0;
 		left: 0;
 		z-index: 1;
-	}
-	#CCTV_Info {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		z-index: 100;
-		min-width: 100px;
-		min-height: 50px;
-		padding: 10px;
-		background-color: rgba(0, 0, 0, 0.5);
-		border-radius: 10px;
-		font-size: small;
 	}
 </style>

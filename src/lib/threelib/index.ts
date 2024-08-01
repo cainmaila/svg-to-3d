@@ -1,6 +1,6 @@
 import { BackSide, Box3, BoxGeometry, Color, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, ShaderMaterial, Shape, SphereGeometry, Vector2, Vector3 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
-import { ADDITION, SUBTRACTION, Brush, Evaluator } from 'three-bvh-csg'
+import { ADDITION, SUBTRACTION, Evaluator, Operation, OperationGroup } from 'three-bvh-csg'
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 const exporter = new GLTFExporter();
@@ -57,6 +57,7 @@ export function createExtrudedLine(start: Vector2, end: Vector2, width: number) 
 // 創建 SVG 加載器
 const loader = new SVGLoader()
 const evaluator = new Evaluator()
+evaluator.attributes = ['position', 'normal'];
 
 /**
  * 將 SVG 轉換為 Group
@@ -78,8 +79,6 @@ export function svgToGroupSync(
     }
 ) {
     return new Promise<Group>((resolve, reject) => {
-        let building: Brush | null = null
-        let doors: Brush | null = null
         const group = new Group()
         const material = new MeshPhongMaterial({
             color
@@ -88,10 +87,10 @@ export function svgToGroupSync(
             svgPath,
             function (data) {
                 const paths = data.paths
-                let doorbrush: Brush | null = null
-                let doorallMesh: Brush | null = null
-                let allMesh: Brush | null = null
-                let brush: Brush | null = null
+                let doorbrush: Operation
+                const doorallMesh = new OperationGroup();
+                const allMesh = new OperationGroup();
+                let brush: Operation
 
                 // 獲取 SVG 的邊界框
                 const svgBounds = new Box3()
@@ -112,6 +111,13 @@ export function svgToGroupSync(
                     const points = path.subPaths[0].getPoints().map(point =>
                         new Vector2(point.x * scale, svgHeight - point.y * scale)  // 翻轉 Y 坐標
                     )
+                    if (points.length < 2) return // 忽略不完整的路徑
+                    //計算points長度
+                    const length = points.reduce((acc, point, index) => {
+                        if (index === 0) return acc
+                        return acc + point.distanceTo(points[index - 1])
+                    }, 0)
+                    if (length < 10) return // 忽略太短的路徑
                     switch (path.userData?.node?.getAttribute('data-type')) {
                         case 'box': //繪製一個BoxGeometry
                             {
@@ -141,14 +147,12 @@ export function svgToGroupSync(
                                         depth: doorHigh,
                                         bevelEnabled: false
                                     })
-                                    doorbrush = new Brush(geometry)
-                                    if (doorallMesh) {
-                                        doorallMesh = evaluator.evaluate(doorallMesh, doorbrush, ADDITION)
-                                    } else {
-                                        doorallMesh = doorbrush
-                                    }
+                                    doorbrush = new Operation(geometry)
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    //@ts-expect-error
+                                    doorbrush.operation = SUBTRACTION;
+                                    doorallMesh.add(doorbrush)
                                 }
-                                doors = doorallMesh
                             }
                             break
                         default: {
@@ -160,26 +164,28 @@ export function svgToGroupSync(
                                     depth: wallHeight,
                                     bevelEnabled: false
                                 })
-                                brush = new Brush(geometry)
-                                if (allMesh) {
-                                    allMesh = evaluator.evaluate(allMesh, brush, ADDITION)
-                                } else {
-                                    allMesh = brush
-                                }
+                                brush = new Operation(geometry)
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                //@ts-expect-error
+                                brush.operation = ADDITION;
+                                allMesh.add(brush)
                             }
-                            building = allMesh
                         }
                     }
                 })
-                if (building) {
-                    if (doors) building = evaluator.evaluate(building, doors, SUBTRACTION)
+                if (allMesh) {
+                    const base = createBaseForObject(allMesh)
+                    const baseBrush = new Operation(base.geometry)
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-expect-error
+                    baseBrush.operation = ADDITION;
+                    baseBrush.add(allMesh)
+                    baseBrush.add(doorallMesh)
+                    const building = evaluator.evaluateHierarchy(baseBrush)
                     building.material = material
-                    const base = createBaseForObject(building)
-                    const baseBrush = new Brush(base.geometry)
-                    const allMesh2 = evaluator.evaluate(building as Brush, baseBrush, ADDITION)
-                    allMesh2.material = material
-                    allMesh2.name = 'Background'
-                    group.add(allMesh2)
+                    building.material = material
+                    building.name = 'Background'
+                    group.add(building)
                 }
                 // 將 group 旋轉以使其在 XZ 平面上
                 group.rotation.x = -Math.PI / 2

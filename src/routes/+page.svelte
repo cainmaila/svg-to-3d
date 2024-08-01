@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
-	import { get } from 'svelte/store'
 	import { goto } from '$app/navigation'
+	import { page } from '$app/stores'
 	import { svgString$, backgroundImg$, scalceSize$ } from '$lib/stores'
 
 	import SvgEditor from '$lib/components/SvgEditor.svelte'
 	import ToolBar from './ToolBar.svelte'
+	import { get } from 'svelte/store'
 
 	let draw: SvgEditor
 	let scalceModeOpen = false
@@ -15,10 +17,28 @@
 	$: draw && loadSvg()
 
 	//載入SVG
-	function loadSvg() {
-		draw.loadSvg(get(svgString$))
-		const bg = get(backgroundImg$)
-		bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
+	async function loadSvg() {
+		const file = $page.url.searchParams.get('file')
+		switch (file) {
+			case 'tomo':
+				const svg = await fetch('/area/a.svg').then((res) => res.text())
+				draw.loadSvg(svg)
+				break
+			default:
+				const svgString = get(svgString$)
+				try {
+					const svgOb = SVG(svgString)
+					const _num = svgOb.node.childElementCount
+					if (_num === 0) throw new Error('沒東西')
+					draw.loadSvg(svgString)
+				} catch (error) {
+					draw.loadImg('/demo.png')
+				}
+				// svgString && draw.loadSvg(svgString)
+				// const bg = get(backgroundImg$)
+				// bg ? draw.settingBackground(bg) : draw.loadImg('/demo.png')
+				break
+		}
 	}
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
@@ -70,6 +90,18 @@
 		draw.setCurrentTool(e.detail)
 		viewTool = e.detail
 	}
+	//下載SVG
+	function downloadSvg() {
+		const svg = SVG($svgString$)
+		const svgString = svg.svg()
+		const blob = new Blob([svgString], { type: 'image/svg+xml' })
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = 'drawing.svg'
+		a.click()
+		URL.revokeObjectURL(url)
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -78,13 +110,19 @@
 		tool={viewTool}
 		on:tool={onToolChangeHandler}
 		on:loadBg={loadImage}
-		on:clear={draw.clear}
+		on:clear={() => draw.clear()}
 		on:build={goto3d}
+		on:download={downloadSvg}
 	/>
 	<SvgEditor
 		bind:this={draw}
 		on:svg={(e) => {
-			svgString$.set(e.detail)
+			const svg = SVG(e.detail)
+			const scalerNode = svg.findOne('[data-type="scaler"]')
+			if (scalerNode) {
+				scalceSize$.set(Number(scalerNode.data('scaler')))
+			}
+			svgString$.set(svg.svg())
 		}}
 		on:background={saveBackgroundToStore}
 		on:measurement={onMeaurement}

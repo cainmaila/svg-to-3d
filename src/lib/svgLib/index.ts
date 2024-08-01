@@ -42,6 +42,13 @@ export function loadSvgElementToDraw(
 				.attr(getAttributes(child))
 		} else if (child.tagName.toLowerCase() === 'path') {
 			draw.path(child.getAttribute('d')).attr(getAttributes(child))
+		} else if (child.tagName.toLowerCase() === 'image') {
+			const bg = draw.image(child.getAttribute('xlink:href'))
+			bg.size(child.width.baseVal.value, child.height.baseVal.value)
+			bg.move(child.x.baseVal.value, child.y.baseVal.value)
+			bg.attr({ opacity: 0.3 })
+			bg.backward()
+			bg.data('type', 'bg')
 		}
 	})
 }

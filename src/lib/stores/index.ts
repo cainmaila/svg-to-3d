@@ -12,5 +12,5 @@ export const svgString$ = persisted('svgString', '')
 export const vertexShader$ = writable('')
 export const fragmentShader$ = writable('')
 
-//比例尺
+//比例尺 幾cm:每1px
 export const scalceSize$ = persisted<number>('scalceSize', 1)

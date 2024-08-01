@@ -74,6 +74,7 @@
 		<button id="loadimageBtn" on:click={() => dispatch('loadBg')}>載入圖</button>
 		<button id="deleteBtn" on:click={() => dispatch('clear')}>清除全部</button>
 		<button id="generate" on:click={() => dispatch('build')}>生成場域</button>
+		<button id="download" on:click={() => dispatch('download')}>下載圖稿</button>
 		<button
 			class="secondary"
 			on:click={() => dispatchToolChange('putBox')}
