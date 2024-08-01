@@ -373,8 +373,9 @@
 <div id="CCTV_Info">
 	<p>{selectCCTV}</p>
 	{#if selectCCTV}
-		<label for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
+		<label class="label" for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
 		<input
+			class="input"
 			type="range"
 			min="2.8"
 			max="6.0"

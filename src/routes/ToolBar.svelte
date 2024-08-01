@@ -12,9 +12,9 @@
 
 <div class="toolbar">
 	<div class="top">
-		<fieldset>
-			<legend>繪製方式</legend>
+		<fieldset class="card">
 			<input
+				class="radio"
 				type="radio"
 				id="view"
 				name="drawtype"
@@ -24,6 +24,7 @@
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>檢視場景</label>
 			<input
+				class="radio"
 				type="radio"
 				id="rect"
 				name="drawtype"
@@ -33,6 +34,7 @@
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>矩形區域</label>
 			<input
+				class="radio"
 				type="radio"
 				id="line"
 				name="drawtype"
@@ -42,6 +44,7 @@
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>直線</label>
 			<input
+				class="radio"
 				type="radio"
 				id="freeDraw"
 				name="drawtype"
@@ -51,6 +54,7 @@
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>自由繪製</label>
 			<input
+				class="radio"
 				type="radio"
 				id="door"
 				name="drawtype"
@@ -60,6 +64,7 @@
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label>安裝門</label>
 			<input
+				class="radio"
 				type="radio"
 				id="scale"
 				name="drawtype"
@@ -70,21 +75,34 @@
 			<label>比例尺</label>
 		</fieldset>
 	</div>
-	<div class="button">
-		<button id="loadimageBtn" on:click={() => dispatch('loadBg')}>載入圖</button>
-		<button id="deleteBtn" on:click={() => dispatch('clear')}>清除全部</button>
-		<button id="generate" on:click={() => dispatch('build')}>生成場域</button>
-		<button id="download" on:click={() => dispatch('download')}>下載圖稿</button>
+	<div>
+		<div class="btn-group variant-filled">
+			<button id="loadimageBtn" on:click={() => dispatch('loadBg')}>載入圖</button>
+			<button id="deleteBtn" on:click={() => dispatch('clear')}>清除全部</button>
+			<button id="generate" on:click={() => dispatch('build')}>生成場域</button>
+			<button id="download" on:click={() => dispatch('download')}>下載圖稿</button>
+		</div>
 		<button
-			class="secondary"
+			class="btn btn-sm variant-filled-surface"
 			on:click={() => dispatchToolChange('putBox')}
 			disabled={tool === 'putBox'}>放置設備2x2</button
 		>
-		<span>放置設備前請先確定比例尺</span>
+		<code class="code">放置設備前請先確定比例尺</code>
 	</div>
 </div>
 
 <style lang="postcss">
+	fieldset {
+		padding: 5px;
+		margin: 5px;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-around;
+		gap: 10px;
+		& label {
+			margin: 0 10px 0 0;
+		}
+	}
 	.toolbar {
 		font-size: smaller;
 		position: absolute;
@@ -109,8 +127,6 @@
 		}
 	}
 	.toolbar button {
-		font-size: smaller;
-		margin: 5px;
 		pointer-events: auto;
 	}
 </style>
