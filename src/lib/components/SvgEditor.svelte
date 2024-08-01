@@ -78,6 +78,8 @@
 		})
 		// scaleLine = draw.findOne('[data-type="scaler"]') //取得比例尺
 		dispatch('svg', svgString)
+		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
+		bg && dispatchSettingBackground(bg)
 	}
 
 	//刪除選中的形狀
@@ -379,7 +381,8 @@
 	}
 
 	export async function loadImg(path: string) {
-		background?.remove()
+		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
+		bg && bg.remove()
 		const img = new Image()
 		img.onload = function (e) {
 			// 調整繪圖區域大小以匹配圖片
@@ -394,6 +397,7 @@
 
 			// 可選：調整圖片透明度，使其更容易描繪
 			background.opacity(0.3)
+			background.data('type', 'bg')
 			dispatchSettingBackground(background) //發送底圖設置事件
 		}
 		img.src = path

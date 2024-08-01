@@ -69,7 +69,6 @@
 	//將背景圖片存入store
 	function saveBackgroundToStore(e: CustomEvent) {
 		backgroundImg$.set(e.detail)
-		console.log('將背景圖片存入store', e.detail)
 	}
 	//比例尺變動
 	function onMeaurement(e: CustomEvent) {
