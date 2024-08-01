@@ -92,9 +92,10 @@
 
 	//清除所有形狀
 	export function clear() {
-		const bg = draw.findOne('[data-type="bg"]')?.clone() as Image //取得背景圖片
+		const bg = draw.findOne('[data-type="bg"]')?.clone() //取得背景圖片
 		draw.clear()
 		svgString = ''
+		//@ts-ignore
 		bg && draw.add(bg)
 		// settingBackground(backgroundImg)
 	}

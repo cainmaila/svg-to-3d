@@ -108,9 +108,6 @@
 			const scalerNode = svg.findOne('[data-type="scaler"]')
 			if (scalerNode) {
 				scalceSize$.set(Number(scalerNode.data('scaler')))
-			} else {
-				//@ts-ignore
-				svg.defs().rect(0, 0, 0, 0).data('type', 'scaler').data('scaler', $scalceSize$)
 			}
 			svgString$.set(svg.svg())
 		}}

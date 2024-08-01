@@ -198,11 +198,10 @@
 			})
 			dispatch(MODLE_READY) // 通知父組件已經準備好
 		} catch (error: any) {
-			console.log(error)
-			// alert(error.message || error)
-			// goto('/', {
-			// 	replaceState: true
-			// })
+			alert(error.message || error)
+			goto('/', {
+				replaceState: true
+			})
 			return
 		}
 
@@ -221,7 +220,7 @@
 		const box = new THREE.Box3().setFromObject(build)
 		const center = box.getCenter(new THREE.Vector3())
 		const size = box.getSize(new THREE.Vector3())
-		const maxDim = Math.max(size.x, size.y, size.z)
+		const maxDim = Math.max(size.x * 0.5, size.y, size.z)
 
 		camera.position.set(center.x, center.y + maxDim / 2, center.z + maxDim)
 		camera.lookAt(center)
