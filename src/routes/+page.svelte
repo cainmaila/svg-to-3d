@@ -110,7 +110,7 @@
 		tool={viewTool}
 		on:tool={onToolChangeHandler}
 		on:loadBg={loadImage}
-		on:clear={draw.clear}
+		on:clear={() => draw.clear()}
 		on:build={goto3d}
 		on:download={downloadSvg}
 	/>
