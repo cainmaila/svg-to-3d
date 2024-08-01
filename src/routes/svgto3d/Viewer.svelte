@@ -9,6 +9,7 @@
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
+	import { string } from 'three/examples/jsm/nodes/Nodes.js'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
@@ -329,17 +330,36 @@
 		transformControls.dispose()
 	})
 
+	//CCTV設定
 	let selectCCTVSeting = {
 		focalLength: 4
 	}
-	$: changeCCTVfocalLength(selectCCTV)
-	function changeCCTVfocalLength(cctvName: string) {
+	$: CCTV_ChangefocalLength(selectCCTV) //焦距改變
+	//改變 UI的 焦距數值
+	function CCTV_ChangefocalLength(cctvName: string) {
 		switch (cctvName) {
 			case 'cctv1':
 				cctv1.focalLength = selectCCTVSeting.focalLength
 				break
 			case 'cctv2':
 				cctv2.focalLength = selectCCTVSeting.focalLength
+				break
+		}
+	}
+	//UI 改變焦距
+	function changeCCTV_FocalLength(e: Event) {
+		const target = e.target as HTMLInputElement
+		const focalLength = parseFloat(target?.value) || 4
+		switch (selectCCTV) {
+			case 'cctv1':
+				// @ts-ignore
+				cctv1.focalLength = focalLength
+				cctvHelper1.update()
+				break
+			case 'cctv2':
+				// @ts-ignore
+				cctv2.focalLength = focalLength
+				cctvHelper2.update()
 				break
 		}
 	}
@@ -361,20 +381,7 @@
 			max="6.0"
 			step="0.1"
 			value={selectCCTVSeting.focalLength}
-			on:input={(e) => {
-				switch (selectCCTV) {
-					case 'cctv1':
-						// @ts-ignore
-						cctv1.focalLength = parseFloat(e.target.value)
-						cctvHelper1.update()
-						break
-					case 'cctv2':
-						// @ts-ignore
-						cctv2.focalLength = parseFloat(e.target.value)
-						cctvHelper2.update()
-						break
-				}
-			}}
+			on:input={changeCCTV_FocalLength}
 		/>
 	{/if}
 </div>
