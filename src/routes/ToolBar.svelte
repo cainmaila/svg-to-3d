@@ -74,30 +74,30 @@
 				{#if tool === 'measurement'}<ICON.TablerSelect />{/if}
 				<span>比例尺</span>
 			</button>
+			<div>
+				<div class="variant-filled btn-group">
+					<button id="loadimageBtn" on:click={() => dispatch('loadBg')} title="替換描繪底圖"
+						><ICON.FluentMdl2ImageCrosshair /></button
+					>
+					<button id="deleteBtn" on:click={() => dispatch('clear')} title="清除所有描繪"
+						><ICON.StreamlineNewFile /></button
+					>
+					<button id="generate" on:click={() => dispatch('build')} title="生成模型"
+						><ICON.StreamlineAiGenerateVariationSpark /></button
+					>
+					<button id="download" on:click={() => dispatch('download')} title="下載設計圖"
+						><ICON.FluentMdl2SaveTemplate /></button
+					>
+				</div>
+				<button
+					class="variant-filled-surface btn btn-sm"
+					on:click={() => dispatchToolChange('putBox')}
+					disabled={tool === 'putBox'}
+					title="放置設備">2 x 2</button
+				>
+				<code class="code">放置設備前請先確定比例尺</code>
+			</div>
 		</fieldset>
-	</div>
-	<div>
-		<div class="variant-filled btn-group">
-			<button id="loadimageBtn" on:click={() => dispatch('loadBg')} title="替換描繪底圖"
-				><ICON.FluentMdl2ImageCrosshair /></button
-			>
-			<button id="deleteBtn" on:click={() => dispatch('clear')} title="清除所有描繪"
-				><ICON.StreamlineNewFile /></button
-			>
-			<button id="generate" on:click={() => dispatch('build')} title="生成模型"
-				><ICON.StreamlineAiGenerateVariationSpark /></button
-			>
-			<button id="download" on:click={() => dispatch('download')} title="下載設計圖"
-				><ICON.FluentMdl2SaveTemplate /></button
-			>
-		</div>
-		<button
-			class="variant-filled-surface btn btn-sm"
-			on:click={() => dispatchToolChange('putBox')}
-			disabled={tool === 'putBox'}
-			title="放置設備">2 x 2</button
-		>
-		<code class="code">放置設備前請先確定比例尺</code>
 	</div>
 </div>
 
