@@ -132,15 +132,17 @@
 		scaleBase={$scalceSize$}
 	/>
 	<code id="mamo">選取物件(黃色標示)，按Delete可刪除</code>
-	<dialog open={scalceModeOpen}>
-		<article id="settingDistance">
-			<form on:submit={settingScale}>
-				<label for="scale">比例尺設定 </label>
-				<input type="number" bind:value={scaleLengthSetting} step="0.01" />公尺
-				<button type="submit">設定</button>
-			</form>
-		</article>
-	</dialog>
+	{#if scalceModeOpen}
+		<div class="dialog card">
+			<header class="card-header">比例尺設定</header>
+			<section id="settingDistance">
+				<form on:submit={settingScale}>
+					<input class="input" type="number" bind:value={scaleLengthSetting} step="0.01" />公尺
+					<button class="variant-filled btn btn-sm" type="submit">設定</button>
+				</form>
+			</section>
+		</div>
+	{/if}
 </main>
 
 <style lang="postcss">
@@ -159,5 +161,16 @@
 		left: 0;
 		z-index: 100;
 		pointer-events: none;
+	}
+	.dialog {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		padding: 20px;
+		background-color: rgba(0, 0, 0, 0.5);
+		& header {
+			padding: 0 0 10px 0;
+		}
 	}
 </style>
