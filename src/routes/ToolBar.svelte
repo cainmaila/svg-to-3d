@@ -2,6 +2,7 @@
 	import '@svgdotjs/svg.draggable.js'
 	import { createEventDispatcher } from 'svelte'
 	import ICON from '$lib/components/icon'
+	import ToolBtn from '$lib/components/btn/ToolBtn.svelte'
 	const dispatch = createEventDispatcher()
 
 	export let tool = 'view' //預設為檢視模式
@@ -14,66 +15,54 @@
 <div class="toolbar">
 	<div class="top">
 		<fieldset class="card">
-			<button
-				class="chip {tool === 'view' ? 'variant-filled' : 'variant-soft'}"
+			<ToolBtn
+				select={tool === 'view'}
 				on:click={() => {
 					dispatchToolChange('view')
 				}}
-				on:keypress
 			>
-				{#if tool === 'view'}<ICON.TablerSelect />{/if}
-				<span>檢視場景</span>
-			</button>
-			<button
-				class="chip {tool === 'polygon' ? 'variant-filled' : 'variant-soft'}"
+				檢視場景
+			</ToolBtn>
+			<ToolBtn
+				select={tool === 'polygon'}
 				on:click={() => {
 					dispatchToolChange('polygon')
 				}}
-				on:keypress
 			>
-				{#if tool === 'polygon'}<ICON.TablerSelect />{/if}
-				<span>矩形區域</span>
-			</button>
-			<button
-				class="chip {tool === 'line' ? 'variant-filled' : 'variant-soft'}"
+				矩形區域
+			</ToolBtn>
+			<ToolBtn
+				select={tool === 'line'}
 				on:click={() => {
 					dispatchToolChange('line')
 				}}
-				on:keypress
 			>
-				{#if tool === 'line'}<ICON.TablerSelect />{/if}
-				<span>直線</span>
-			</button>
-			<button
-				class="chip {tool === 'freeDraw' ? 'variant-filled' : 'variant-soft'}"
+				直線
+			</ToolBtn>
+			<ToolBtn
+				select={tool === 'freeDraw'}
 				on:click={() => {
 					dispatchToolChange('freeDraw')
 				}}
-				on:keypress
 			>
-				{#if tool === 'freeDraw'}<ICON.TablerSelect />{/if}
-				<span>自由繪製</span>
-			</button>
-			<button
-				class="chip {tool === 'door' ? 'variant-filled' : 'variant-soft'}"
+				自由繪製
+			</ToolBtn>
+			<ToolBtn
+				select={tool === 'door'}
 				on:click={() => {
 					dispatchToolChange('door')
 				}}
-				on:keypress
 			>
-				{#if tool === 'door'}<ICON.TablerSelect />{/if}
-				<span>安裝門</span>
-			</button>
-			<button
-				class="chip {tool === 'measurement' ? 'variant-filled' : 'variant-soft'}"
+				安裝門
+			</ToolBtn>
+			<ToolBtn
+				select={tool === 'measurement'}
 				on:click={() => {
 					dispatchToolChange('measurement')
 				}}
-				on:keypress
 			>
-				{#if tool === 'measurement'}<ICON.TablerSelect />{/if}
-				<span>比例尺</span>
-			</button>
+				比例尺
+			</ToolBtn>
 			<div>
 				<div class="variant-filled btn-group">
 					<button id="loadimageBtn" on:click={() => dispatch('loadBg')} title="替換描繪底圖"
@@ -109,9 +98,6 @@
 		flex-wrap: wrap;
 		justify-content: space-around;
 		gap: 10px;
-		& label {
-			margin: 0 10px 0 0;
-		}
 	}
 	.toolbar {
 		font-size: smaller;
@@ -129,14 +115,5 @@
 			align-items: center;
 			width: 100%;
 		}
-		& .button {
-			display: flex;
-		}
-		& input {
-			pointer-events: auto;
-		}
-	}
-	.toolbar button {
-		pointer-events: auto;
 	}
 </style>
