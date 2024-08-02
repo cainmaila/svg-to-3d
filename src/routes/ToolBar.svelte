@@ -14,66 +14,66 @@
 <div class="toolbar">
 	<div class="top">
 		<fieldset class="card">
-			<input
-				class="radio"
-				type="radio"
-				id="view"
-				name="drawtype"
-				on:change={() => dispatchToolChange('view')}
-				checked={tool === 'view'}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>檢視場景</label>
-			<input
-				class="radio"
-				type="radio"
-				id="rect"
-				name="drawtype"
-				on:change={() => dispatchToolChange('polygon')}
-				checked={tool === 'rect'}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>矩形區域</label>
-			<input
-				class="radio"
-				type="radio"
-				id="line"
-				name="drawtype"
-				on:change={() => dispatchToolChange('line')}
-				checked={tool === 'line'}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>直線</label>
-			<input
-				class="radio"
-				type="radio"
-				id="freeDraw"
-				name="drawtype"
-				on:change={() => dispatchToolChange('freeDraw')}
-				checked={tool === 'freeDraw'}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>自由繪製</label>
-			<input
-				class="radio"
-				type="radio"
-				id="door"
-				name="drawtype"
-				on:change={() => dispatchToolChange('door')}
-				checked={tool === 'door'}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>安裝門</label>
-			<input
-				class="radio"
-				type="radio"
-				id="scale"
-				name="drawtype"
-				on:change={() => dispatchToolChange('measurement')}
-				checked={tool === 'scale'}
-			/>
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label>比例尺</label>
+			<button
+				class="chip {tool === 'view' ? 'variant-filled' : 'variant-soft'}"
+				on:click={() => {
+					dispatchToolChange('view')
+				}}
+				on:keypress
+			>
+				{#if tool === 'view'}<ICON.TablerSelect />{/if}
+				<span>檢視場景</span>
+			</button>
+			<button
+				class="chip {tool === 'polygon' ? 'variant-filled' : 'variant-soft'}"
+				on:click={() => {
+					dispatchToolChange('polygon')
+				}}
+				on:keypress
+			>
+				{#if tool === 'polygon'}<ICON.TablerSelect />{/if}
+				<span>矩形區域</span>
+			</button>
+			<button
+				class="chip {tool === 'line' ? 'variant-filled' : 'variant-soft'}"
+				on:click={() => {
+					dispatchToolChange('line')
+				}}
+				on:keypress
+			>
+				{#if tool === 'line'}<ICON.TablerSelect />{/if}
+				<span>直線</span>
+			</button>
+			<button
+				class="chip {tool === 'freeDraw' ? 'variant-filled' : 'variant-soft'}"
+				on:click={() => {
+					dispatchToolChange('freeDraw')
+				}}
+				on:keypress
+			>
+				{#if tool === 'freeDraw'}<ICON.TablerSelect />{/if}
+				<span>自由繪製</span>
+			</button>
+			<button
+				class="chip {tool === 'door' ? 'variant-filled' : 'variant-soft'}"
+				on:click={() => {
+					dispatchToolChange('door')
+				}}
+				on:keypress
+			>
+				{#if tool === 'door'}<ICON.TablerSelect />{/if}
+				<span>安裝門</span>
+			</button>
+			<button
+				class="chip {tool === 'measurement' ? 'variant-filled' : 'variant-soft'}"
+				on:click={() => {
+					dispatchToolChange('measurement')
+				}}
+				on:keypress
+			>
+				{#if tool === 'measurement'}<ICON.TablerSelect />{/if}
+				<span>比例尺</span>
+			</button>
 		</fieldset>
 	</div>
 	<div>
@@ -94,7 +94,8 @@
 		<button
 			class="variant-filled-surface btn btn-sm"
 			on:click={() => dispatchToolChange('putBox')}
-			disabled={tool === 'putBox'}>放置設備2x2</button
+			disabled={tool === 'putBox'}
+			title="放置設備">2 x 2</button
 		>
 		<code class="code">放置設備前請先確定比例尺</code>
 	</div>
