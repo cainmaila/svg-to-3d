@@ -5,8 +5,7 @@
 	import { onMount } from 'svelte'
 	import { loadSvgElementToDraw } from '$lib/svgLib'
 	import { createEventDispatcher } from 'svelte'
-
-	const BOX_SIZE = 2 //放置的Box大小 m
+	import ScaleBar from './ScaleBar.svelte'
 
 	const dispatch = createEventDispatcher()
 	//on:svg svgString變化
@@ -200,8 +199,11 @@
 	function startDrawing(event: MouseEvent) {
 		const point = getMousePosition(event)
 		isDrawing = true
+		const _currentTool = currentTool.split('_')[0]
+		const size = currentTool.split('_')[1] || '1x1x1'
+		const sizeArr = size.split('x').map((s) => parseInt(s)) as [number, number, number]
 
-		switch (currentTool) {
+		switch (_currentTool) {
 			case 'polygon':
 				currentShape = draw
 					.polygon()
@@ -237,27 +239,27 @@
 					.stroke({ color: '#ff0000', width: lineWidth })
 				break
 			case 'putBox': //放置Box設備
-				putBox(point)
+				putBox(point, sizeArr)
 				setCurrentTool('view')
 				break
 		}
 	}
 
 	//繪製一個Box在場域中
-	function putBox(point: { x: number; y: number }) {
-		const size = (BOX_SIZE / scaleBase) * 100
-		const box = draw.rect(size, size).fill('white').stroke('none')
-		box.move(point.x - (size >> 1), point.y - (size >> 1))
+	function putBox(point: { x: number; y: number }, size: [number, number, number] = [2, 2, 1]) {
+		const sizeX = (size[0] / scaleBase) * 100
+		const sizeY = (size[1] / scaleBase) * 100
+		const box = draw.rect(sizeX, sizeY).fill('white').stroke('none')
+		box.move(point.x - (sizeX >> 1), point.y - (sizeY >> 1))
 		box.data('type', 'box')
+		box.data('size', size[2])
 		box.draggable()
 	}
 
 	//繪製中
 	function drawing(event: MouseEvent) {
 		if (!isDrawing) return
-
 		const point = getMousePosition(event)
-
 		switch (currentTool) {
 			case 'polygon':
 				currentShape.plot([
@@ -433,10 +435,7 @@
 	on:dragleave|preventDefault
 	on:drop|preventDefault={loadFile}
 ></div>
-<div id="scale-bar">
-	<div id="scale-text">{viewScaleWidth.toFixed(2)} 公尺</div>
-	<div id="scale-line"></div>
-</div>
+<ScaleBar>{viewScaleWidth.toFixed(2)} 公尺</ScaleBar>
 
 <style lang="postcss">
 	#drawing {
@@ -449,29 +448,6 @@
 			position: absolute;
 			left: 0;
 			top: 0;
-		}
-	}
-	#scale-bar {
-		position: fixed;
-		right: 20px;
-		bottom: 20px;
-		padding: 5px;
-		font-family: Arial, sans-serif;
-		font-size: 12px;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		color: rgb(255, 255, 255);
-		pointer-events: none;
-		& #scale-line {
-			width: 200px;
-			height: 8px;
-			/* background-color: #ffffff; */
-			border: 1px solid #ffffff;
-			border-top: none;
-		}
-		& #scale-text {
-			transform: translate(-4px, 0);
 		}
 	}
 </style>

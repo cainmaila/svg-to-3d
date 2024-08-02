@@ -5,7 +5,7 @@
 	import { page } from '$app/stores'
 	import { svgString$, backgroundImg$, scalceSize$ } from '$lib/stores'
 
-	import SvgEditor from '$lib/components/SvgEditor.svelte'
+	import SvgEditor from '$lib/components/SvgEditor'
 	import ToolBar from './ToolBar.svelte'
 	import { get } from 'svelte/store'
 

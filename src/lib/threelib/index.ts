@@ -129,7 +129,7 @@ export function svgToGroupSync(
                                 shape.lineTo(points[3].x, points[3].y)
                                 shape.lineTo(points[0].x, points[0].y)
                                 const geometry = new ExtrudeGeometry(shape, {
-                                    depth: 100,
+                                    depth: path.userData?.node?.getAttribute('data-size') ? path.userData?.node?.getAttribute('data-size') * 100 : 100,
                                     bevelEnabled: false
                                 })
                                 const mesh = new Mesh(geometry, material)

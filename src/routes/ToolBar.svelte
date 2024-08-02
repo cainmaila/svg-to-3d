@@ -79,10 +79,22 @@
 					>
 				</div>
 				<button
-					class="variant-filled-surface btn btn-sm"
-					on:click={() => dispatchToolChange('putBox')}
-					disabled={tool === 'putBox'}
-					title="放置設備">2 x 2</button
+					class="variant-filled-surface btn btn-sm text-xs"
+					on:click={() => dispatchToolChange('putBox_2x1x1')}
+					disabled={tool === 'putBox_2x1x1'}
+					title="放置設備">2x1x1</button
+				>
+				<button
+					class="variant-filled-surface btn btn-sm text-xs"
+					on:click={() => dispatchToolChange('putBox_1x2x1')}
+					disabled={tool === 'putBox_1x2x1'}
+					title="放置設備">1x2x1</button
+				>
+				<button
+					class="variant-filled-surface btn btn-sm text-xs"
+					on:click={() => dispatchToolChange('putBox_1x1x2')}
+					disabled={tool === 'putBox_1x1x2'}
+					title="放置設備">1x1x2</button
 				>
 				<code class="code">放置設備前請先確定比例尺</code>
 			</div>
