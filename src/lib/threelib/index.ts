@@ -133,7 +133,7 @@ export function svgToGroupSync(
                                     bevelEnabled: false
                                 })
                                 const mesh = new Mesh(geometry, material)
-                                mesh.name = `Box_${count}`
+                                mesh.name = `Box_${path.userData?.node?.getAttribute('data-tagname')}_${count}`
                                 group.add(mesh)
                             }
                             break

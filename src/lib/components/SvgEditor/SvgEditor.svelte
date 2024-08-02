@@ -252,6 +252,7 @@
 		const box = draw.rect(sizeX, sizeY).fill('white').stroke('none')
 		box.move(point.x - (sizeX >> 1), point.y - (sizeY >> 1))
 		box.data('type', 'box')
+		box.data('tagname', size[0] + 'x' + size[1] + 'x' + size[2])
 		box.data('size', size[2])
 		box.draggable()
 	}
