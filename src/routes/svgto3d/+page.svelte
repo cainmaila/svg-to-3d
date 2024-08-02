@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Viewer from './Viewer.svelte'
-	import EntypoDownload from '$lib/components/icon/EntypoDownload.svelte'
+	import ICON from '$lib/components/icon'
 
 	export let data: {
 		svgString: string
@@ -17,13 +17,13 @@
 {#if downloadGLB}
 	<div id="UI">
 		<a
-			class="btn variant-filled"
+			class="variant-filled btn"
 			role="button"
 			href={downloadGLB}
 			download="area.glb"
 			title="下載模型"
 		>
-			<EntypoDownload /></a
+			<ICON.EntypoDownload /></a
 		>
 	</div>
 {/if}

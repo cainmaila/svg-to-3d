@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '@svgdotjs/svg.draggable.js'
 	import { createEventDispatcher } from 'svelte'
+	import ICON from '$lib/components/icon'
 	const dispatch = createEventDispatcher()
 
 	export let tool = 'view' //預設為檢視模式
@@ -76,14 +77,22 @@
 		</fieldset>
 	</div>
 	<div>
-		<div class="btn-group variant-filled">
-			<button id="loadimageBtn" on:click={() => dispatch('loadBg')}>載入圖</button>
-			<button id="deleteBtn" on:click={() => dispatch('clear')}>清除全部</button>
-			<button id="generate" on:click={() => dispatch('build')}>生成場域</button>
-			<button id="download" on:click={() => dispatch('download')}>下載圖稿</button>
+		<div class="variant-filled btn-group">
+			<button id="loadimageBtn" on:click={() => dispatch('loadBg')} title="替換描繪底圖"
+				><ICON.FluentMdl2ImageCrosshair /></button
+			>
+			<button id="deleteBtn" on:click={() => dispatch('clear')} title="清除所有描繪"
+				><ICON.StreamlineNewFile /></button
+			>
+			<button id="generate" on:click={() => dispatch('build')} title="生成模型"
+				><ICON.StreamlineAiGenerateVariationSpark /></button
+			>
+			<button id="download" on:click={() => dispatch('download')} title="下載設計圖"
+				><ICON.FluentMdl2SaveTemplate /></button
+			>
 		</div>
 		<button
-			class="btn btn-sm variant-filled-surface"
+			class="variant-filled-surface btn btn-sm"
 			on:click={() => dispatchToolChange('putBox')}
 			disabled={tool === 'putBox'}>放置設備2x2</button
 		>
