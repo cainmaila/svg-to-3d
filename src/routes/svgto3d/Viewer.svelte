@@ -379,6 +379,11 @@
 				break
 		}
 	}
+
+	function onClickClearCCTVHandler() {
+		selectCCTV = ''
+		cctvMode = ''
+	}
 </script>
 
 <svelte:window
@@ -388,8 +393,13 @@
 />
 <div id="Viewer"></div>
 <div id="CCTV_Info">
-	<p>{selectCCTV}</p>
 	{#if selectCCTV}
+		<div class="flex items-center justify-between">
+			<p class="h4">{selectCCTV}</p>
+			<button type="button" class="variant-filled btn btn-sm" on:click={onClickClearCCTVHandler}
+				>Clear</button
+			>
+		</div>
 		<label class="label" for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
 		<input
 			class="input"
