@@ -18,7 +18,7 @@
 		roughness: 0.5,
 		metalness: 0.5
 	})
-	const cctvNum = 2
+	const cctvNum = 2 //CCTV數量
 
 	export let data: {
 		svgString: string
