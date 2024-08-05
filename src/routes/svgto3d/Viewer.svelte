@@ -62,7 +62,7 @@
 	//建立一個CCTV
 	function createCCTV(position: THREE.Vector3, lookAt: THREE.Vector3) {
 		const cctv = new CCTVCamera({
-			focalLength: 6, // 焦距
+			focalLength: 4, // 焦距
 			sensorWidth: 4.8, // 传感器宽度
 			sensorHeight: 3.6, // 传感器高度
 			near: 5, // 近裁剪面
@@ -101,29 +101,22 @@
 	shadowCameras.push(cctv2)
 	// shadowCameras.push(cctv3)
 	// shadowCameras.push(cctv4)
+	const cctvHelpers: THREE.CameraHelper[] = []
+	cctvHelpers.push(cctvHelper1)
+	cctvHelpers.push(cctvHelper2)
+	// cctvHelpers.push(cctvHelper3)
+	// cctvHelpers.push(cctvHelper4)
 	//攝影機物件
-	const cctvObjs = [
-		new THREE.Mesh(
-			new THREE.BoxGeometry(10, 10, 20),
-			new THREE.MeshBasicMaterial({ color: 0xff0000 })
-		),
-		new THREE.Mesh(
+	const cctvObjs: THREE.Mesh[] = shadowCameras.map((_, ind) => {
+		const cctvObj = new THREE.Mesh(
 			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
 		)
-		// new THREE.Mesh(
-		// 	new THREE.BoxGeometry(10, 10, 20),
-		// 	new THREE.MeshBasicMaterial({ color: 0xff0000 })
-		// ),
-		// new THREE.Mesh(
-		// 	new THREE.BoxGeometry(10, 10, 20),
-		// 	new THREE.MeshBasicMaterial({ color: 0xff0000 })
-		// )
-	]
-	cctvObjs.forEach((cctvObj, ind) => {
 		cctvObj.name = `cctv${ind + 1}`
 		scene.add(cctvObj)
-		moveCctv(ind)
+		cctvObj.position.copy(shadowCameras[ind].position)
+		cctvObj.quaternion.copy(shadowCameras[ind].quaternion)
+		return cctvObj
 	})
 	//複製攝影機位置包含旋轉
 	function moveCctv(ind: number) {
@@ -132,37 +125,18 @@
 	}
 	//選擇cctv
 	$: {
-		switch (selectCCTV) {
-			case 'cctv1':
-				_clearSelectCCTV()
-				cctvHelper1.visible = true
-				selectCCTVSeting.focalLength = cctv1.focalLength
-				break
-			case 'cctv2':
-				_clearSelectCCTV()
-				cctvHelper2.visible = true
-				selectCCTVSeting.focalLength = cctv2.focalLength
-				break
-			// case 'cctv3':
-			// 	_clearSelectCCTV()
-			// 	cctvHelper3.visible = true
-			// 	selectCCTVSeting.focalLength = cctv3.focalLength
-			// 	break
-			// case 'cctv4':
-			// 	_clearSelectCCTV()
-			// 	cctvHelper4.visible = true
-			// 	selectCCTVSeting.focalLength = cctv4.focalLength
-			// 	break
-			default:
-				_clearSelectCCTV()
+		if (selectCCTV) {
+			_clearSelectCCTV()
+			const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
+			cctvHelpers[selectIndex].visible = true
+			selectCCTVSeting.focalLength = (shadowCameras[selectIndex] as CCTVCamera).focalLength
 		}
 	}
+
 	function _clearSelectCCTV() {
-		cctvHelper1.visible = false
-		cctvHelper2.visible = false
-		// cctvHelper3.visible = false
-		// cctvHelper4.visible = false
-		// transformControls.detach()
+		cctvHelpers.forEach((cctvHelper) => {
+			cctvHelper.visible = false
+		})
 	}
 	//點選畫面ray到cctvObj
 	const raycaster = new THREE.Raycaster()
@@ -321,35 +295,15 @@
 	// 渲染循環
 	function animate() {
 		requestAnimationFrame(animate)
-
-		projectionMaterial.uniforms.cctvPositions.value[0].copy(cctv1.position)
-		cctv1.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[0])
-		projectionMaterial.uniforms.cctvFOVs.value[0] = cctv1.fov
-		projectionMaterial.uniforms.cctvAspects.value[0] = cctv1.aspect
-		projectionMaterial.uniforms.cctvNears.value[0] = cctv1.near
-		projectionMaterial.uniforms.cctvFars.value[0] = cctv1.far
-
-		projectionMaterial.uniforms.cctvPositions.value[1].copy(cctv2.position)
-		cctv2.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[1])
-		projectionMaterial.uniforms.cctvFOVs.value[1] = cctv2.fov
-		projectionMaterial.uniforms.cctvAspects.value[1] = cctv2.aspect
-		projectionMaterial.uniforms.cctvNears.value[1] = cctv2.near
-		projectionMaterial.uniforms.cctvFars.value[1] = cctv2.far
-
-		// projectionMaterial.uniforms.cctvPositions.value[2].copy(cctv3.position)
-		// cctv3.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[2])
-		// projectionMaterial.uniforms.cctvFOVs.value[2] = cctv3.fov
-		// projectionMaterial.uniforms.cctvAspects.value[2] = cctv3.aspect
-		// projectionMaterial.uniforms.cctvNears.value[2] = cctv3.near
-		// projectionMaterial.uniforms.cctvFars.value[2] = cctv3.far
-
-		// projectionMaterial.uniforms.cctvPositions.value[3].copy(cctv4.position)
-		// cctv4.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[3])
-		// projectionMaterial.uniforms.cctvFOVs.value[3] = cctv4.fov
-		// projectionMaterial.uniforms.cctvAspects.value[3] = cctv4.aspect
-		// projectionMaterial.uniforms.cctvNears.value[3] = cctv4.near
-		// projectionMaterial.uniforms.cctvFars.value[3] = cctv4.far
-
+		for (let i = 0; i < cctvNum; i++) {
+			// 更新CCTV位置
+			projectionMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
+			shadowCameras[i].getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[i])
+			projectionMaterial.uniforms.cctvFOVs.value[i] = shadowCameras[i].fov
+			projectionMaterial.uniforms.cctvAspects.value[i] = shadowCameras[i].aspect
+			projectionMaterial.uniforms.cctvNears.value[i] = shadowCameras[i].near
+			projectionMaterial.uniforms.cctvFars.value[i] = shadowCameras[i].far
+		}
 		// 更新平行光方向
 		directionalLight.getWorldDirection(projectionMaterial.uniforms.directionalLightDirection.value)
 		// 更新阴影矩阵
@@ -405,47 +359,18 @@
 	$: CCTV_ChangefocalLength(selectCCTV) //焦距改變
 	//改變 UI的 焦距數值
 	function CCTV_ChangefocalLength(cctvName: string) {
-		switch (cctvName) {
-			case 'cctv1':
-				cctv1.focalLength = selectCCTVSeting.focalLength
-				break
-			case 'cctv2':
-				cctv2.focalLength = selectCCTVSeting.focalLength
-				break
-			case 'cctv3':
-				cctv3.focalLength = selectCCTVSeting.focalLength
-				break
-			case 'cctv4':
-				cctv4.focalLength = selectCCTVSeting.focalLength
-				break
+		const cctv = shadowCameras.find((cctv) => cctv.name === cctvName)
+		if (cctv) {
+			selectCCTVSeting.focalLength = (cctv as CCTVCamera).focalLength
 		}
 	}
 	//UI 改變焦距
 	function changeCCTV_FocalLength(e: Event) {
 		const target = e.target as HTMLInputElement
 		const focalLength = parseFloat(target?.value) || 4
-		switch (selectCCTV) {
-			case 'cctv1':
-				// @ts-ignore
-				cctv1.focalLength = focalLength
-				cctvHelper1.update()
-				break
-			case 'cctv2':
-				// @ts-ignore
-				cctv2.focalLength = focalLength
-				cctvHelper2.update()
-				break
-			case 'cctv3':
-				// @ts-ignore
-				cctv3.focalLength = focalLength
-				cctvHelper3.update()
-				break
-			case 'cctv4':
-				// @ts-ignore
-				cctv4.focalLength = focalLength
-				cctvHelper4.update()
-				break
-		}
+		const index = parseInt(selectCCTV.replace('cctv', '')) - 1
+		;(shadowCameras[index] as CCTVCamera).focalLength = focalLength
+		cctvHelpers[index].update()
 	}
 
 	function onClickClearCCTVHandler() {
@@ -454,12 +379,11 @@
 	}
 </script>
 
-<svelte:window
-	on:resize|passive={onWindowResize}
-	on:click={onRayCCTV}
-	on:mousemove|preventDefault={onMouseMoveHandler}
-/>
-<div id="Viewer"></div>
+<svelte:window on:resize|passive={onWindowResize} />
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div id="Viewer" on:click={onRayCCTV} on:mousemove|preventDefault={onMouseMoveHandler}></div>
+
 <div id="CCTV_Info">
 	{#if selectCCTV}
 		<div class="flex items-center justify-between">
