@@ -130,6 +130,8 @@
 			const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
 			cctvHelpers[selectIndex].visible = true
 			selectCCTVSeting.focalLength = (shadowCameras[selectIndex] as CCTVCamera).focalLength
+		} else {
+			_clearSelectCCTV()
 		}
 	}
 
