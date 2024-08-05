@@ -18,6 +18,7 @@
 		roughness: 0.5,
 		metalness: 0.5
 	})
+	const cctvNum = 2
 
 	export let data: {
 		svgString: string
@@ -85,21 +86,21 @@
 		new THREE.Vector3(-500, 300, 500),
 		new THREE.Vector3(0, -100, 100)
 	)
-	// 添加CCTV3
-	const { cctv: cctv3, cctvHelper: cctvHelper3 } = createCCTV(
-		new THREE.Vector3(500, 300, -500),
-		new THREE.Vector3(0, -100, 100)
-	)
-	// 添加CCTV4
-	const { cctv: cctv4, cctvHelper: cctvHelper4 } = createCCTV(
-		new THREE.Vector3(-500, 300, 350),
-		new THREE.Vector3(0, -100, 0)
-	)
+	// // 添加CCTV3
+	// const { cctv: cctv3, cctvHelper: cctvHelper3 } = createCCTV(
+	// 	new THREE.Vector3(500, 300, -500),
+	// 	new THREE.Vector3(0, -100, 100)
+	// )
+	// // 添加CCTV4
+	// const { cctv: cctv4, cctvHelper: cctvHelper4 } = createCCTV(
+	// 	new THREE.Vector3(-500, 300, 350),
+	// 	new THREE.Vector3(0, -100, 0)
+	// )
 	const shadowCameras: THREE.PerspectiveCamera[] = []
 	shadowCameras.push(cctv1)
 	shadowCameras.push(cctv2)
-	shadowCameras.push(cctv3)
-	shadowCameras.push(cctv4)
+	// shadowCameras.push(cctv3)
+	// shadowCameras.push(cctv4)
 	//攝影機物件
 	const cctvObjs = [
 		new THREE.Mesh(
@@ -109,15 +110,15 @@
 		new THREE.Mesh(
 			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
-		),
-		new THREE.Mesh(
-			new THREE.BoxGeometry(10, 10, 20),
-			new THREE.MeshBasicMaterial({ color: 0xff0000 })
-		),
-		new THREE.Mesh(
-			new THREE.BoxGeometry(10, 10, 20),
-			new THREE.MeshBasicMaterial({ color: 0xff0000 })
 		)
+		// new THREE.Mesh(
+		// 	new THREE.BoxGeometry(10, 10, 20),
+		// 	new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		// ),
+		// new THREE.Mesh(
+		// 	new THREE.BoxGeometry(10, 10, 20),
+		// 	new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		// )
 	]
 	cctvObjs.forEach((cctvObj, ind) => {
 		cctvObj.name = `cctv${ind + 1}`
@@ -142,16 +143,16 @@
 				cctvHelper2.visible = true
 				selectCCTVSeting.focalLength = cctv2.focalLength
 				break
-			case 'cctv3':
-				_clearSelectCCTV()
-				cctvHelper3.visible = true
-				selectCCTVSeting.focalLength = cctv3.focalLength
-				break
-			case 'cctv4':
-				_clearSelectCCTV()
-				cctvHelper4.visible = true
-				selectCCTVSeting.focalLength = cctv4.focalLength
-				break
+			// case 'cctv3':
+			// 	_clearSelectCCTV()
+			// 	cctvHelper3.visible = true
+			// 	selectCCTVSeting.focalLength = cctv3.focalLength
+			// 	break
+			// case 'cctv4':
+			// 	_clearSelectCCTV()
+			// 	cctvHelper4.visible = true
+			// 	selectCCTVSeting.focalLength = cctv4.focalLength
+			// 	break
 			default:
 				_clearSelectCCTV()
 		}
@@ -159,8 +160,8 @@
 	function _clearSelectCCTV() {
 		cctvHelper1.visible = false
 		cctvHelper2.visible = false
-		cctvHelper3.visible = false
-		cctvHelper4.visible = false
+		// cctvHelper3.visible = false
+		// cctvHelper4.visible = false
 		// transformControls.detach()
 	}
 	//點選畫面ray到cctvObj
@@ -244,16 +245,16 @@
 			cctvAspects: { value: [0, 0, 0, 0] },
 			cctvNears: { value: [0, 0, 0, 0] },
 			cctvFars: { value: [0, 0, 0, 0] },
-			cctvCount: { value: 4 },
+			cctvCount: { value: cctvNum },
 			ambientLightColor: { value: ambientLight.color },
 			directionalLightColor: { value: directionalLight.color },
 			directionalLightDirection: { value: new THREE.Vector3() },
 			hemisphereLightSkyColor: { value: hemisphereLight.color },
 			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
-			shadowMaps1: { value: shadowMaps[0].texture },
-			shadowMaps2: { value: shadowMaps[1].texture },
-			shadowMaps3: { value: shadowMaps[2].texture },
-			shadowMaps4: { value: shadowMaps[3].texture },
+			shadowMaps1: { value: shadowMaps[0]?.texture || null },
+			shadowMaps2: { value: shadowMaps[1]?.texture || null },
+			shadowMaps3: { value: shadowMaps[2]?.texture || null },
+			shadowMaps4: { value: shadowMaps[3]?.texture || null },
 			shadowMatrices: {
 				value: [new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4()]
 			}
@@ -335,24 +336,24 @@
 		projectionMaterial.uniforms.cctvNears.value[1] = cctv2.near
 		projectionMaterial.uniforms.cctvFars.value[1] = cctv2.far
 
-		projectionMaterial.uniforms.cctvPositions.value[2].copy(cctv3.position)
-		cctv3.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[2])
-		projectionMaterial.uniforms.cctvFOVs.value[2] = cctv3.fov
-		projectionMaterial.uniforms.cctvAspects.value[2] = cctv3.aspect
-		projectionMaterial.uniforms.cctvNears.value[2] = cctv3.near
-		projectionMaterial.uniforms.cctvFars.value[2] = cctv3.far
+		// projectionMaterial.uniforms.cctvPositions.value[2].copy(cctv3.position)
+		// cctv3.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[2])
+		// projectionMaterial.uniforms.cctvFOVs.value[2] = cctv3.fov
+		// projectionMaterial.uniforms.cctvAspects.value[2] = cctv3.aspect
+		// projectionMaterial.uniforms.cctvNears.value[2] = cctv3.near
+		// projectionMaterial.uniforms.cctvFars.value[2] = cctv3.far
 
-		projectionMaterial.uniforms.cctvPositions.value[3].copy(cctv4.position)
-		cctv4.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[3])
-		projectionMaterial.uniforms.cctvFOVs.value[3] = cctv4.fov
-		projectionMaterial.uniforms.cctvAspects.value[3] = cctv4.aspect
-		projectionMaterial.uniforms.cctvNears.value[3] = cctv4.near
-		projectionMaterial.uniforms.cctvFars.value[3] = cctv4.far
+		// projectionMaterial.uniforms.cctvPositions.value[3].copy(cctv4.position)
+		// cctv4.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[3])
+		// projectionMaterial.uniforms.cctvFOVs.value[3] = cctv4.fov
+		// projectionMaterial.uniforms.cctvAspects.value[3] = cctv4.aspect
+		// projectionMaterial.uniforms.cctvNears.value[3] = cctv4.near
+		// projectionMaterial.uniforms.cctvFars.value[3] = cctv4.far
 
 		// 更新平行光方向
 		directionalLight.getWorldDirection(projectionMaterial.uniforms.directionalLightDirection.value)
 		// 更新阴影矩阵
-		for (let i = 0; i < 4; i++) {
+		for (let i = 0; i < cctvNum; i++) {
 			const shadowCamera = shadowCameras[i]
 			shadowCamera.updateMatrixWorld()
 			// 计算并更新阴影矩阵
@@ -373,7 +374,7 @@
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
 		scene.overrideMaterial = depthMaterial
-		for (let i = 0; i < 4; i++) {
+		for (let i = 0; i < cctvNum; i++) {
 			renderer.setRenderTarget(shadowMaps[i])
 			renderer.render(scene, shadowCameras[i])
 		}
