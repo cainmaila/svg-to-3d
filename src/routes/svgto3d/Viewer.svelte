@@ -58,6 +58,7 @@
 	directionalLight.position.set(1, 0, 1)
 	scene.add(directionalLight)
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
+	hemisphereLight.position.set(0, 500, 0)
 	scene.add(hemisphereLight)
 	//建立一個CCTV
 	function createCCTV(position: THREE.Vector3, lookAt: THREE.Vector3) {
@@ -227,6 +228,7 @@
 			directionalLightDirection: { value: new THREE.Vector3() },
 			hemisphereLightSkyColor: { value: hemisphereLight.color },
 			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
+			hemisphereLightPosition: { value: hemisphereLight.position },
 			shadowMaps1: { value: shadowMaps[0]?.texture || null },
 			shadowMaps2: { value: shadowMaps[1]?.texture || null },
 			shadowMaps3: { value: shadowMaps[2]?.texture || null },

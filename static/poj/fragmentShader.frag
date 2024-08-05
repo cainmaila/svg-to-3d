@@ -11,6 +11,7 @@ uniform vec3 directionalLightColor;
 uniform vec3 directionalLightDirection;
 uniform vec3 hemisphereLightSkyColor;
 uniform vec3 hemisphereLightGroundColor;
+uniform vec3 hemisphereLightPosition;
 uniform sampler2D shadowMaps1;
 uniform sampler2D shadowMaps2;
 uniform sampler2D shadowMaps3;
@@ -95,9 +96,8 @@ void main() {
      // 平行光
     float directionalIntensity = max(dot(vNormal, normalize(directionalLightDirection)), 0.0);
     vec3 directionalColor = directionalLightColor * directionalIntensity;
-    // 半球光
-    float hemiIntensity = 0.5 + 0.5 * dot(vNormal, vec3(0.0, 1.0, 0.0));
-    vec3 hemiColor = mix(hemisphereLightGroundColor, hemisphereLightSkyColor, hemiIntensity);
+    //計算半球光的影響
+    vec3 hemiColor = mix(hemisphereLightGroundColor, hemisphereLightSkyColor, dot(vNormal, normalize(hemisphereLightPosition - vWorldPosition)));
 
      // 合并所有光照
     vec3 finalColor = ambientColor + directionalColor + hemiColor;
