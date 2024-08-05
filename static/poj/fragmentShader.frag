@@ -1,10 +1,10 @@
 precision highp float;
-uniform vec3 cctvPositions[2];
-uniform vec3 cctvDirections[2];
-uniform float cctvFOVs[2];
-uniform float cctvAspects[2];
-uniform float cctvNears[2];
-uniform float cctvFars[2];
+uniform vec3 cctvPositions[4];
+uniform vec3 cctvDirections[4];
+uniform float cctvFOVs[4];
+uniform float cctvAspects[4];
+uniform float cctvNears[4];
+uniform float cctvFars[4];
 uniform int cctvCount;
 uniform vec3 ambientLightColor;
 uniform vec3 directionalLightColor;
@@ -13,7 +13,9 @@ uniform vec3 hemisphereLightSkyColor;
 uniform vec3 hemisphereLightGroundColor;
 uniform sampler2D shadowMaps1;
 uniform sampler2D shadowMaps2;
-uniform mat4 shadowMatrices[2];
+uniform sampler2D shadowMaps3;
+uniform sampler2D shadowMaps4;
+uniform mat4 shadowMatrices[4];
 
 varying vec3 vWorldPosition;
 varying vec3 vNormal;
@@ -73,6 +75,12 @@ void main() {
                     break;
                 case 1:
                     shadow = getShadow(fragPosLightSpace, shadowMaps2);
+                    break;
+                case 2:
+                    shadow = getShadow(fragPosLightSpace, shadowMaps3);
+                    break;
+                case 3:
+                    shadow = getShadow(fragPosLightSpace, shadowMaps4);
                     break;
             }
             if(shadow)

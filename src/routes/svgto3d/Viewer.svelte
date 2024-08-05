@@ -9,7 +9,6 @@
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
-	import { building } from '$app/environment'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
@@ -59,40 +58,58 @@
 	scene.add(directionalLight)
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	scene.add(hemisphereLight)
+	//建立一個CCTV
+	function createCCTV(position: THREE.Vector3, lookAt: THREE.Vector3) {
+		const cctv = new CCTVCamera({
+			focalLength: 6, // 焦距
+			sensorWidth: 4.8, // 传感器宽度
+			sensorHeight: 3.6, // 传感器高度
+			near: 5, // 近裁剪面
+			far: 3000 // 远裁剪面
+		})
+		cctv.position.copy(position)
+		cctv.lookAt(lookAt)
+		scene.add(cctv)
+		const cctvHelper = new THREE.CameraHelper(cctv)
+		cctvHelper.visible = false
+		scene.add(cctvHelper)
+		return { cctv, cctvHelper }
+	}
 	// 添加CCTV1
-	const cctv1 = new CCTVCamera({
-		focalLength: 6, // 焦距
-		sensorWidth: 4.8, // 传感器宽度
-		sensorHeight: 3.6, // 传感器高度
-		near: 5, // 近裁剪面
-		far: 3000 // 远裁剪面
-	})
-	cctv1.position.set(500, 300, -350)
-	cctv1.lookAt(0, 100, 0)
-	scene.add(cctv1)
-	const cctvHelper1 = new THREE.CameraHelper(cctv1)
-	scene.add(cctvHelper1)
-	cctvHelper1.visible = false
-
+	const { cctv: cctv1, cctvHelper: cctvHelper1 } = createCCTV(
+		new THREE.Vector3(500, 300, -350),
+		new THREE.Vector3(0, 100, 0)
+	)
 	// 添加CCTV2
-	const cctv2 = new CCTVCamera({
-		focalLength: 4, // 焦距
-		sensorWidth: 4.8, // 传感器宽度
-		sensorHeight: 3.6, // 传感器高度
-		near: 5, // 近裁剪面
-		far: 3000 // 远裁剪面
-	})
-	cctv2.position.set(-500, 300, 500)
-	cctv2.lookAt(0, -100, 100)
-	scene.add(cctv2)
-	const cctvHelper2 = new THREE.CameraHelper(cctv2)
-	scene.add(cctvHelper2)
-	cctvHelper2.visible = false
+	const { cctv: cctv2, cctvHelper: cctvHelper2 } = createCCTV(
+		new THREE.Vector3(-500, 300, 500),
+		new THREE.Vector3(0, -100, 100)
+	)
+	// 添加CCTV3
+	const { cctv: cctv3, cctvHelper: cctvHelper3 } = createCCTV(
+		new THREE.Vector3(500, 300, -500),
+		new THREE.Vector3(0, -100, 100)
+	)
+	// 添加CCTV4
+	const { cctv: cctv4, cctvHelper: cctvHelper4 } = createCCTV(
+		new THREE.Vector3(-500, 300, 350),
+		new THREE.Vector3(0, -100, 0)
+	)
 	const shadowCameras: THREE.PerspectiveCamera[] = []
 	shadowCameras.push(cctv1)
 	shadowCameras.push(cctv2)
+	shadowCameras.push(cctv3)
+	shadowCameras.push(cctv4)
 	//攝影機物件
 	const cctvObjs = [
+		new THREE.Mesh(
+			new THREE.BoxGeometry(10, 10, 20),
+			new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		),
+		new THREE.Mesh(
+			new THREE.BoxGeometry(10, 10, 20),
+			new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		),
 		new THREE.Mesh(
 			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
@@ -125,6 +142,16 @@
 				cctvHelper2.visible = true
 				selectCCTVSeting.focalLength = cctv2.focalLength
 				break
+			case 'cctv3':
+				_clearSelectCCTV()
+				cctvHelper3.visible = true
+				selectCCTVSeting.focalLength = cctv3.focalLength
+				break
+			case 'cctv4':
+				_clearSelectCCTV()
+				cctvHelper4.visible = true
+				selectCCTVSeting.focalLength = cctv4.focalLength
+				break
 			default:
 				_clearSelectCCTV()
 		}
@@ -132,6 +159,8 @@
 	function _clearSelectCCTV() {
 		cctvHelper1.visible = false
 		cctvHelper2.visible = false
+		cctvHelper3.visible = false
+		cctvHelper4.visible = false
 		// transformControls.detach()
 	}
 	//點選畫面ray到cctvObj
@@ -153,7 +182,7 @@
 				if (intersectsTopGrid.length > 0) {
 					const point = intersectsTopGrid[0].point
 					if (selectCCTV) {
-						const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
+						const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
 						shadowCameras[selectIndex].position.copy(point)
 						moveCctv(selectIndex)
 						cctvMode = 'lookat' //移動完畢
@@ -172,7 +201,7 @@
 			const intersectsBuild = raycaster.intersectObject(build)
 			if (intersectsBuild.length > 0) {
 				const point = intersectsBuild[0].point
-				const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
+				const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
 				shadowCameras[selectIndex].lookAt(point)
 				moveCctv(selectIndex)
 			}
@@ -205,13 +234,17 @@
 	//創建投影貼圖
 	const projectionMaterial = new THREE.ShaderMaterial({
 		uniforms: {
-			cctvPositions: { value: [new THREE.Vector3(), new THREE.Vector3()] },
-			cctvDirections: { value: [new THREE.Vector3(), new THREE.Vector3()] },
-			cctvFOVs: { value: [0, 0] },
-			cctvAspects: { value: [0, 0] },
-			cctvNears: { value: [0, 0] },
-			cctvFars: { value: [0, 0] },
-			cctvCount: { value: 2 },
+			cctvPositions: {
+				value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
+			},
+			cctvDirections: {
+				value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
+			},
+			cctvFOVs: { value: [0, 0, 0, 0] },
+			cctvAspects: { value: [0, 0, 0, 0] },
+			cctvNears: { value: [0, 0, 0, 0] },
+			cctvFars: { value: [0, 0, 0, 0] },
+			cctvCount: { value: 4 },
 			ambientLightColor: { value: ambientLight.color },
 			directionalLightColor: { value: directionalLight.color },
 			directionalLightDirection: { value: new THREE.Vector3() },
@@ -219,7 +252,11 @@
 			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
 			shadowMaps1: { value: shadowMaps[0].texture },
 			shadowMaps2: { value: shadowMaps[1].texture },
-			shadowMatrices: { value: [new THREE.Matrix4(), new THREE.Matrix4()] }
+			shadowMaps3: { value: shadowMaps[2].texture },
+			shadowMaps4: { value: shadowMaps[3].texture },
+			shadowMatrices: {
+				value: [new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4()]
+			}
 		},
 		vertexShader: $vertexShader$,
 		fragmentShader: $fragmentShader$
@@ -298,10 +335,24 @@
 		projectionMaterial.uniforms.cctvNears.value[1] = cctv2.near
 		projectionMaterial.uniforms.cctvFars.value[1] = cctv2.far
 
+		projectionMaterial.uniforms.cctvPositions.value[2].copy(cctv3.position)
+		cctv3.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[2])
+		projectionMaterial.uniforms.cctvFOVs.value[2] = cctv3.fov
+		projectionMaterial.uniforms.cctvAspects.value[2] = cctv3.aspect
+		projectionMaterial.uniforms.cctvNears.value[2] = cctv3.near
+		projectionMaterial.uniforms.cctvFars.value[2] = cctv3.far
+
+		projectionMaterial.uniforms.cctvPositions.value[3].copy(cctv4.position)
+		cctv4.getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[3])
+		projectionMaterial.uniforms.cctvFOVs.value[3] = cctv4.fov
+		projectionMaterial.uniforms.cctvAspects.value[3] = cctv4.aspect
+		projectionMaterial.uniforms.cctvNears.value[3] = cctv4.near
+		projectionMaterial.uniforms.cctvFars.value[3] = cctv4.far
+
 		// 更新平行光方向
 		directionalLight.getWorldDirection(projectionMaterial.uniforms.directionalLightDirection.value)
 		// 更新阴影矩阵
-		for (let i = 0; i < 2; i++) {
+		for (let i = 0; i < 4; i++) {
 			const shadowCamera = shadowCameras[i]
 			shadowCamera.updateMatrixWorld()
 			// 计算并更新阴影矩阵
@@ -322,7 +373,7 @@
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
 		scene.overrideMaterial = depthMaterial
-		for (let i = 0; i < 2; i++) {
+		for (let i = 0; i < 4; i++) {
 			renderer.setRenderTarget(shadowMaps[i])
 			renderer.render(scene, shadowCameras[i])
 		}
@@ -360,6 +411,12 @@
 			case 'cctv2':
 				cctv2.focalLength = selectCCTVSeting.focalLength
 				break
+			case 'cctv3':
+				cctv3.focalLength = selectCCTVSeting.focalLength
+				break
+			case 'cctv4':
+				cctv4.focalLength = selectCCTVSeting.focalLength
+				break
 		}
 	}
 	//UI 改變焦距
@@ -376,6 +433,16 @@
 				// @ts-ignore
 				cctv2.focalLength = focalLength
 				cctvHelper2.update()
+				break
+			case 'cctv3':
+				// @ts-ignore
+				cctv3.focalLength = focalLength
+				cctvHelper3.update()
+				break
+			case 'cctv4':
+				// @ts-ignore
+				cctv4.focalLength = focalLength
+				cctvHelper4.update()
 				break
 		}
 	}
