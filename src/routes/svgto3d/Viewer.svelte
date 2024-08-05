@@ -5,10 +5,10 @@
 	import { goto } from '$app/navigation'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
 	import { CCTVCamera } from '$lib/threelib/cctvLib'
-	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
+	import { SlideToggle } from '@skeletonlabs/skeleton'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
@@ -24,14 +24,23 @@
 	}
 	export let downloadGLB: string = ''
 	let { svgString } = data
-
 	let selectCCTV: string = '' //選擇的cctv
+	let cctvMode = '' //cctv模式 move
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000)
 	const renderer = new THREE.WebGLRenderer({ antialias: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
+
+	//加個頂部網格底座
+	const top = new THREE.PlaneGeometry(10000, 10000, 100, 100)
+	const topMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 })
+	const topMesh = new THREE.Mesh(top, topMaterial)
+	topMesh.rotation.x = -Math.PI / 2
+	topMesh.position.y = 300
+	topMesh.visible = false
+	scene.add(topMesh)
 
 	onMount(() => {
 		document.getElementById('Viewer')?.appendChild(renderer.domElement)
@@ -80,13 +89,6 @@
 	const shadowCameras: THREE.PerspectiveCamera[] = []
 	shadowCameras.push(cctv1)
 	shadowCameras.push(cctv2)
-	// 创建 TransformControls
-	const transformControls = new TransformControls(camera, renderer.domElement)
-	scene.add(transformControls)
-	// 禁用 OrbitControls 当 TransformControls 被激活时
-	transformControls.addEventListener('dragging-changed', function (event) {
-		controls.enabled = !event.value
-	})
 	//攝影機物件
 	const cctvObjs = [
 		new THREE.Mesh(
@@ -108,22 +110,16 @@
 		cctvObjs[ind].position.copy(shadowCameras[ind].position)
 		cctvObjs[ind].quaternion.copy(shadowCameras[ind].quaternion)
 	}
-	transformControls.addEventListener('objectChange', () => {
-		const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
-		moveCctv(selectIndex)
-	})
 	//選擇cctv
 	$: {
 		switch (selectCCTV) {
 			case 'cctv1':
 				_clearSelectCCTV()
-				transformControls.attach(cctv1)
 				cctvHelper1.visible = true
 				selectCCTVSeting.focalLength = cctv1.focalLength
 				break
 			case 'cctv2':
 				_clearSelectCCTV()
-				transformControls.attach(cctv2)
 				cctvHelper2.visible = true
 				selectCCTVSeting.focalLength = cctv2.focalLength
 				break
@@ -134,7 +130,7 @@
 	function _clearSelectCCTV() {
 		cctvHelper1.visible = false
 		cctvHelper2.visible = false
-		transformControls.detach()
+		// transformControls.detach()
 	}
 	//點選畫面ray到cctvObj
 	const raycaster = new THREE.Raycaster()
@@ -148,7 +144,20 @@
 			const obj = intersects[0].object
 			selectCCTV = obj.name
 		} else {
-			selectCCTV = ''
+			//沒有選到cctv的情況下
+			if (cctvMode === 'move') {
+				//ray到topGrid的位置
+				const intersectsTopGrid = raycaster.intersectObject(topMesh)
+				if (intersectsTopGrid.length > 0) {
+					const point = intersectsTopGrid[0].point
+					if (selectCCTV) {
+						const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
+						shadowCameras[selectIndex].position.copy(point)
+						moveCctv(selectIndex)
+						cctvMode = '' //移動完畢
+					}
+				}
+			}
 		}
 	}
 	//創建深度紋理
@@ -205,11 +214,6 @@
 			})
 			return
 		}
-
-		// //加個網格底座
-		// const grid = new THREE.GridHelper(10000, 500, 0x888888, 0x444444)
-		// grid.position.y = -5
-		// scene.add(grid)
 
 		scene.add(build)
 		build.traverse((child) => {
@@ -297,23 +301,6 @@
 		renderer.setRenderTarget(null)
 	}
 
-	// 设置 TransformControls 模式为 "translate"（平移），"rotate"（旋转），或 "scale"（缩放）
-	transformControls.setMode('translate')
-	// 添加键盘事件来切换模式
-	function transformControlsChange(event: KeyboardEvent) {
-		switch (event.key) {
-			case 't': // 平移
-				transformControls.setMode('translate')
-				break
-			case 'r': // 旋转
-				transformControls.setMode('rotate')
-				break
-			case 's': // 缩放
-				transformControls.setMode('scale')
-				break
-		}
-	}
-
 	// 將天空盒添加到場景
 	scene.add(generateSkyBox())
 
@@ -326,7 +313,7 @@
 
 	onDestroy(() => {
 		renderer.domElement.remove()
-		transformControls.dispose()
+		// transformControls.dispose()
 	})
 
 	//CCTV設定
@@ -362,13 +349,15 @@
 				break
 		}
 	}
+
+	//CCTV Info變動移動模式
+	function onCCTVchangeMoveModeHandler(e: Event) {
+		const target = e.target as HTMLInputElement
+		cctvMode = target.checked ? 'move' : ''
+	}
 </script>
 
-<svelte:window
-	on:resize|passive={onWindowResize}
-	on:keydown={transformControlsChange}
-	on:click={onRayCCTV}
-/>
+<svelte:window on:resize|passive={onWindowResize} on:click={onRayCCTV} />
 <div id="Viewer"></div>
 <div id="CCTV_Info">
 	<p>{selectCCTV}</p>
@@ -383,6 +372,13 @@
 			value={selectCCTVSeting.focalLength}
 			on:input={changeCCTV_FocalLength}
 		/>
+		<SlideToggle
+			name="slider-large"
+			checked={cctvMode === 'move'}
+			on:change={onCCTVchangeMoveModeHandler}
+			active="bg-primary-500"
+			size="sm">移動位置</SlideToggle
+		>
 	{/if}
 </div>
 
