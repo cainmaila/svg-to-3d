@@ -9,6 +9,7 @@
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
+	import { building } from '$app/environment'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
@@ -23,6 +24,7 @@
 		svgString: string
 	}
 	export let downloadGLB: string = ''
+	let build: THREE.Group //建築物
 	let { svgString } = data
 	let selectCCTV: string = '' //選擇的cctv
 	let cctvMode = '' //cctv模式 move
@@ -154,10 +156,39 @@
 						const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
 						shadowCameras[selectIndex].position.copy(point)
 						moveCctv(selectIndex)
-						cctvMode = '' //移動完畢
+						cctvMode = 'lookat' //移動完畢
 					}
 				}
+			} else if (cctvMode === 'lookat') {
+				cctvMode = ''
 			}
+		}
+	}
+	function onMouseMoveHandler(event: MouseEvent) {
+		if (cctvMode === 'lookat' && selectCCTV) {
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+			raycaster.setFromCamera(mouse, camera)
+			const intersectsBuild = raycaster.intersectObject(build)
+			if (intersectsBuild.length > 0) {
+				const point = intersectsBuild[0].point
+				const selectIndex = selectCCTV === 'cctv1' ? 0 : 1
+				shadowCameras[selectIndex].lookAt(point)
+				moveCctv(selectIndex)
+			}
+		}
+	}
+	//CCTV Info變動移動模式
+	function onCCTVchangeMoveModeHandler(e: Event) {
+		const target = e.target as HTMLInputElement
+		const name = target.name
+		switch (name) {
+			case 'move':
+				cctvMode = target.checked ? 'move' : ''
+				break
+			case 'lookat':
+				cctvMode = target.checked ? 'lookat' : ''
+				break
 		}
 	}
 	//創建深度紋理
@@ -196,7 +227,6 @@
 
 	init()
 	async function init() {
-		let build
 		try {
 			const svg = svgStringToURL(svgString)
 			build = await svgToGroupSync(svg, {
@@ -349,15 +379,13 @@
 				break
 		}
 	}
-
-	//CCTV Info變動移動模式
-	function onCCTVchangeMoveModeHandler(e: Event) {
-		const target = e.target as HTMLInputElement
-		cctvMode = target.checked ? 'move' : ''
-	}
 </script>
 
-<svelte:window on:resize|passive={onWindowResize} on:click={onRayCCTV} />
+<svelte:window
+	on:resize|passive={onWindowResize}
+	on:click={onRayCCTV}
+	on:mousemove|preventDefault={onMouseMoveHandler}
+/>
 <div id="Viewer"></div>
 <div id="CCTV_Info">
 	<p>{selectCCTV}</p>
@@ -373,11 +401,18 @@
 			on:input={changeCCTV_FocalLength}
 		/>
 		<SlideToggle
-			name="slider-large"
+			name="move"
 			checked={cctvMode === 'move'}
 			on:change={onCCTVchangeMoveModeHandler}
 			active="bg-primary-500"
 			size="sm">移動位置</SlideToggle
+		>
+		<SlideToggle
+			name="lookat"
+			checked={cctvMode === 'lookat'}
+			on:change={onCCTVchangeMoveModeHandler}
+			active="bg-primary-500"
+			size="sm">拍攝方向</SlideToggle
 		>
 	{/if}
 </div>
