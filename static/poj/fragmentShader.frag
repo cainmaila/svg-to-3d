@@ -99,12 +99,14 @@ void main() {
     //計算半球光的影響
     vec3 hemiColor = mix(hemisphereLightGroundColor, hemisphereLightSkyColor, dot(vNormal, normalize(hemisphereLightPosition - vWorldPosition)));
 
+    //合併半球光以外的光照
+    vec3 lite = ambientColor + directionalColor + hemiColor * .05;
      // 合并所有光照
     vec3 finalColor = ambientColor + directionalColor + hemiColor;
     if(viewCount >= 2) {
-        gl_FragColor = vec4(finalColor * vec3(0.5, 0.0, 0.0), 1.0); // 红色
+        gl_FragColor = vec4(lite * vec3(0.5, 0.0, 0.0), 1.0); // 红色
     } else if(viewCount == 1) {
-        gl_FragColor = vec4(finalColor * vec3(0.5, 0.5, 0.0), 1.0); // 黄色
+        gl_FragColor = vec4(lite * vec3(0.5, 0.5, 0.0), 1.0); // 黄色
     } else {
         gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜色
     }
