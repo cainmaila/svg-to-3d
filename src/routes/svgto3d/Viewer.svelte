@@ -12,6 +12,7 @@
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
+	const CCTV_CHANGE = 'cctvChange' //CCTV改變
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
@@ -123,6 +124,7 @@
 	function moveCctv(ind: number) {
 		cctvObjs[ind].position.copy(shadowCameras[ind].position)
 		cctvObjs[ind].quaternion.copy(shadowCameras[ind].quaternion)
+		dispatch(CCTV_CHANGE, { name: cctvObjs[ind].name, matrix: cctvObjs[ind].matrix })
 	}
 	//選擇cctv
 	$: {
@@ -173,6 +175,7 @@
 	}
 	function onMouseMoveHandler(event: MouseEvent) {
 		if (cctvMode === 'lookat' && selectCCTV) {
+			//ray到建築物的位置
 			mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 			raycaster.setFromCamera(mouse, camera)

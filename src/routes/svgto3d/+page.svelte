@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { debounce } from 'lodash-es'
 	import Viewer from './Viewer.svelte'
 	import ICON from '$lib/components/icon'
 
@@ -8,9 +9,24 @@
 
 	let nowGenerate = true //是否正在生成模型
 	let downloadGLB: string = '' //下載的模型路徑
+
+	const cctvsMap: Map<string, string> = new Map()
+	const debouncedHandler = debounce((detail) => {
+		cctvsMap.set(detail.name, detail.matrix)
+		//把所有的CCTV資料轉成字串 放進 localStorage
+		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
+	}, 300)
+	function onCCTVchangeMoveModeHandler(e: CustomEvent) {
+		debouncedHandler(e.detail)
+	}
 </script>
 
-<Viewer {data} bind:downloadGLB on:modelReady={() => (nowGenerate = false)} />
+<Viewer
+	{data}
+	bind:downloadGLB
+	on:modelReady={() => (nowGenerate = false)}
+	on:cctvChange={onCCTVchangeMoveModeHandler}
+/>
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
 {/if}
