@@ -9,6 +9,12 @@
 
 	let nowGenerate = true //是否正在生成模型
 	let downloadGLB: string = '' //下載的模型路徑
+	let cctvsSettings = []
+	try {
+		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
+	} catch (error) {
+		cctvsSettings = []
+	}
 
 	const cctvsMap: Map<string, string> = new Map()
 	const debouncedHandler = debounce((detail) => {
@@ -23,6 +29,7 @@
 
 <Viewer
 	{data}
+	{cctvsSettings}
 	bind:downloadGLB
 	on:modelReady={() => (nowGenerate = false)}
 	on:cctvChange={onCCTVchangeMoveModeHandler}

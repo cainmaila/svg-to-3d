@@ -19,12 +19,14 @@
 		roughness: 0.5,
 		metalness: 0.5
 	})
-	const cctvNum = 2 //CCTV數量
 
 	export let data: {
 		svgString: string
 	}
 	export let downloadGLB: string = ''
+	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][]
+
+	let cctvNum = cctvsSettings.length //CCTV數量
 	let build: THREE.Group //建築物
 	let { svgString } = data
 	let selectCCTV: string = '' //選擇的cctv
@@ -61,8 +63,9 @@
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	hemisphereLight.position.set(0, 500, 0)
 	scene.add(hemisphereLight)
-	//建立一個CCTV
-	function createCCTV(position: THREE.Vector3, lookAt: THREE.Vector3) {
+
+	//建立一個CCTV給予名稱與matrix
+	function createCCTVByMatrix(name: string, matrix: THREE.Matrix4) {
 		const cctv = new CCTVCamera({
 			focalLength: 4, // 焦距
 			sensorWidth: 4.8, // 传感器宽度
@@ -70,24 +73,58 @@
 			near: 5, // 近裁剪面
 			far: 3000 // 远裁剪面
 		})
-		cctv.position.copy(position)
-		cctv.lookAt(lookAt)
+		cctv.name = name + '_camera'
+		cctv.matrix.copy(matrix)
+		cctv.matrix.decompose(cctv.position, cctv.quaternion, cctv.scale)
 		scene.add(cctv)
 		const cctvHelper = new THREE.CameraHelper(cctv)
 		cctvHelper.visible = false
+		cctvHelper.name = name + '_helper'
 		scene.add(cctvHelper)
-		return { cctv, cctvHelper }
+		return { cctv, cctvHelper, name }
 	}
-	// 添加CCTV1
-	const { cctv: cctv1, cctvHelper: cctvHelper1 } = createCCTV(
-		new THREE.Vector3(500, 300, -350),
-		new THREE.Vector3(0, 100, 0)
-	)
-	// 添加CCTV2
-	const { cctv: cctv2, cctvHelper: cctvHelper2 } = createCCTV(
-		new THREE.Vector3(-500, 300, 500),
-		new THREE.Vector3(0, -100, 100)
-	)
+	//建立一個CCTV
+	// function createCCTV(
+	// 	name: string,
+	// 	position: THREE.Vector3,
+	// 	lookAt: THREE.Vector3 = new THREE.Vector3()
+	// ) {
+	// 	const cctv = new CCTVCamera({
+	// 		focalLength: 4, // 焦距
+	// 		sensorWidth: 4.8, // 传感器宽度
+	// 		sensorHeight: 3.6, // 传感器高度
+	// 		near: 5, // 近裁剪面
+	// 		far: 3000 // 远裁剪面
+	// 	})
+	// 	cctv.name = name + '_camera'
+	// 	cctv.position.copy(position)
+	// 	cctv.lookAt(lookAt)
+	// 	scene.add(cctv)
+	// 	const cctvHelper = new THREE.CameraHelper(cctv)
+	// 	cctvHelper.visible = false
+	// 	cctvHelper.name = name + '_helper'
+	// 	scene.add(cctvHelper)
+	// 	return { cctv, cctvHelper, name }
+	// }
+
+	const cctvs = cctvsSettings.map((cctvSetting) => {
+		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */)
+	})
+
+	// while (cctvs.length < cctvNum) {
+	// 	cctvs.push(createCCTV(new THREE.Vector3(), new THREE.Vector3()))
+	// }
+
+	// // 添加CCTV1
+	// const { cctv: cctv1, cctvHelper: cctvHelper1 } = createCCTV(
+	// 	new THREE.Vector3(500, 300, -350),
+	// 	new THREE.Vector3(0, 100, 0)
+	// )
+	// // 添加CCTV2
+	// const { cctv: cctv2, cctvHelper: cctvHelper2 } = createCCTV(
+	// 	new THREE.Vector3(-500, 300, 500),
+	// 	new THREE.Vector3(0, -100, 100)
+	// )
 	// // 添加CCTV3
 	// const { cctv: cctv3, cctvHelper: cctvHelper3 } = createCCTV(
 	// 	new THREE.Vector3(500, 300, -500),
@@ -98,41 +135,39 @@
 	// 	new THREE.Vector3(-500, 300, 350),
 	// 	new THREE.Vector3(0, -100, 0)
 	// )
-	const shadowCameras: THREE.PerspectiveCamera[] = []
-	shadowCameras.push(cctv1)
-	shadowCameras.push(cctv2)
-	// shadowCameras.push(cctv3)
-	// shadowCameras.push(cctv4)
-	const cctvHelpers: THREE.CameraHelper[] = []
-	cctvHelpers.push(cctvHelper1)
-	cctvHelpers.push(cctvHelper2)
-	// cctvHelpers.push(cctvHelper3)
-	// cctvHelpers.push(cctvHelper4)
+	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
+	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
-	const cctvObjs: THREE.Mesh[] = shadowCameras.map((_, ind) => {
+	const cctvObjs: THREE.Mesh[] = cctvs.map(({ cctv, name }) => {
 		const cctvObj = new THREE.Mesh(
 			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
 		)
-		cctvObj.name = `cctv${ind + 1}`
+		cctvObj.name = name
 		scene.add(cctvObj)
-		cctvObj.position.copy(shadowCameras[ind].position)
-		cctvObj.quaternion.copy(shadowCameras[ind].quaternion)
+		cctvObj.position.copy(cctv.position)
+		cctvObj.quaternion.copy(cctv.quaternion)
 		return cctvObj
 	})
 	//複製攝影機位置包含旋轉
-	function moveCctv(ind: number) {
-		cctvObjs[ind].position.copy(shadowCameras[ind].position)
-		cctvObjs[ind].quaternion.copy(shadowCameras[ind].quaternion)
-		dispatch(CCTV_CHANGE, { name: cctvObjs[ind].name, matrix: cctvObjs[ind].matrix })
+	function moveCctv(name: string) {
+		const cctvObj = cctvObjs.find((cctvObj) => cctvObj.name === name)
+		const ind = shadowCameras.findIndex((cctv) => cctv.name === name + '_camera')
+		if (!cctvObj) return
+		cctvObj.position.copy(shadowCameras[ind].position)
+		cctvObj.quaternion.copy(shadowCameras[ind].quaternion)
+		dispatch(CCTV_CHANGE, { name: cctvObj.name, matrix: cctvObj.matrix })
 	}
 	//選擇cctv
 	$: {
 		if (selectCCTV) {
 			_clearSelectCCTV()
-			const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
-			cctvHelpers[selectIndex].visible = true
-			selectCCTVSeting.focalLength = (shadowCameras[selectIndex] as CCTVCamera).focalLength
+			const cctvHelper = cctvHelpers.find(
+				(cctvHelper) => cctvHelper.name === selectCCTV + '_helper'
+			)
+			if (cctvHelper) cctvHelper.visible = true
+			const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+			if (shadowCamera) selectCCTVSeting.focalLength = (shadowCamera as CCTVCamera).focalLength
 		} else {
 			_clearSelectCCTV()
 		}
@@ -162,9 +197,9 @@
 				if (intersectsTopGrid.length > 0) {
 					const point = intersectsTopGrid[0].point
 					if (selectCCTV) {
-						const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
-						shadowCameras[selectIndex].position.copy(point)
-						moveCctv(selectIndex)
+						const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+						if (shadowCamera) shadowCamera.position.copy(point)
+						moveCctv(selectCCTV)
 						cctvMode = 'lookat' //移動完畢
 					}
 				}
@@ -182,9 +217,9 @@
 			const intersectsBuild = raycaster.intersectObject(build)
 			if (intersectsBuild.length > 0) {
 				const point = intersectsBuild[0].point
-				const selectIndex = parseInt(selectCCTV.replace('cctv', '')) - 1
-				shadowCameras[selectIndex].lookAt(point)
-				moveCctv(selectIndex)
+				const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+				if (shadowCamera) shadowCamera.lookAt(point)
+				moveCctv(selectCCTV)
 			}
 		}
 	}
@@ -366,7 +401,7 @@
 	$: CCTV_ChangefocalLength(selectCCTV) //焦距改變
 	//改變 UI的 焦距數值
 	function CCTV_ChangefocalLength(cctvName: string) {
-		const cctv = shadowCameras.find((cctv) => cctv.name === cctvName)
+		const cctv = shadowCameras.find((cctv) => cctv.name === cctvName + '_camera')
 		if (cctv) {
 			selectCCTVSeting.focalLength = (cctv as CCTVCamera).focalLength
 		}
@@ -375,9 +410,11 @@
 	function changeCCTV_FocalLength(e: Event) {
 		const target = e.target as HTMLInputElement
 		const focalLength = parseFloat(target?.value) || 4
-		const index = parseInt(selectCCTV.replace('cctv', '')) - 1
-		;(shadowCameras[index] as CCTVCamera).focalLength = focalLength
-		cctvHelpers[index].update()
+		const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+		if (!shadowCamera) return
+		;(shadowCamera as CCTVCamera).focalLength = focalLength
+		const cctvHelper = cctvHelpers.find((cctvHelper) => cctvHelper.name === selectCCTV + '_helper')
+		if (cctvHelper) cctvHelper.update()
 	}
 
 	function onClickClearCCTVHandler() {
