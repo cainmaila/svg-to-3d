@@ -1,3 +1,9 @@
 # CCTV場域規劃應用情境
 
-這是個實驗性POC，希望藉由SVG繪製平面場域建立3D場景，配置CCTV監控範圍，提供後續應用
+藉由平面圖繪製3D場域，藉以規劃CCTV配置
+
+本項目未經允許不可使用於商業用途
+
+This project may not be used for commercial purposes without permission.
+
+[你可以在這裡實際使用它](https://svg-to-3d-mu.vercel.app/)
