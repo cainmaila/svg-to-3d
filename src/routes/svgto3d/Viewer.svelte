@@ -208,8 +208,14 @@
 			}
 		}
 	}
+	//新增CCTV
+	export function addCCTV() {
+		cctvMode = 'add'
+	}
 	function onMouseMoveHandler(event: MouseEvent) {
-		if (cctvMode === 'lookat' && selectCCTV) {
+		if (cctvMode === 'add') {
+			selectCCTV = ''
+		} else if (cctvMode === 'lookat' && selectCCTV) {
 			//ray到建築物的位置
 			mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1

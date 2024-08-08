@@ -4,6 +4,7 @@ import StreamlineNewFile from './StreamlineNewFile.svelte'
 import StreamlineAiGenerateVariationSpark from './StreamlineAiGenerateVariationSpark.svelte'
 import FluentMdl2SaveTemplate from './FluentMdl2SaveTemplate.svelte'
 import TablerSelect from './TablerSelect.svelte'
+import GameIconsCctvCamera from './GameIconsCctvCamera.svelte'
 
 export default {
     TablerSelect, //+select
@@ -11,5 +12,6 @@ export default {
     StreamlineAiGenerateVariationSpark, //+ai
     StreamlineNewFile, //+file
     FluentMdl2ImageCrosshair, //+image
-    EntypoDownload //download
+    EntypoDownload, //download
+    GameIconsCctvCamera //cctv
 }

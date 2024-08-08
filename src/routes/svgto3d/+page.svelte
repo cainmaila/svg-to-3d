@@ -6,7 +6,7 @@
 	export let data: {
 		svgString: string
 	}
-
+	let viewer
 	let nowGenerate = true //是否正在生成模型
 	let downloadGLB: string = '' //下載的模型路徑
 	let cctvsSettings = []
@@ -28,6 +28,7 @@
 </script>
 
 <Viewer
+	bind:this={viewer}
 	{data}
 	{cctvsSettings}
 	bind:downloadGLB
@@ -40,13 +41,16 @@
 {#if downloadGLB}
 	<div id="UI">
 		<a
-			class="variant-filled btn"
+			class="variant-filled btn-icon"
 			role="button"
 			href={downloadGLB}
 			download="area.glb"
 			title="下載模型"
 		>
 			<ICON.EntypoDownload /></a
+		>
+		<button class="variant-filled btn-icon" title="新增CCTV" on:click={viewer.addCCTV}>
+			<ICON.GameIconsCctvCamera /></button
 		>
 	</div>
 {/if}
@@ -61,7 +65,11 @@
 		z-index: 100;
 		pointer-events: none;
 		& a {
-			margin: 10px;
+			margin: 10px 0 0 0;
+			pointer-events: auto;
+		}
+		& button {
+			margin: 10px 0 0 0;
 			pointer-events: auto;
 		}
 	}
