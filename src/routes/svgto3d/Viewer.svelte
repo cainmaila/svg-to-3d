@@ -213,20 +213,24 @@
 		cctvMode = 'add'
 	}
 	function onMouseMoveHandler(event: MouseEvent) {
-		if (cctvMode === 'add') {
-			selectCCTV = ''
-		} else if (cctvMode === 'lookat' && selectCCTV) {
-			//ray到建築物的位置
-			mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-			raycaster.setFromCamera(mouse, camera)
-			const intersectsBuild = raycaster.intersectObject(build)
-			if (intersectsBuild.length > 0) {
-				const point = intersectsBuild[0].point
-				const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
-				if (shadowCamera) shadowCamera.lookAt(point)
-				moveCctv(selectCCTV)
-			}
+		switch (cctvMode) {
+			case 'add':
+				selectCCTV = ''
+				break
+			case 'lookat':
+				if (selectCCTV) {
+					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+					mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+					raycaster.setFromCamera(mouse, camera)
+					const intersectsBuild = raycaster.intersectObject(build)
+					if (intersectsBuild.length > 0) {
+						const point = intersectsBuild[0].point
+						const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+						if (shadowCamera) shadowCamera.lookAt(point)
+						moveCctv(selectCCTV)
+					}
+				}
+				break
 		}
 	}
 	//CCTV Info變動移動模式
