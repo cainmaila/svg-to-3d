@@ -62,9 +62,9 @@
 		>
 		<button
 			class="variant-filled btn-icon"
-			title="新增CCTV"
 			on:click={viewer.addCCTV}
 			disabled={cameraNum >= 4}
+			title={cameraNum >= 4 ? '最多只能新增4個CCTV' : '新增CCTV'}
 		>
 			<ICON.GameIconsCctvCamera /></button
 		>
