@@ -1,4 +1,6 @@
-import { ShaderMaterial, Vector3 } from "three"
+import { AmbientLight, Color, DirectionalLight, HemisphereLight, Matrix4, ShaderMaterial, Vector3, WebGLRenderTarget } from "three"
+import vertexShader from '$lib/threelib/shaders/poj/vertexShader.frag'
+import fragmentShader from '$lib/threelib/shaders/poj/fragmentShader.frag'
 /**
  * 一種使場景深度的材料。
  */
@@ -82,3 +84,68 @@ export const lightShaderMaterial = new ShaderMaterial({
 	`,
 	transparent: true
 });
+
+// 添加光源
+const ambientLight = new AmbientLight(0xffffff)
+const directionalLight = new DirectionalLight(0xffffff, 1.0)
+directionalLight.position.set(1, 0, 1)
+const hemisphereLight = new HemisphereLight(0xffffbb, 0x080820)
+hemisphereLight.position.set(0, 500, 0)
+/**
+ * 生成投影材料
+ * @param param0 - 參數
+ * @param param0.cctvNum - 監視器數量
+ * @param param0.color - 顏色
+ * @param param0.shadowMaps - 陰影貼圖
+ * @returns 投影材料
+ */
+export function generateProjectionMaterial({ cctvNum, color, shadowMaps }: { cctvNum: number, color: Color, shadowMaps: WebGLRenderTarget[] }) {
+	const shaderMaterial = new ShaderMaterial({
+		uniforms: {
+			cctvPositions: {
+				value: [
+					new Vector3(),
+					new Vector3(),
+					new Vector3(),
+					new Vector3(),
+				]
+			},
+			cctvDirections: {
+				value: [
+					new Vector3(),
+					new Vector3(),
+					new Vector3(),
+					new Vector3(),
+				]
+			},
+			cctvFOVs: { value: [0, 0, 0, 0] },
+			cctvAspects: { value: [0, 0, 0, 0] },
+			cctvNears: { value: [0, 0, 0, 0] },
+			cctvFars: { value: [0, 0, 0, 0] },
+			cctvCount: { value: cctvNum },
+			ambientLightColor: { value: ambientLight.color },
+			directionalLightColor: { value: directionalLight.color },
+			directionalLightDirection: { value: new Vector3() },
+			hemisphereLightSkyColor: { value: hemisphereLight.color },
+			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
+			hemisphereLightPosition: { value: hemisphereLight.position },
+			shadowMaps1: { value: shadowMaps[0]?.texture || null },
+			shadowMaps2: { value: shadowMaps[1]?.texture || null },
+			shadowMaps3: { value: shadowMaps[2]?.texture || null },
+			shadowMaps4: { value: shadowMaps[3]?.texture || null },
+			shadowMatrices: {
+				value: [
+					new Matrix4(),
+					new Matrix4(),
+					new Matrix4(),
+					new Matrix4()
+				]
+			},
+			baseColor: { value: color }
+		},
+		vertexShader,
+		fragmentShader
+	})
+	directionalLight.getWorldDirection(shaderMaterial.uniforms.directionalLightDirection.value)
+	return shaderMaterial
+}
