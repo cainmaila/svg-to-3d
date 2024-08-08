@@ -26,6 +26,11 @@
 		roughness: 0.5,
 		metalness: 0.5
 	})
+	const oupPutBoxMaterial = new THREE.MeshStandardMaterial({
+		color: 0x448844,
+		roughness: 0.5,
+		metalness: 0.5
+	})
 
 	export let data: {
 		svgString: string
@@ -281,7 +286,8 @@
 			// oupPutMaterial
 			build.traverse((child) => {
 				if (child instanceof THREE.Mesh) {
-					child.material = oupPutMaterial
+					if (child.name.includes('Box')) child.material = oupPutBoxMaterial
+					else child.material = oupPutMaterial
 				}
 			})
 			downloadGLB = await generateGLB(build)
