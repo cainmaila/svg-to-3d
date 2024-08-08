@@ -78,7 +78,7 @@
 	function _createCCTVObj({ cctv, name }: { cctv: THREE.PerspectiveCamera; name: string }) {
 		const cctvObj = new THREE.Mesh(
 			new THREE.BoxGeometry(10, 10, 20),
-			new THREE.MeshBasicMaterial({ color: 0xff0000 })
+			new THREE.MeshBasicMaterial({ color: 0x880000 })
 		)
 		cctvObj.name = name
 		scene.add(cctvObj)
@@ -239,39 +239,15 @@
 	for (let i = 0; i < MAX_CCTV_NUM; i++) {
 		shadowMaps.push(generateShadowMap())
 	}
-	//創建投影貼圖
-	const projectionMaterial = new THREE.ShaderMaterial({
-		uniforms: {
-			cctvPositions: {
-				value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
-			},
-			cctvDirections: {
-				value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
-			},
-			cctvFOVs: { value: [0, 0, 0, 0] },
-			cctvAspects: { value: [0, 0, 0, 0] },
-			cctvNears: { value: [0, 0, 0, 0] },
-			cctvFars: { value: [0, 0, 0, 0] },
-			cctvCount: { value: cctvNum },
-			ambientLightColor: { value: ambientLight.color },
-			directionalLightColor: { value: directionalLight.color },
-			directionalLightDirection: { value: new THREE.Vector3() },
-			hemisphereLightSkyColor: { value: hemisphereLight.color },
-			hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
-			hemisphereLightPosition: { value: hemisphereLight.position },
-			shadowMaps1: { value: shadowMaps[0]?.texture || null },
-			shadowMaps2: { value: shadowMaps[1]?.texture || null },
-			shadowMaps3: { value: shadowMaps[2]?.texture || null },
-			shadowMaps4: { value: shadowMaps[3]?.texture || null },
-			shadowMatrices: {
-				value: [new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4()]
-			}
-		},
-		vertexShader: $vertexShader$,
-		fragmentShader: $fragmentShader$
+	const projectionMaterial = generateProjectionMaterial({
+		color: new THREE.Color(0x888888)
+	})
+	const projectionBoxMaterial = generateProjectionMaterial({
+		color: new THREE.Color(0x448844)
 	})
 	$: {
 		projectionMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
+		projectionBoxMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
 	}
 
 	init()
@@ -295,11 +271,13 @@
 		}
 
 		scene.add(build)
-		build.traverse((child) => {
-			if (child instanceof THREE.Mesh) {
-				child.material = projectionMaterial
-			}
-		})
+		// build.traverse((child) => {
+		// 	if (child instanceof THREE.Mesh) {
+		// 		// 設置材質
+		// 		if (child.name.includes('box')) child.material = projectionBoxMaterial
+		// 		else child.material = projectionMaterial
+		// 	}
+		// })
 		// 調整相機位置
 		const box = new THREE.Box3().setFromObject(build)
 		const center = box.getCenter(new THREE.Vector3())
@@ -321,7 +299,9 @@
 			downloadGLB = await generateGLB(build)
 			build.traverse((child) => {
 				if (child instanceof THREE.Mesh) {
-					child.material = projectionMaterial
+					// 設置材質
+					if (child.name.includes('Box')) child.material = projectionBoxMaterial
+					else child.material = projectionMaterial
 				}
 			})
 		} catch (error) {
@@ -335,14 +315,23 @@
 		for (let i = 0; i < cctvNum; i++) {
 			// 更新CCTV位置
 			projectionMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
+			projectionBoxMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
 			shadowCameras[i].getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[i])
+			shadowCameras[i].getWorldDirection(projectionBoxMaterial.uniforms.cctvDirections.value[i])
 			projectionMaterial.uniforms.cctvFOVs.value[i] = shadowCameras[i].fov
 			projectionMaterial.uniforms.cctvAspects.value[i] = shadowCameras[i].aspect
 			projectionMaterial.uniforms.cctvNears.value[i] = shadowCameras[i].near
 			projectionMaterial.uniforms.cctvFars.value[i] = shadowCameras[i].far
+			projectionBoxMaterial.uniforms.cctvFOVs.value[i] = shadowCameras[i].fov
+			projectionBoxMaterial.uniforms.cctvAspects.value[i] = shadowCameras[i].aspect
+			projectionBoxMaterial.uniforms.cctvNears.value[i] = shadowCameras[i].near
+			projectionBoxMaterial.uniforms.cctvFars.value[i] = shadowCameras[i].far
 		}
 		// 更新平行光方向
 		directionalLight.getWorldDirection(projectionMaterial.uniforms.directionalLightDirection.value)
+		directionalLight.getWorldDirection(
+			projectionBoxMaterial.uniforms.directionalLightDirection.value
+		)
 		// 更新阴影矩阵
 		for (let i = 0; i < cctvNum; i++) {
 			const shadowCamera = shadowCameras[i]
@@ -351,6 +340,7 @@
 			const shadowMatrix = new THREE.Matrix4()
 			shadowMatrix.multiplyMatrices(shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse)
 			projectionMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
+			projectionBoxMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
 		}
 		renderShadowMaps() // 渲染阴影贴图
 
@@ -436,6 +426,55 @@
 		while (cctvObjs.length) {
 			delCCTV(cctvObjs[0].name)
 		}
+	}
+	//創建投影貼圖
+	function generateProjectionMaterial({ color }: { color: THREE.Color }) {
+		return new THREE.ShaderMaterial({
+			uniforms: {
+				cctvPositions: {
+					value: [
+						new THREE.Vector3(),
+						new THREE.Vector3(),
+						new THREE.Vector3(),
+						new THREE.Vector3()
+					]
+				},
+				cctvDirections: {
+					value: [
+						new THREE.Vector3(),
+						new THREE.Vector3(),
+						new THREE.Vector3(),
+						new THREE.Vector3()
+					]
+				},
+				cctvFOVs: { value: [0, 0, 0, 0] },
+				cctvAspects: { value: [0, 0, 0, 0] },
+				cctvNears: { value: [0, 0, 0, 0] },
+				cctvFars: { value: [0, 0, 0, 0] },
+				cctvCount: { value: cctvNum },
+				ambientLightColor: { value: ambientLight.color },
+				directionalLightColor: { value: directionalLight.color },
+				directionalLightDirection: { value: new THREE.Vector3() },
+				hemisphereLightSkyColor: { value: hemisphereLight.color },
+				hemisphereLightGroundColor: { value: hemisphereLight.groundColor },
+				hemisphereLightPosition: { value: hemisphereLight.position },
+				shadowMaps1: { value: shadowMaps[0]?.texture || null },
+				shadowMaps2: { value: shadowMaps[1]?.texture || null },
+				shadowMaps3: { value: shadowMaps[2]?.texture || null },
+				shadowMaps4: { value: shadowMaps[3]?.texture || null },
+				shadowMatrices: {
+					value: [
+						new THREE.Matrix4(),
+						new THREE.Matrix4(),
+						new THREE.Matrix4(),
+						new THREE.Matrix4()
+					]
+				},
+				baseColor: { value: color }
+			},
+			vertexShader: $vertexShader$,
+			fragmentShader: $fragmentShader$
+		})
 	}
 </script>
 

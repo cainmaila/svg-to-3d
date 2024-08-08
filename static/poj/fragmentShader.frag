@@ -17,6 +17,7 @@ uniform sampler2D shadowMaps2;
 uniform sampler2D shadowMaps3;
 uniform sampler2D shadowMaps4;
 uniform mat4 shadowMatrices[4];
+uniform vec3 baseColor;
 
 varying vec3 vWorldPosition;
 varying vec3 vNormal;
@@ -108,6 +109,7 @@ void main() {
     } else if(viewCount == 1) {
         gl_FragColor = vec4(lite * vec3(0.5, 0.5, 0.0), 1.0); // 黄色
     } else {
-        gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜色
+        // gl_FragColor = vec4(finalColor * vec3(0.2, 0.2, 0.2), 1.0); // 默认颜色
+        gl_FragColor = vec4(finalColor * baseColor, 1.0); // 默认颜色
     }
 }
