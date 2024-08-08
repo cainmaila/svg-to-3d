@@ -5,7 +5,12 @@
 	import { SlideToggle } from '@skeletonlabs/skeleton'
 	import { goto } from '$app/navigation'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from '$lib/threelib'
-	import { CCTVCamera, createCCTV, createCCTVByMatrix } from '$lib/threelib/cctvLib'
+	import {
+		CCTVCamera,
+		createCCTV,
+		createCCTVByMatrix,
+		generateShadowMap
+	} from '$lib/threelib/cctvLib'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
 
@@ -63,7 +68,6 @@
 	const cctvs = cctvsSettings.map((cctvSetting) => {
 		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */, scene)
 	})
-
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
@@ -82,28 +86,27 @@
 	}
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
-		const cctvObj = cctvObjs.find((cctvObj) => cctvObj.name === name)
-		const ind = shadowCameras.findIndex((cctv) => cctv.name === name + '_camera')
-		if (!cctvObj) return
-		cctvObj.position.copy(shadowCameras[ind].position)
-		cctvObj.quaternion.copy(shadowCameras[ind].quaternion)
+		const cctvObj = _getCCTVObj(name)
+		const shadowCamera = _getCCTVCamera(name)
+		if (!cctvObj || !shadowCamera) return //找不到cctvObj或shadowCamera
+		cctvObj.position.copy(shadowCamera.position)
+		cctvObj.quaternion.copy(shadowCamera.quaternion)
+		_getCCTVHelper(name)?.update()
 		dispatch(CCTV_CHANGE, { name: cctvObj.name, matrix: cctvObj.matrix })
 	}
 	//選擇cctv
 	$: {
 		if (selectCCTV) {
 			_clearSelectCCTV()
-			const cctvHelper = cctvHelpers.find(
-				(cctvHelper) => cctvHelper.name === selectCCTV + '_helper'
-			)
+			const cctvHelper = _getCCTVHelper()
 			if (cctvHelper) cctvHelper.visible = true
-			const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+			const shadowCamera = _getCCTVCamera()
 			if (shadowCamera) selectCCTVSeting.focalLength = (shadowCamera as CCTVCamera).focalLength
 		} else {
 			_clearSelectCCTV()
 		}
 	}
-
+	//清除選擇的CCTV
 	function _clearSelectCCTV() {
 		cctvHelpers.forEach((cctvHelper) => {
 			cctvHelper.visible = false
@@ -111,10 +114,18 @@
 	}
 	//找到CCTV shadowCamera
 	function _getCCTVCamera(_name?: string) {
-		return shadowCameras.find((cctv) => cctv.name === `${_name || selectCCTV}_camera`)
+		return shadowCameras.find((cctv) => {
+			return cctv.name === `${_name || selectCCTV}_camera`
+		})
 	}
+	//找到CCTV Obj
 	function _getCCTVObj(_name?: string) {
-		return cctvObjs.find((cctvObj) => cctvObj.name === _name || selectCCTV)
+		return cctvObjs.find((cctvObj) => cctvObj.name === (_name || selectCCTV))
+	}
+	function _getCCTVHelper(_name?: string) {
+		return cctvHelpers.find((cctvHelper) => {
+			return cctvHelper.name === `${_name || selectCCTV}_helper`
+		})
 	}
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
@@ -143,7 +154,7 @@
 						new THREE.Vector3(),
 						scene
 					)
-					const cctvObj = _createCCTVObj({ cctv, name })
+					const cctvObj = _createCCTVObj({ cctv, name: `cctv${_n}` })
 					shadowCameras.push(cctv)
 					cctvObjs.push(cctvObj)
 					cctvHelpers.push(cctvHelper)
@@ -200,7 +211,7 @@
 					const intersectsBuild = raycaster.intersectObject(build)
 					if (intersectsBuild.length > 0) {
 						const point = intersectsBuild[0].point
-						const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+						const shadowCamera = _getCCTVCamera()
 						if (shadowCamera) shadowCamera.lookAt(point)
 						moveCctv(selectCCTV)
 					}
@@ -222,19 +233,9 @@
 		}
 	}
 	//創建深度紋理
-	const shadowMapSize = 2048
 	const shadowMaps: THREE.WebGLRenderTarget[] = []
 	for (let i = 0; i < MAX_CCTV_NUM; i++) {
-		shadowMaps.push(_generateShadowMap())
-	}
-	function _generateShadowMap() {
-		return new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
-			minFilter: THREE.LinearFilter,
-			magFilter: THREE.LinearFilter,
-			format: THREE.RGBAFormat,
-			type: THREE.FloatType, // 使用浮點數格式提高精度
-			anisotropy: 16 // 啟用各向異性過濾
-		})
+		shadowMaps.push(generateShadowMap())
 	}
 	//創建投影貼圖
 	const projectionMaterial = new THREE.ShaderMaterial({
@@ -393,7 +394,7 @@
 	$: CCTV_ChangefocalLength(selectCCTV) //焦距改變
 	//改變 UI的 焦距數值
 	function CCTV_ChangefocalLength(cctvName: string) {
-		const cctv = shadowCameras.find((cctv) => cctv.name === cctvName + '_camera')
+		const cctv = _getCCTVCamera(cctvName)
 		if (cctv) {
 			selectCCTVSeting.focalLength = (cctv as CCTVCamera).focalLength
 		}
@@ -402,10 +403,10 @@
 	function changeCCTV_FocalLength(e: Event) {
 		const target = e.target as HTMLInputElement
 		const focalLength = parseFloat(target?.value) || 4
-		const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+		const shadowCamera = _getCCTVCamera()
 		if (!shadowCamera) return
 		;(shadowCamera as CCTVCamera).focalLength = focalLength
-		const cctvHelper = cctvHelpers.find((cctvHelper) => cctvHelper.name === selectCCTV + '_helper')
+		const cctvHelper = _getCCTVHelper()
 		if (cctvHelper) cctvHelper.update()
 	}
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { CameraHelper } from 'three'
 	import { debounce } from 'lodash-es'
 	import Viewer from './Viewer.svelte'
 	import ICON from '$lib/components/icon'
@@ -10,15 +11,20 @@
 	let nowGenerate = true //是否正在生成模型
 	let downloadGLB: string = '' //下載的模型路徑
 	let cctvsSettings = []
+	let cameraNum = 0
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
+		cameraNum = cctvsSettings.length
 	} catch (error) {
 		cctvsSettings = []
 	}
-
 	const cctvsMap: Map<string, string> = new Map()
+	cctvsSettings.forEach((cctv: any) => {
+		cctvsMap.set(cctv[0], cctv[1])
+	})
 	const debouncedHandler = debounce((detail) => {
 		cctvsMap.set(detail.name, detail.matrix)
+		cameraNum = cctvsMap.size
 		//把所有的CCTV資料轉成字串 放進 localStorage
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}, 300)
@@ -49,7 +55,12 @@
 		>
 			<ICON.EntypoDownload /></a
 		>
-		<button class="variant-filled btn-icon" title="新增CCTV" on:click={viewer.addCCTV}>
+		<button
+			class="variant-filled btn-icon"
+			title="新增CCTV"
+			on:click={viewer.addCCTV}
+			disabled={cameraNum >= 4}
+		>
 			<ICON.GameIconsCctvCamera /></button
 		>
 	</div>

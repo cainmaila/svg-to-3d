@@ -1,4 +1,4 @@
-import { CameraHelper, LinearFilter, Matrix4, PerspectiveCamera, RGBAFormat, Scene, Vector3, WebGLRenderTarget } from "three"
+import { CameraHelper, FloatType, LinearFilter, Matrix4, PerspectiveCamera, RGBAFormat, Scene, Vector3, WebGLRenderTarget } from "three"
 
 type I_CCTV_SETTING = {
     focalLength: number
@@ -167,15 +167,12 @@ export function createCCTVByMatrix(name: string, matrix: Matrix4, scene?: Scene)
 
 //創建深度紋理
 const shadowMapSize = 2048
-export function createDepthTexture(shadowCameras: PerspectiveCamera[]) {
-    const shadowMaps: WebGLRenderTarget[] = shadowCameras.map(() => {
-        return new WebGLRenderTarget(shadowMapSize, shadowMapSize, {
-            minFilter: LinearFilter,
-            magFilter: LinearFilter,
-            format: RGBAFormat
-        })
+export function generateShadowMap() {
+    return new WebGLRenderTarget(shadowMapSize, shadowMapSize, {
+        minFilter: LinearFilter,
+        magFilter: LinearFilter,
+        format: RGBAFormat,
+        type: FloatType, // 使用浮點數格式提高精度
+        anisotropy: 16 // 啟用各向異性過濾
     })
-    return {
-        shadowCameras, shadowMaps
-    }
 }
