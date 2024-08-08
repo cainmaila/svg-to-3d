@@ -13,10 +13,12 @@
 	} from '$lib/threelib/cctvLib'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
+	import ICON from '$lib/components/icon'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
 	const CCTV_CHANGE = 'cctvChange' //CCTV改變
+	const CCTV_DEL = 'cctvDel' //CCTV刪除
 	const MAX_CCTV_NUM = 4 //最大CCTV數量
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
@@ -414,6 +416,21 @@
 		selectCCTV = ''
 		cctvMode = ''
 	}
+
+	function delCCTV() {
+		const cctvObj = _getCCTVObj()
+		if (cctvObj) {
+			const index = cctvObjs.indexOf(cctvObj)
+			cctvObjs.splice(index, 1)
+			shadowCameras.splice(index, 1)
+			const cctvHelper = cctvHelpers.splice(index, 1)
+			cctvHelper[0] && scene.remove(cctvHelper[0])
+			scene.remove(cctvObj)
+			cctvNum--
+			selectCCTV = ''
+			dispatch(CCTV_DEL, { name: cctvObj.name })
+		}
+	}
 </script>
 
 <svelte:window on:resize|passive={onWindowResize} />
@@ -439,20 +456,25 @@
 			value={selectCCTVSeting.focalLength}
 			on:input={changeCCTV_FocalLength}
 		/>
-		<SlideToggle
-			name="move"
-			checked={cctvMode === 'move'}
-			on:change={onCCTVchangeMoveModeHandler}
-			active="bg-primary-500"
-			size="sm">移動位置</SlideToggle
-		>
-		<SlideToggle
-			name="lookat"
-			checked={cctvMode === 'lookat'}
-			on:change={onCCTVchangeMoveModeHandler}
-			active="bg-primary-500"
-			size="sm">拍攝方向</SlideToggle
-		>
+		<div>
+			<SlideToggle
+				name="move"
+				checked={cctvMode === 'move'}
+				on:change={onCCTVchangeMoveModeHandler}
+				active="bg-primary-500"
+				size="sm">移動位置</SlideToggle
+			>
+			<SlideToggle
+				name="lookat"
+				checked={cctvMode === 'lookat'}
+				on:change={onCCTVchangeMoveModeHandler}
+				active="bg-primary-500"
+				size="sm">拍攝方向</SlideToggle
+			>
+			<button class="variant-filled btn-icon btn-sm scale-75 text-2xl" on:click={delCCTV}>
+				<ICON.MaterialSymbolsLightDeleteSharp />
+			</button>
+		</div>
 	{/if}
 </div>
 

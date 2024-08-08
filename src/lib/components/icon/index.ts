@@ -5,8 +5,10 @@ import StreamlineAiGenerateVariationSpark from './StreamlineAiGenerateVariationS
 import FluentMdl2SaveTemplate from './FluentMdl2SaveTemplate.svelte'
 import TablerSelect from './TablerSelect.svelte'
 import GameIconsCctvCamera from './GameIconsCctvCamera.svelte'
+import MaterialSymbolsLightDeleteSharp from './MaterialSymbolsLightDeleteSharp.svelte'
 
 export default {
+    MaterialSymbolsLightDeleteSharp, //+delete
     TablerSelect, //+select
     FluentMdl2SaveTemplate, //+save
     StreamlineAiGenerateVariationSpark, //+ai

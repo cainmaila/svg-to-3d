@@ -40,6 +40,11 @@
 	bind:downloadGLB
 	on:modelReady={() => (nowGenerate = false)}
 	on:cctvChange={onCCTVchangeMoveModeHandler}
+	on:cctvDel={(e) => {
+		cctvsMap.delete(e.detail.name)
+		cameraNum = cctvsMap.size
+		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
+	}}
 />
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
