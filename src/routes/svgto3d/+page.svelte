@@ -68,6 +68,14 @@
 		>
 			<ICON.GameIconsCctvCamera /></button
 		>
+		<button
+			class="variant-filled btn-icon"
+			on:click={viewer.delAllCCTV}
+			disabled={cameraNum === 0}
+			title="重置全部CCTV"
+		>
+			<ICON.MaterialSymbolsRestore /></button
+		>
 	</div>
 {/if}
 

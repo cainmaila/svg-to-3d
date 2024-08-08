@@ -416,9 +416,9 @@
 		selectCCTV = ''
 		cctvMode = ''
 	}
-
-	function delCCTV() {
-		const cctvObj = _getCCTVObj()
+	//刪除CCTV
+	function delCCTV(name?: string) {
+		const cctvObj = _getCCTVObj(name)
 		if (cctvObj) {
 			const index = cctvObjs.indexOf(cctvObj)
 			cctvObjs.splice(index, 1)
@@ -429,6 +429,12 @@
 			cctvNum--
 			selectCCTV = ''
 			dispatch(CCTV_DEL, { name: cctvObj.name })
+		}
+	}
+	//刪除全部CCTV(重置)
+	export function delAllCCTV() {
+		while (cctvObjs.length) {
+			delCCTV(cctvObjs[0].name)
 		}
 	}
 </script>
@@ -471,7 +477,7 @@
 				active="bg-primary-500"
 				size="sm">拍攝方向</SlideToggle
 			>
-			<button class="variant-filled btn-icon btn-sm scale-75 text-2xl" on:click={delCCTV}>
+			<button class="variant-filled btn-icon btn-sm scale-75 text-2xl" on:click={() => delCCTV()}>
 				<ICON.MaterialSymbolsLightDeleteSharp />
 			</button>
 		</div>
