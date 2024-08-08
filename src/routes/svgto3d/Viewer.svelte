@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { imports } from './../../../.svelte-kit/output/server/nodes/5.js'
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -12,8 +13,10 @@
 		generateShadowMap
 	} from '$lib/threelib/cctvLib'
 	import { depthMaterial } from '$lib/threelib/materialLib'
-	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
+	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
+	import vertexShader from '$lib/threelib/shaders/poj/vertexShader.frag'
+	import fragmentShader from '$lib/threelib/shaders/poj/fragmentShader.frag'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
@@ -472,8 +475,8 @@
 				},
 				baseColor: { value: color }
 			},
-			vertexShader: $vertexShader$,
-			fragmentShader: $fragmentShader$
+			vertexShader,
+			fragmentShader
 		})
 	}
 </script>

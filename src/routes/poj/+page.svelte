@@ -4,7 +4,6 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
-	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { CCTVCamera } from '$lib/threelib/cctvLib'
 	let viewerDom: HTMLDivElement
@@ -99,8 +98,8 @@
 			shadowMaps1: { value: shadowMaps[0].texture },
 			shadowMatrices: { value: [new THREE.Matrix4(), new THREE.Matrix4()] }
 		},
-		vertexShader: $vertexShader$,
-		fragmentShader: $fragmentShader$
+		vertexShader,
+		fragmentShader
 	})
 
 	// 设置 TransformControls 模式为 "translate"（平移），"rotate"（旋转），或 "scale"（缩放）

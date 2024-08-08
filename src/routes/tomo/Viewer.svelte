@@ -7,7 +7,6 @@
 	import { CCTVCamera } from '$lib/threelib/cctvLib'
 	import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 	import { depthMaterial } from '$lib/threelib/materialLib'
-	import { fragmentShader$, vertexShader$ } from '$lib/stores'
 	import { generateGLB } from '$lib/threelib'
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
@@ -178,8 +177,8 @@
 			shadowMaps2: { value: shadowMaps[1].texture },
 			shadowMatrices: { value: [new THREE.Matrix4(), new THREE.Matrix4()] }
 		},
-		vertexShader: $vertexShader$,
-		fragmentShader: $fragmentShader$
+		vertexShader,
+		fragmentShader
 	})
 
 	init()
