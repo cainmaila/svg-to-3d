@@ -214,9 +214,6 @@
 	}
 	function onMouseMoveHandler(event: MouseEvent) {
 		switch (cctvMode) {
-			case 'add':
-				selectCCTV = ''
-				break
 			case 'lookat':
 				if (selectCCTV) {
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
