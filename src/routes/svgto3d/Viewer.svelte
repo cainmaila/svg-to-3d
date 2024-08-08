@@ -342,11 +342,14 @@
 		const initialClearColor = renderer.getClearColor(new THREE.Color())
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
+		const selectCCTVHelper = _getCCTVHelper()
+		selectCCTVHelper && (selectCCTVHelper.visible = false) //避免選擇的CCTV干擾
 		scene.overrideMaterial = depthMaterial
 		for (let i = 0; i < cctvNum; i++) {
 			renderer.setRenderTarget(shadowMaps[i])
 			renderer.render(scene, shadowCameras[i])
 		}
+		selectCCTVHelper && (selectCCTVHelper.visible = true) //開啟選擇的CCTV
 		scene.overrideMaterial = null
 		renderer.setClearColor(initialClearColor, initialClearAlpha)
 		renderer.setRenderTarget(null)
