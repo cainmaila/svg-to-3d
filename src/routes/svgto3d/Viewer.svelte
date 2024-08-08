@@ -178,34 +178,53 @@
 			cctvHelper.visible = false
 		})
 	}
-	//點選畫面ray到cctvObj
+	//找到CCTV shadowCamera
+	function _getCCTVCamera() {
+		return selectCCTV && shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+	}
+	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
 	const mouse = new THREE.Vector2()
-	function onRayCCTV(event: MouseEvent) {
+	function onRayMe(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 		raycaster.setFromCamera(mouse, camera)
-		const intersects = raycaster.intersectObjects(cctvObjs)
-		if (intersects.length > 0) {
-			const obj = intersects[0].object
-			selectCCTV = obj.name
-		} else {
-			//沒有選到cctv的情況下
-			if (cctvMode === 'move') {
-				//ray到topGrid的位置
-				const intersectsTopGrid = raycaster.intersectObject(topMesh)
-				if (intersectsTopGrid.length > 0) {
-					const point = intersectsTopGrid[0].point
-					if (selectCCTV) {
-						const shadowCamera = shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
-						if (shadowCamera) shadowCamera.position.copy(point)
+		const shadowCamera = _getCCTVCamera()
+		switch (cctvMode) {
+			case 'move':
+				if (shadowCamera) {
+					//ray到topGrid的位置
+					const intersectsTopGrid = raycaster.intersectObject(topMesh)
+					if (intersectsTopGrid.length > 0) {
+						const point = intersectsTopGrid[0].point
+						shadowCamera.position.copy(point)
 						moveCctv(selectCCTV)
 						cctvMode = 'lookat' //移動完畢
 					}
+					break
+				} else {
+					cctvMode = ''
 				}
-			} else if (cctvMode === 'lookat') {
-				cctvMode = ''
-			}
+			case 'lookat':
+				if (shadowCamera) {
+					//ray到topGrid的位置
+					const intersectsBuild = raycaster.intersectObject(build)
+					if (intersectsBuild.length > 0) {
+						const point = intersectsBuild[0].point
+						shadowCamera.lookAt(point)
+						moveCctv(selectCCTV)
+						cctvMode = ''
+					}
+				} else {
+					cctvMode = ''
+				}
+			default:
+				const intersects = raycaster.intersectObjects(cctvObjs)
+				if (intersects.length > 0) {
+					const obj = intersects[0].object
+					selectCCTV = obj.name
+					cctvMode = '' //如果選到cctv就清除原來的cctvMode模式
+				}
 		}
 	}
 	//新增CCTV
@@ -433,7 +452,7 @@
 <svelte:window on:resize|passive={onWindowResize} />
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div id="Viewer" on:click={onRayCCTV} on:mousemove|preventDefault={onMouseMoveHandler}></div>
+<div id="Viewer" on:click={onRayMe} on:mousemove|preventDefault={onMouseMoveHandler}></div>
 
 <div id="CCTV_Info">
 	{#if selectCCTV}
