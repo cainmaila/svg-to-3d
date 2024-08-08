@@ -2,13 +2,12 @@
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+	import { SlideToggle } from '@skeletonlabs/skeleton'
 	import { goto } from '$app/navigation'
-	import { generateSkyBox, svgStringToURL, svgToGroupSync } from '$lib/threelib'
-	import { CCTVCamera } from '$lib/threelib/cctvLib'
+	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from '$lib/threelib'
+	import { CCTVCamera, createCCTV, createCCTVByMatrix } from '$lib/threelib/cctvLib'
 	import { depthMaterial } from '$lib/threelib/materialLib'
 	import { fragmentShader$, vertexShader$, scalceSize$ } from '$lib/stores'
-	import { generateGLB } from '$lib/threelib'
-	import { SlideToggle } from '@skeletonlabs/skeleton'
 
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
@@ -24,21 +23,20 @@
 	export let data: {
 		svgString: string
 	}
-	export let downloadGLB: string = ''
-	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][]
+	export let downloadGLB: string = '' //下載的模型路徑
+	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
 
 	let cctvNum = cctvsSettings.length //CCTV數量
 	let build: THREE.Group //建築物
-	let { svgString } = data
+	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
-	let cctvMode = '' //cctv模式 move
+	let cctvMode = '' //cctv模式 add move lookat
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000)
 	const renderer = new THREE.WebGLRenderer({ antialias: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
-
 	//加個頂部網格底座
 	const top = new THREE.PlaneGeometry(10000, 10000, 100, 100)
 	const topMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 })
@@ -47,69 +45,23 @@
 	topMesh.position.y = 300
 	topMesh.visible = false
 	scene.add(topMesh)
-
 	onMount(() => {
 		document.getElementById('Viewer')?.appendChild(renderer.domElement)
 	})
-
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.maxDistance = 10000 // 最大缩放距离
 	// 添加光源
 	const ambientLight = new THREE.AmbientLight(0xffffff)
-	scene.add(ambientLight)
+	// scene.add(ambientLight)
 	const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0)
 	directionalLight.position.set(1, 0, 1)
-	scene.add(directionalLight)
+	// scene.add(directionalLight)
 	const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820)
 	hemisphereLight.position.set(0, 500, 0)
-	scene.add(hemisphereLight)
-
-	//建立一個CCTV給予名稱與matrix
-	function createCCTVByMatrix(name: string, matrix: THREE.Matrix4) {
-		const cctv = new CCTVCamera({
-			focalLength: 4, // 焦距
-			sensorWidth: 4.8, // 传感器宽度
-			sensorHeight: 3.6, // 传感器高度
-			near: 5, // 近裁剪面
-			far: 3000 // 远裁剪面
-		})
-		cctv.name = name + '_camera'
-		cctv.matrix.copy(matrix)
-		cctv.matrix.decompose(cctv.position, cctv.quaternion, cctv.scale)
-		scene.add(cctv)
-		const cctvHelper = new THREE.CameraHelper(cctv)
-		cctvHelper.visible = false
-		cctvHelper.name = name + '_helper'
-		scene.add(cctvHelper)
-		return { cctv, cctvHelper, name }
-	}
-	//建立一個CCTV
-	function createCCTV(
-		name: string,
-		position: THREE.Vector3,
-		lookAt: THREE.Vector3 = new THREE.Vector3()
-	) {
-		const cctv = new CCTVCamera({
-			focalLength: 4, // 焦距
-			sensorWidth: 4.8, // 传感器宽度
-			sensorHeight: 3.6, // 传感器高度
-			near: 5, // 近裁剪面
-			far: 3000 // 远裁剪面
-		})
-		cctv.name = name + '_camera'
-		cctv.position.copy(position)
-		cctv.lookAt(lookAt)
-		scene.add(cctv)
-		const cctvHelper = new THREE.CameraHelper(cctv)
-		cctvHelper.visible = false
-		cctvHelper.name = name + '_helper'
-		scene.add(cctvHelper)
-		return { cctv, cctvHelper, name }
-	}
-
+	// scene.add(hemisphereLight)
 	const cctvs = cctvsSettings.map((cctvSetting) => {
-		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */)
+		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */, scene)
 	})
 
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
@@ -162,7 +114,7 @@
 		return shadowCameras.find((cctv) => cctv.name === `${_name || selectCCTV}_camera`)
 	}
 	function _getCCTVObj(_name?: string) {
-		return cctvObjs.find((cctvHelper) => cctvHelper.name === _name || selectCCTV)
+		return cctvObjs.find((cctvObj) => cctvObj.name === _name || selectCCTV)
 	}
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
@@ -185,7 +137,12 @@
 					while (_getCCTVObj(`cctv${_n}`)) {
 						_n++
 					}
-					const { cctv, cctvHelper, name } = createCCTV(`cctv${_n}`, point, new THREE.Vector3())
+					const { cctv, cctvHelper, name } = createCCTV(
+						`cctv${_n}`,
+						point,
+						new THREE.Vector3(),
+						scene
+					)
 					const cctvObj = _createCCTVObj({ cctv, name })
 					shadowCameras.push(cctv)
 					cctvObjs.push(cctvObj)
