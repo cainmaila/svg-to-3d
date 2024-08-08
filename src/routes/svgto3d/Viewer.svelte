@@ -13,6 +13,7 @@
 	const dispatch = createEventDispatcher()
 	const MODLE_READY = 'modelReady' //模型準備好
 	const CCTV_CHANGE = 'cctvChange' //CCTV改變
+	const MAX_CCTV_NUM = 4 //最大CCTV數量
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
@@ -84,28 +85,28 @@
 		return { cctv, cctvHelper, name }
 	}
 	//建立一個CCTV
-	// function createCCTV(
-	// 	name: string,
-	// 	position: THREE.Vector3,
-	// 	lookAt: THREE.Vector3 = new THREE.Vector3()
-	// ) {
-	// 	const cctv = new CCTVCamera({
-	// 		focalLength: 4, // 焦距
-	// 		sensorWidth: 4.8, // 传感器宽度
-	// 		sensorHeight: 3.6, // 传感器高度
-	// 		near: 5, // 近裁剪面
-	// 		far: 3000 // 远裁剪面
-	// 	})
-	// 	cctv.name = name + '_camera'
-	// 	cctv.position.copy(position)
-	// 	cctv.lookAt(lookAt)
-	// 	scene.add(cctv)
-	// 	const cctvHelper = new THREE.CameraHelper(cctv)
-	// 	cctvHelper.visible = false
-	// 	cctvHelper.name = name + '_helper'
-	// 	scene.add(cctvHelper)
-	// 	return { cctv, cctvHelper, name }
-	// }
+	function createCCTV(
+		name: string,
+		position: THREE.Vector3,
+		lookAt: THREE.Vector3 = new THREE.Vector3()
+	) {
+		const cctv = new CCTVCamera({
+			focalLength: 4, // 焦距
+			sensorWidth: 4.8, // 传感器宽度
+			sensorHeight: 3.6, // 传感器高度
+			near: 5, // 近裁剪面
+			far: 3000 // 远裁剪面
+		})
+		cctv.name = name + '_camera'
+		cctv.position.copy(position)
+		cctv.lookAt(lookAt)
+		scene.add(cctv)
+		const cctvHelper = new THREE.CameraHelper(cctv)
+		cctvHelper.visible = false
+		cctvHelper.name = name + '_helper'
+		scene.add(cctvHelper)
+		return { cctv, cctvHelper, name }
+	}
 
 	const cctvs = cctvsSettings.map((cctvSetting) => {
 		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */)
@@ -138,7 +139,9 @@
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
-	const cctvObjs: THREE.Mesh[] = cctvs.map(({ cctv, name }) => {
+	const cctvObjs: THREE.Mesh[] = cctvs.map(_createCCTVObj)
+	//創建CCTV Obj物件
+	function _createCCTVObj({ cctv, name }: { cctv: THREE.PerspectiveCamera; name: string }) {
 		const cctvObj = new THREE.Mesh(
 			new THREE.BoxGeometry(10, 10, 20),
 			new THREE.MeshBasicMaterial({ color: 0xff0000 })
@@ -148,7 +151,7 @@
 		cctvObj.position.copy(cctv.position)
 		cctvObj.quaternion.copy(cctv.quaternion)
 		return cctvObj
-	})
+	}
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
 		const cctvObj = cctvObjs.find((cctvObj) => cctvObj.name === name)
@@ -179,8 +182,11 @@
 		})
 	}
 	//找到CCTV shadowCamera
-	function _getCCTVCamera() {
-		return selectCCTV && shadowCameras.find((cctv) => cctv.name === selectCCTV + '_camera')
+	function _getCCTVCamera(_name?: string) {
+		return shadowCameras.find((cctv) => cctv.name === `${_name || selectCCTV}_camera`)
+	}
+	function _getCCTVObj(_name?: string) {
+		return cctvObjs.find((cctvHelper) => cctvHelper.name === _name || selectCCTV)
 	}
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
@@ -191,10 +197,31 @@
 		raycaster.setFromCamera(mouse, camera)
 		const shadowCamera = _getCCTVCamera()
 		switch (cctvMode) {
+			case 'add':
+				selectCCTV = ''
+				if (MAX_CCTV_NUM > cctvNum) {
+					cctvMode = ''
+				}
+				const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
+				if (intersectsTopGrid.length > 0) {
+					const point = intersectsTopGrid[0].point
+					let _n = 1
+					while (_getCCTVObj(`cctv${_n}`)) {
+						_n++
+					}
+					const { cctv, cctvHelper, name } = createCCTV(`cctv${_n}`, point, new THREE.Vector3())
+					const cctvObj = _createCCTVObj({ cctv, name })
+					shadowCameras.push(cctv)
+					cctvObjs.push(cctvObj)
+					cctvHelpers.push(cctvHelper)
+					cctvNum++
+					selectCCTV = name
+					cctvMode = 'lookat' //移動完畢
+				}
+				break
 			case 'move':
 				if (shadowCamera) {
-					//ray到topGrid的位置
-					const intersectsTopGrid = raycaster.intersectObject(topMesh)
+					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
 					if (intersectsTopGrid.length > 0) {
 						const point = intersectsTopGrid[0].point
 						shadowCamera.position.copy(point)
@@ -207,8 +234,7 @@
 				}
 			case 'lookat':
 				if (shadowCamera) {
-					//ray到topGrid的位置
-					const intersectsBuild = raycaster.intersectObject(build)
+					const intersectsBuild = raycaster.intersectObject(build) //ray到building的位置
 					if (intersectsBuild.length > 0) {
 						const point = intersectsBuild[0].point
 						shadowCamera.lookAt(point)
@@ -235,6 +261,7 @@
 		switch (cctvMode) {
 			case 'lookat':
 				if (selectCCTV) {
+					console.log(33333)
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 					mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 					raycaster.setFromCamera(mouse, camera)
@@ -264,7 +291,11 @@
 	}
 	//創建深度紋理
 	const shadowMapSize = 2048
-	const shadowMaps: THREE.WebGLRenderTarget[] = shadowCameras.map(() => {
+	const shadowMaps: THREE.WebGLRenderTarget[] = []
+	for (let i = 0; i < MAX_CCTV_NUM; i++) {
+		shadowMaps.push(_generateShadowMap())
+	}
+	function _generateShadowMap() {
 		return new THREE.WebGLRenderTarget(shadowMapSize, shadowMapSize, {
 			minFilter: THREE.LinearFilter,
 			magFilter: THREE.LinearFilter,
@@ -272,7 +303,7 @@
 			type: THREE.FloatType, // 使用浮點數格式提高精度
 			anisotropy: 16 // 啟用各向異性過濾
 		})
-	})
+	}
 	//創建投影貼圖
 	const projectionMaterial = new THREE.ShaderMaterial({
 		uniforms: {
@@ -304,6 +335,9 @@
 		vertexShader: $vertexShader$,
 		fragmentShader: $fragmentShader$
 	})
+	$: {
+		projectionMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
+	}
 
 	init()
 	async function init() {
