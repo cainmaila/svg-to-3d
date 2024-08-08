@@ -112,30 +112,6 @@
 		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */)
 	})
 
-	// while (cctvs.length < cctvNum) {
-	// 	cctvs.push(createCCTV(new THREE.Vector3(), new THREE.Vector3()))
-	// }
-
-	// // 添加CCTV1
-	// const { cctv: cctv1, cctvHelper: cctvHelper1 } = createCCTV(
-	// 	new THREE.Vector3(500, 300, -350),
-	// 	new THREE.Vector3(0, 100, 0)
-	// )
-	// // 添加CCTV2
-	// const { cctv: cctv2, cctvHelper: cctvHelper2 } = createCCTV(
-	// 	new THREE.Vector3(-500, 300, 500),
-	// 	new THREE.Vector3(0, -100, 100)
-	// )
-	// // 添加CCTV3
-	// const { cctv: cctv3, cctvHelper: cctvHelper3 } = createCCTV(
-	// 	new THREE.Vector3(500, 300, -500),
-	// 	new THREE.Vector3(0, -100, 100)
-	// )
-	// // 添加CCTV4
-	// const { cctv: cctv4, cctvHelper: cctvHelper4 } = createCCTV(
-	// 	new THREE.Vector3(-500, 300, 350),
-	// 	new THREE.Vector3(0, -100, 0)
-	// )
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
@@ -261,7 +237,6 @@
 		switch (cctvMode) {
 			case 'lookat':
 				if (selectCCTV) {
-					console.log(33333)
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 					mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 					raycaster.setFromCamera(mouse, camera)
