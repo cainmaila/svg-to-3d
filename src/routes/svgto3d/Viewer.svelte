@@ -389,6 +389,7 @@
 		const shadowCamera = _getCCTVCamera()
 		if (!shadowCamera) return
 		;(shadowCamera as CCTVCamera).focalLength = focalLength
+		selectCCTVSeting.focalLength = focalLength
 		const cctvHelper = _getCCTVHelper()
 		if (cctvHelper) cctvHelper.update()
 	}
