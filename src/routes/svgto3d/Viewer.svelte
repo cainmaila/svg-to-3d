@@ -19,7 +19,6 @@
 	const MODLE_READY = 'modelReady' //模型準備好
 	const CCTV_CHANGE = 'cctvChange' //CCTV改變
 	const CCTV_DEL = 'cctvDel' //CCTV刪除
-	const MAX_CCTV_NUM = 4 //最大CCTV數量
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
@@ -31,14 +30,14 @@
 		roughness: 0.5,
 		metalness: 0.5
 	})
-
+	export let MAX_CCTV_NUM = 4 //最大CCTV數量
 	export let data: {
 		svgString: string
 	}
 	export let downloadGLB: string = '' //下載的模型路徑
 	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
 
-	let cctvNum = cctvsSettings.length //CCTV數量
+	let cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	let build: THREE.Group //建築物
 	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
@@ -247,11 +246,13 @@
 		shadowMaps.push(generateShadowMap())
 	}
 	const projectionMaterial = generateProjectionMaterial({
+		maxcctvnum: MAX_CCTV_NUM,
 		cctvNum,
 		color: new THREE.Color(0x888888),
 		shadowMaps
 	})
 	const projectionBoxMaterial = generateProjectionMaterial({
+		maxcctvnum: MAX_CCTV_NUM,
 		cctvNum,
 		color: new THREE.Color(0x448844),
 		shadowMaps

@@ -6,6 +6,7 @@
 	export let data: {
 		svgString: string
 	}
+	const MAX_CCTV_NUM = 10 //最大CCTV數量
 	let viewer
 	let nowGenerate = true //是否正在生成模型
 	let downloadGLB: string = '' //下載的模型路徑
@@ -37,6 +38,7 @@
 
 <Viewer
 	bind:this={viewer}
+	{MAX_CCTV_NUM}
 	{data}
 	{cctvsSettings}
 	bind:downloadGLB
@@ -65,8 +67,8 @@
 		<button
 			class="variant-filled btn-icon"
 			on:click={viewer.addCCTV}
-			disabled={cameraNum >= 4}
-			title={cameraNum >= 4 ? '最多只能新增4個CCTV' : '新增CCTV'}
+			disabled={cameraNum >= MAX_CCTV_NUM}
+			title={cameraNum >= MAX_CCTV_NUM ? `最多只能新增${MAX_CCTV_NUM}個CCTV` : '新增CCTV'}
 		>
 			<ICON.GameIconsCctvCamera /></button
 		>
