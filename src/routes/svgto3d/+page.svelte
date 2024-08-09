@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { CameraHelper } from 'three'
 	import { debounce } from 'lodash-es'
 	import Viewer from './Viewer.svelte'
 	import ICON from '$lib/components/icon'
@@ -18,12 +17,15 @@
 	} catch (error) {
 		cctvsSettings = []
 	}
-	const cctvsMap: Map<string, string> = new Map()
+	const cctvsMap: Map<string, object> = new Map()
 	cctvsSettings.forEach((cctv: any) => {
 		cctvsMap.set(cctv[0], cctv[1])
 	})
 	const debouncedHandler = debounce((detail) => {
-		cctvsMap.set(detail.name, detail.matrix)
+		cctvsMap.set(detail.name, {
+			matrix: detail.matrix,
+			focalLength: detail.focalLength
+		})
 		cameraNum = cctvsMap.size
 		//把所有的CCTV資料轉成字串 放進 localStorage
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))

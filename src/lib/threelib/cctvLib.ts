@@ -146,9 +146,9 @@ export function createCCTV(
  * @param scene - 場景
  * @returns {cctv, cctvHelper, name}
  */
-export function createCCTVByMatrix(name: string, matrix: Matrix4, scene?: Scene) {
+export function createCCTVByMatrix(name: string, matrix: Matrix4, focalLength: number = 4, scene?: Scene) {
     const cctv = new CCTVCamera({
-        focalLength: 4, // 焦距
+        focalLength, // 焦距
         sensorWidth: 4.8, // 传感器宽度
         sensorHeight: 3.6, // 传感器高度
         near: 5, // 近裁剪面

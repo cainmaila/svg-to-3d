@@ -64,7 +64,14 @@
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.maxDistance = 10000 // 最大缩放距离
 	const cctvs = cctvsSettings.map((cctvSetting) => {
-		return createCCTVByMatrix(cctvSetting[0] /* name */, cctvSetting[1] /* Matri */, scene)
+		return createCCTVByMatrix(
+			cctvSetting[0] /* name */,
+			// @ts-ignore
+			cctvSetting[1]?.matrix /* matrix */,
+			//@ts-ignore
+			cctvSetting[1]?.focalLength,
+			/* Matri */ scene
+		)
 	})
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
@@ -90,7 +97,11 @@
 		cctvObj.position.copy(shadowCamera.position)
 		cctvObj.quaternion.copy(shadowCamera.quaternion)
 		_getCCTVHelper(name)?.update()
-		dispatch(CCTV_CHANGE, { name: cctvObj.name, matrix: cctvObj.matrix })
+		dispatch(CCTV_CHANGE, {
+			name: cctvObj.name,
+			matrix: cctvObj.matrix,
+			focalLength: shadowCamera?.focalLength
+		})
 	}
 	//選擇cctv
 	$: {
@@ -114,7 +125,7 @@
 	function _getCCTVCamera(_name?: string) {
 		return shadowCameras.find((cctv) => {
 			return cctv.name === `${_name || selectCCTV}_camera`
-		})
+		}) as CCTVCamera | undefined
 	}
 	//找到CCTV Obj
 	function _getCCTVObj(_name?: string) {
@@ -392,6 +403,7 @@
 		selectCCTVSeting.focalLength = focalLength
 		const cctvHelper = _getCCTVHelper()
 		if (cctvHelper) cctvHelper.update()
+		moveCctv(selectCCTV)
 	}
 
 	function onClickClearCCTVHandler() {
