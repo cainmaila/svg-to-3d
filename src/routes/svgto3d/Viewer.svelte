@@ -3,6 +3,7 @@
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
+	import { debounce } from 'lodash-es'
 	import { goto } from '$app/navigation'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from '$lib/threelib'
 	import {
@@ -226,6 +227,7 @@
 				}
 				break
 		}
+		debounce(() => updataShadowMaps(), 100)()
 	}
 	//CCTV Info變動移動模式
 	function onCCTVchangeMoveModeHandler(e: Event) {
@@ -310,13 +312,21 @@
 					else child.material = projectionMaterial
 				}
 			})
+			updataShadowMaps()
+			animate()
 		} catch (error) {
 			alert('轉換匯出模型失敗')
 		}
 	}
+	//
 	// 渲染循環
 	function animate() {
 		requestAnimationFrame(animate)
+		controls.update()
+		renderer.render(scene, camera)
+	}
+	//更新CCTV投影貼圖
+	function updataShadowMaps() {
 		for (let i = 0; i < cctvNum; i++) {
 			// 更新CCTV位置
 			projectionMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
@@ -343,11 +353,7 @@
 			projectionBoxMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
 		}
 		renderShadowMaps() // 渲染阴影贴图
-
-		controls.update()
-		renderer.render(scene, camera)
 	}
-	animate()
 
 	//render深度紋理
 	function renderShadowMaps() {
@@ -405,6 +411,7 @@
 		const cctvHelper = _getCCTVHelper()
 		if (cctvHelper) cctvHelper.update()
 		moveCctv(selectCCTV)
+		debounce(() => updataShadowMaps(), 100)()
 	}
 
 	function onClickClearCCTVHandler() {
