@@ -48,6 +48,7 @@
 	const scene = new THREE.Scene()
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000)
 	const renderer = new THREE.WebGLRenderer({ antialias: true })
+	renderer.setPixelRatio(window.devicePixelRatio)
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	//加個頂部網格底座
 	const top = new THREE.PlaneGeometry(10000, 10000, 100, 100)
