@@ -1,8 +1,9 @@
-import { BackSide, Box3, BoxGeometry, Color, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, ShaderMaterial, Shape, SphereGeometry, Vector2, Vector3 } from 'three'
+import { Box3, BoxGeometry, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, Shape, Vector2, Vector3 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { ADDITION, SUBTRACTION, Evaluator, Operation, OperationGroup } from 'three-bvh-csg'
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import _generateSkyBox from './generateSkyBox';
 const exporter = new GLTFExporter();
 
 /**
@@ -254,53 +255,4 @@ export function svgStringToURL(svgString: string) {
  * @param param0.bottomColor 低處的白色
  * @returns
  */
-export function generateSkyBox({
-    topColor,
-    bottomColor
-}: {
-    topColor: number,
-    bottomColor: number
-} = {
-        topColor: 0x87ceeb,
-        bottomColor: 0x000000
-    }) {
-    // 頂點着色器
-    const vertexShader = `
-        varying vec3 vWorldPosition;
-        void main() {
-        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-        vWorldPosition = worldPosition.xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-        `
-    // 片段着色器
-    const fragmentShader = `
-        uniform vec3 topColor;
-        uniform vec3 bottomColor;
-        uniform float offset;
-        uniform float exponent;
-        varying vec3 vWorldPosition;
-        void main() {
-        float h = normalize(vWorldPosition + offset).y;
-        gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
-        }
-`
-    // 自定義材質
-    const uniforms = {
-        topColor: { value: new Color(topColor) }, // 天空的淺藍色
-        bottomColor: { value: new Color(bottomColor) }, // 低處的白色
-        offset: { value: 33 },
-        exponent: { value: 0.6 }
-    }
-    const skyMaterial = new ShaderMaterial({
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
-        uniforms: uniforms,
-        side: BackSide
-    })
-    // 创建天空盒几何体
-    const skyGeometry = new SphereGeometry(100000, 32, 15)
-    // 创建天空盒
-    return new Mesh(skyGeometry, skyMaterial)
-}
-
+export const generateSkyBox = _generateSkyBox
