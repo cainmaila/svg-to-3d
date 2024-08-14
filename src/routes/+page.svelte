@@ -93,6 +93,7 @@
 	//下載SVG
 	function downloadSvg() {
 		const svg = SVG($svgString$)
+		svg.defs().line(0, 0, 0, 0).data('type', 'scaler').data('scaler', $scalceSize$)
 		const svgString = svg.svg()
 		const blob = new Blob([svgString], { type: 'image/svg+xml' })
 		const url = URL.createObjectURL(blob)
