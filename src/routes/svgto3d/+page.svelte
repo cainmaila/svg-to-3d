@@ -2,6 +2,7 @@
 	import { debounce } from 'lodash-es'
 	import Viewer from './Viewer.svelte'
 	import ICON from '$lib/components/icon'
+	import { SlideToggle } from '@skeletonlabs/skeleton'
 
 	export let data: {
 		svgString: string
@@ -12,6 +13,7 @@
 	let downloadGLB: string = '' //下載的模型路徑
 	let cctvsSettings = []
 	let cameraNum = 0
+	let bgImageDisable = false //底圖是否顯示
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
 		cameraNum = cctvsSettings.length
@@ -42,6 +44,7 @@
 	{data}
 	{cctvsSettings}
 	bind:downloadGLB
+	bind:bgImageDisable
 	on:modelReady={() => (nowGenerate = false)}
 	on:cctvChange={onCCTVchangeMoveModeHandler}
 	on:cctvDel={(e) => {
@@ -80,6 +83,7 @@
 		>
 			<ICON.MaterialSymbolsRestore /></button
 		>
+		<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable}>底圖顯示</SlideToggle>
 	</div>
 {/if}
 
@@ -90,14 +94,18 @@
 		position: absolute;
 		top: 0;
 		left: 0;
+		display: flex;
+		align-items: center;
+		gap: 5px;
 		z-index: 100;
 		pointer-events: none;
 		& a {
-			margin: 10px 0 0 0;
 			pointer-events: auto;
 		}
 		& button {
-			margin: 10px 0 0 0;
+			pointer-events: auto;
+		}
+		& .slide-toggle-track {
 			pointer-events: auto;
 		}
 	}

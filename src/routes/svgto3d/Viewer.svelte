@@ -42,12 +42,16 @@
 	}
 	export let downloadGLB: string = '' //下載的模型路徑
 	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
+	export let bgImageDisable: boolean = false //底圖是否顯示
 
 	let cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	let build: THREE.Group //建築物
 	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
 	let cctvMode = '' //cctv模式 add move lookat
+	let bgImageObj: THREE.Mesh //底圖物件
+
+	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -322,6 +326,8 @@
 			build.traverse((child) => {
 				if (child instanceof THREE.Mesh) {
 					if (child.name === 'BG') {
+						bgImageObj = child
+						child.visible = bgImageDisable
 						return
 					}
 					if (child.name === 'Floor') {

@@ -242,7 +242,7 @@ export function svgToGroupSync(
                                     mesh.name = 'BG'
                                     const dy = svgBounds.max.y - svgBounds.min.y
                                     mesh.position.set(child.cx() as number * scale, (dy - child.cy() as number) * scale, 1)
-                                    // group.add(mesh)
+                                    group.add(mesh)
                                 })
 
                             }
