@@ -93,6 +93,7 @@ export function svgToGroupSync(
                 const doorallMesh = new OperationGroup();
                 const allMesh = new OperationGroup();
                 let brush: Operation
+                let firstBrush: Operation
 
                 // 獲取 SVG 的邊界框
                 const svgBounds = new Box3()
@@ -154,6 +155,7 @@ export function svgToGroupSync(
                                     //@ts-expect-error
                                     doorbrush.operation = SUBTRACTION;
                                     doorallMesh.add(doorbrush)
+
                                 }
                             }
                             break
@@ -166,24 +168,35 @@ export function svgToGroupSync(
                                     depth: wallHeight,
                                     bevelEnabled: false
                                 })
-                                brush = new Operation(geometry)
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                //@ts-expect-error
-                                brush.operation = ADDITION;
-                                allMesh.add(brush)
+
+                                if (firstBrush) {
+                                    brush = new Operation(geometry)
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    //@ts-expect-error
+                                    brush.operation = ADDITION;
+                                    allMesh.add(brush)
+                                } else {
+                                    firstBrush = new Operation(geometry)
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    //@ts-expect-error
+                                    firstBrush.operation = ADDITION;
+                                }
                             }
                         }
                     }
                 })
-                if (allMesh) {
-                    const base = createBaseForObject(allMesh)
-                    const baseBrush = new Operation(base.geometry)
+                const base = createBaseForObject(allMesh)
+                base.name = 'Floor'
+                group.add(base)
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-expect-error
+                if (firstBrush && allMesh) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     //@ts-expect-error
-                    baseBrush.operation = ADDITION;
-                    baseBrush.add(allMesh)
-                    baseBrush.add(doorallMesh)
-                    const building = evaluator.evaluateHierarchy(baseBrush)
+                    firstBrush.operation = ADDITION;
+                    firstBrush.add(allMesh)
+                    firstBrush.add(doorallMesh)
+                    const building = evaluator.evaluateHierarchy(firstBrush)
                     building.material = material
                     building.material = material
                     building.name = 'Background'
@@ -229,7 +242,7 @@ export function svgToGroupSync(
                                     mesh.name = 'BG'
                                     const dy = svgBounds.max.y - svgBounds.min.y
                                     mesh.position.set(child.cx() as number * scale, (dy - child.cy() as number) * scale, 1)
-                                    group.add(mesh)
+                                    // group.add(mesh)
                                 })
 
                             }
