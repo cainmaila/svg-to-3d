@@ -1,8 +1,9 @@
-import { Box3, BoxGeometry, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, Shape, Vector2, Vector3 } from 'three'
+import { Box3, BoxGeometry, ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, PlaneGeometry, Shape, TextureLoader, Vector2, Vector3 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import { ADDITION, SUBTRACTION, Evaluator, Operation, OperationGroup } from 'three-bvh-csg'
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { Svg } from '@svgdotjs/svg.js'
 import _generateSkyBox from './generateSkyBox';
 const exporter = new GLTFExporter();
 
@@ -203,6 +204,39 @@ export function svgToGroupSync(
                         child.material = material
                     }
                 })
+
+                const svg = new Svg(data.xml as unknown as SVGSVGElement)
+                svg.children().forEach(async child => {
+                    switch (child.type) {
+                        case 'path':
+                            break
+                        case 'rect':
+                            break
+                        case 'image':
+                            //利用以上數據建立一個theejs平面
+                            {
+                                const href = child.attr('xlink:href')
+                                const w = child.width() as number
+                                const h = child.height() as number
+                                const geometry = new PlaneGeometry(w as number * scale, h as number * scale);
+                                const textureLoader = new TextureLoader()
+                                textureLoader.load(href, (texture) => {
+                                    //透明材質
+                                    const material = new MeshBasicMaterial({
+                                        map: texture,
+                                    })
+                                    const mesh = new Mesh(geometry, material)
+                                    mesh.name = 'BG'
+                                    const dy = svgBounds.max.y - svgBounds.min.y
+                                    mesh.position.set(child.cx() as number * scale, (dy - child.cy() as number) * scale, 1)
+                                    group.add(mesh)
+                                })
+
+                            }
+                            break
+                    }
+                })
+
                 resolve(group)
             },
             undefined,

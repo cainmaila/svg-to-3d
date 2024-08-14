@@ -308,6 +308,9 @@
 			downloadGLB = await generateGLB(build)
 			build.traverse((child) => {
 				if (child instanceof THREE.Mesh) {
+					if (child.name === 'BG') {
+						return
+					}
 					// 設置材質
 					if (child.name.includes('Box')) child.material = projectionBoxMaterial
 					else child.material = projectionMaterial

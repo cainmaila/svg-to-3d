@@ -395,10 +395,13 @@
 			// draw.size(img.width, img.height)
 			// 創建一個新的圖片元素並設置為背景
 			background = draw.image(path)
+			const w_size = canvasWidth / img.width
+			const h_size = canvasHeight / img.height
+			const f_size = (w_size < h_size ? w_size : h_size) * 0.8 //合適的縮放比例
 			//縮到畫布大小
-			background.size(canvasWidth * 0.8, canvasHeight * 0.8)
+			background.size(img.width * f_size, img.height * f_size)
 			//置中
-			background.center(canvasWidth / 2, canvasHeight / 2)
+			background.center(canvasWidth / 2, canvasHeight / 2 + 30)
 			background.back() // 將圖片移到最底層
 
 			// 可選：調整圖片透明度，使其更容易描繪
