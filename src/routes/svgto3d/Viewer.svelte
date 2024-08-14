@@ -31,7 +31,12 @@
 		roughness: 0.5,
 		metalness: 0.5
 	})
-	export let MAX_CCTV_NUM = 4 //最大CCTV數量
+	const oupFloorBoxMaterial = new THREE.MeshStandardMaterial({
+		color: 0xcccccc,
+		roughness: 0.5,
+		metalness: 0.5
+	})
+	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
 		svgString: string
 	}
@@ -260,9 +265,16 @@
 		color: new THREE.Color(0x448844),
 		shadowMaps
 	})
+	const projectionFloorMaterial = generateProjectionMaterial({
+		maxcctvnum: MAX_CCTV_NUM,
+		cctvNum,
+		color: new THREE.Color(0xcccccc),
+		shadowMaps
+	})
 	$: {
 		projectionMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
 		projectionBoxMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
+		projectionFloorMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
 	}
 
 	init()
@@ -302,6 +314,7 @@
 			build.traverse((child) => {
 				if (child instanceof THREE.Mesh) {
 					if (child.name.includes('Box')) child.material = oupPutBoxMaterial
+					else if (child.name.includes('Floor')) child.material = oupFloorBoxMaterial
 					else child.material = oupPutMaterial
 				}
 			})
@@ -309,6 +322,10 @@
 			build.traverse((child) => {
 				if (child instanceof THREE.Mesh) {
 					if (child.name === 'BG') {
+						return
+					}
+					if (child.name === 'Floor') {
+						child.material = projectionFloorMaterial
 						return
 					}
 					// 設置材質
@@ -335,16 +352,26 @@
 			// 更新CCTV位置
 			projectionMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
 			projectionBoxMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
+			projectionFloorMaterial.uniforms.cctvPositions.value[i].copy(shadowCameras[i].position)
+
 			shadowCameras[i].getWorldDirection(projectionMaterial.uniforms.cctvDirections.value[i])
 			shadowCameras[i].getWorldDirection(projectionBoxMaterial.uniforms.cctvDirections.value[i])
+			shadowCameras[i].getWorldDirection(projectionFloorMaterial.uniforms.cctvDirections.value[i])
+
 			projectionMaterial.uniforms.cctvFOVs.value[i] = shadowCameras[i].fov
 			projectionMaterial.uniforms.cctvAspects.value[i] = shadowCameras[i].aspect
 			projectionMaterial.uniforms.cctvNears.value[i] = shadowCameras[i].near
 			projectionMaterial.uniforms.cctvFars.value[i] = shadowCameras[i].far
+
 			projectionBoxMaterial.uniforms.cctvFOVs.value[i] = shadowCameras[i].fov
 			projectionBoxMaterial.uniforms.cctvAspects.value[i] = shadowCameras[i].aspect
 			projectionBoxMaterial.uniforms.cctvNears.value[i] = shadowCameras[i].near
 			projectionBoxMaterial.uniforms.cctvFars.value[i] = shadowCameras[i].far
+
+			projectionFloorMaterial.uniforms.cctvFOVs.value[i] = shadowCameras[i].fov
+			projectionFloorMaterial.uniforms.cctvAspects.value[i] = shadowCameras[i].aspect
+			projectionFloorMaterial.uniforms.cctvNears.value[i] = shadowCameras[i].near
+			projectionFloorMaterial.uniforms.cctvFars.value[i] = shadowCameras[i].far
 		}
 		// 更新阴影矩阵
 		for (let i = 0; i < cctvNum; i++) {
@@ -355,6 +382,7 @@
 			shadowMatrix.multiplyMatrices(shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse)
 			projectionMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
 			projectionBoxMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
+			projectionFloorMaterial.uniforms.shadowMatrices.value[i].copy(shadowMatrix)
 		}
 		renderShadowMaps() // 渲染阴影贴图
 	}
