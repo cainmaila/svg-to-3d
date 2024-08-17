@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as THREE from 'three'
-	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+	import { OrbitControls } from 'three/examples/jsm/Addons.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
 	import { debounce } from 'lodash-es'
