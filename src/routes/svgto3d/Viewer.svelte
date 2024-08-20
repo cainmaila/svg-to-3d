@@ -15,12 +15,9 @@
 	import { depthMaterial, generateProjectionMaterial } from '$lib/threelib/materialLib'
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
+	import { ViewerEvent, CCTVMode } from './viewerType'
 
 	const dispatch = createEventDispatcher()
-	const MODLE_READY = 'modelReady' //模型準備好
-	const CCTV_CHANGE = 'cctvChange' //CCTV改變
-	const CCTV_DEL = 'cctvDel' //CCTV刪除
-	const MODE_CHANGE = 'modeChange' //模式改變
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
@@ -49,11 +46,11 @@
 	let build: THREE.Group //建築物
 	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
-	let cctvMode = '' //cctv模式 add move lookat createLine addLine
+	let cctvMode: CCTVMode = CCTVMode.NONE //cctv模式 add move lookat createLine addLine
 	let bgImageObj: THREE.Mesh //底圖物件
 
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
-	$: dispatch(MODE_CHANGE, cctvMode) //通知父組件模式改變
+	$: dispatch(ViewerEvent.MODE_CHANGE, cctvMode) //通知父組件模式改變
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -109,7 +106,7 @@
 		cctvObj.position.copy(shadowCamera.position)
 		cctvObj.quaternion.copy(shadowCamera.quaternion)
 		_getCCTVHelper(name)?.update()
-		dispatch(CCTV_CHANGE, {
+		dispatch(ViewerEvent.CCTV_CHANGE, {
 			name: cctvObj.name,
 			matrix: cctvObj.matrix,
 			focalLength: shadowCamera?.focalLength
@@ -158,7 +155,7 @@
 	$: switch (true) {
 		case points.length === 1:
 			createLineEnd()
-			cctvMode = 'addLine'
+			cctvMode = CCTVMode.ADDLINE
 			break
 		case points.length > 1:
 			createLine(points)
@@ -180,7 +177,7 @@
 		raycaster.setFromCamera(mouse, camera)
 		const shadowCamera = _getCCTVCamera()
 		switch (cctvMode) {
-			case 'createLine': //創建線
+			case CCTVMode.CREATELINE: //創建線
 				{
 					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
 					const selectPoint = intersectsTopGrid[0]?.point
@@ -198,7 +195,7 @@
 					points = points
 				}
 				break
-			case 'addLine':
+			case CCTVMode.ADDLINE: //添加線
 				{
 					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
 					const selectPoint = intersectsTopGrid[0]?.point
@@ -216,10 +213,10 @@
 					points = points
 				}
 				break
-			case 'add':
+			case CCTVMode.ADD: //添加CCTV
 				selectCCTV = ''
 				if (MAX_CCTV_NUM > cctvNum) {
-					cctvMode = ''
+					cctvMode = CCTVMode.NONE
 				}
 				const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
 				if (intersectsTopGrid.length > 0) {
@@ -240,7 +237,7 @@
 					cctvHelpers.push(cctvHelper)
 					cctvNum++
 					selectCCTV = name
-					cctvMode = 'lookat' //移動完畢
+					cctvMode = CCTVMode.LOOKAT //移動完畢
 				}
 				break
 			case 'move':
@@ -250,11 +247,11 @@
 						const point = intersectsTopGrid[0].point
 						shadowCamera.position.copy(point)
 						moveCctv(selectCCTV)
-						cctvMode = 'lookat' //移動完畢
+						cctvMode = CCTVMode.LOOKAT //移動完畢
 					}
 					break
 				} else {
-					cctvMode = ''
+					cctvMode = CCTVMode.NONE
 				}
 			case 'lookat':
 				if (shadowCamera) {
@@ -263,17 +260,17 @@
 						const point = intersectsBuild[0].point
 						shadowCamera.lookAt(point)
 						moveCctv(selectCCTV)
-						cctvMode = ''
+						cctvMode = CCTVMode.NONE
 					}
 				} else {
-					cctvMode = ''
+					cctvMode = CCTVMode.NONE
 				}
 			default:
 				const intersects = raycaster.intersectObjects(cctvObjs)
 				if (intersects.length > 0) {
 					const obj = intersects[0].object
 					selectCCTV = obj.name
-					cctvMode = '' //如果選到cctv就清除原來的cctvMode模式
+					cctvMode = CCTVMode.NONE //如果選到cctv就清除原來的cctvMode模式
 				}
 		}
 	}
@@ -292,15 +289,15 @@
 	}
 	//新增CCTV
 	export function addCCTV() {
-		cctvMode = 'add'
+		cctvMode = CCTVMode.ADD
 	}
 	function onMouseMoveHandler(event: MouseEvent) {
 		switch (cctvMode) {
-			case 'createLine': //創建線
+			case CCTVMode.CREATELINE: //創建線
 				break
-			case 'addLine':
+			case CCTVMode.ADDLINE: //添加線
 				break
-			case 'lookat':
+			case CCTVMode.LOOKAT:
 				if (selectCCTV) {
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 					mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
@@ -322,15 +319,15 @@
 		const target = e.target as HTMLInputElement
 		const name = target.name
 		switch (name) {
-			case 'createLine': //創建線
+			case CCTVMode.CREATELINE: //創建線
 				break
-			case 'addLine':
+			case CCTVMode.ADDLINE: //添加線
 				break
-			case 'move':
-				cctvMode = target.checked ? 'move' : ''
+			case CCTVMode.MOVE:
+				cctvMode = target.checked ? CCTVMode.MOVE : CCTVMode.NONE
 				break
-			case 'lookat':
-				cctvMode = target.checked ? 'lookat' : ''
+			case CCTVMode.LOOKAT:
+				cctvMode = target.checked ? CCTVMode.LOOKAT : CCTVMode.NONE
 				break
 		}
 	}
@@ -374,7 +371,7 @@
 				color: 0xcccccc,
 				scale: $scalceSize$ // 縮放比例
 			})
-			dispatch(MODLE_READY) // 通知父組件已經準備好
+			dispatch(ViewerEvent.MODLE_READY) // 通知父組件已經準備好
 		} catch (error: any) {
 			alert(error.message || error)
 			goto('/', {
@@ -536,7 +533,7 @@
 
 	function onClickClearCCTVHandler() {
 		selectCCTV = ''
-		cctvMode = ''
+		cctvMode = CCTVMode.NONE
 	}
 	//刪除CCTV
 	function delCCTV(name?: string) {
@@ -550,7 +547,7 @@
 			scene.remove(cctvObj)
 			cctvNum--
 			selectCCTV = ''
-			dispatch(CCTV_DEL, { name: cctvObj.name })
+			dispatch(ViewerEvent.CCTV_DEL, { name: cctvObj.name })
 		}
 	}
 	//刪除全部CCTV(重置)
@@ -562,7 +559,7 @@
 	//新增線路
 	export function createLines() {
 		selectCCTV = ''
-		cctvMode = 'createLine'
+		cctvMode = CCTVMode.CREATELINE
 	}
 </script>
 
@@ -598,14 +595,14 @@
 		<div>
 			<SlideToggle
 				name="move"
-				checked={cctvMode === 'move'}
+				checked={cctvMode === CCTVMode.MOVE}
 				on:change={onCCTVchangeMoveModeHandler}
 				active="bg-primary-500"
 				size="sm">移動位置</SlideToggle
 			>
 			<SlideToggle
 				name="lookat"
-				checked={cctvMode === 'lookat'}
+				checked={cctvMode === CCTVMode.LOOKAT}
 				on:change={onCCTVchangeMoveModeHandler}
 				active="bg-primary-500"
 				size="sm">拍攝方向</SlideToggle
