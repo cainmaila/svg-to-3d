@@ -49,7 +49,7 @@
 	let build: THREE.Group //建築物
 	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
-	let cctvMode = '' //cctv模式 add move lookat createLine
+	let cctvMode = '' //cctv模式 add move lookat createLine addLine
 	let bgImageObj: THREE.Mesh //底圖物件
 
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
@@ -153,11 +153,20 @@
 	const mouse = new THREE.Vector2()
 
 	let points: THREE.Vector3[] = []
-	const lineMap = new Map()
-	$: points.length > 0 && createLineEnd()
+	let lineMap = new Map()
+	// $: points.length > 0 && createLineEnd()
+	$: switch (true) {
+		case points.length == 1:
+			createLineEnd()
+			break
+		case points.length > 1:
+			console.log('points.length', points.length)
+			break
+	}
 	function createLineEnd() {
-		cctvMode = ''
+		cctvMode = 'addLine'
 		lineMap.set(new Date().getTime(), points)
+		lineMap = lineMap
 	}
 	function onRayMe(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -171,9 +180,26 @@
 					const selectPoint = intersectsTopGrid[0]?.point
 					if (!selectPoint) return
 					const poMesh = new THREE.Mesh(
-						new THREE.SphereGeometry(10, 2, 2),
+						new THREE.SphereGeometry(5, 2, 2),
 						new THREE.MeshBasicMaterial({
-							color: 0xff0000
+							color: 0x00ffff
+						})
+					)
+					poMesh.position.copy(selectPoint)
+					scene.add(poMesh)
+					points.push(selectPoint)
+					points = points
+				}
+				break
+			case 'addLine':
+				{
+					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
+					const selectPoint = intersectsTopGrid[0]?.point
+					if (!selectPoint) return
+					const poMesh = new THREE.Mesh(
+						new THREE.SphereGeometry(5, 2, 2),
+						new THREE.MeshBasicMaterial({
+							color: 0x00ffff
 						})
 					)
 					poMesh.position.copy(selectPoint)
@@ -251,6 +277,8 @@
 		switch (cctvMode) {
 			case 'createLine': //創建線
 				break
+			case 'addLine':
+				break
 			case 'lookat':
 				if (selectCCTV) {
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -274,6 +302,8 @@
 		const name = target.name
 		switch (name) {
 			case 'createLine': //創建線
+				break
+			case 'addLine':
 				break
 			case 'move':
 				cctvMode = target.checked ? 'move' : ''
