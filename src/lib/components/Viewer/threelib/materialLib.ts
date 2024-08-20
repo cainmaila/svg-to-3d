@@ -1,7 +1,7 @@
 import { AmbientLight, Color, DirectionalLight, HemisphereLight, Matrix4, ShaderMaterial, Vector3, WebGLRenderTarget } from "three"
-import vertexShader from '$lib/threelib/shaders/poj/vertexShader.frag'
+import vertexShader from './shaders/poj/vertexShader.frag'
 // import fragmentShader from '$lib/threelib/shaders/poj/fragmentShader.frag'
-import { createShader } from '$lib/threelib/shaders/poj/fragmentShader'
+import { createShader } from './shaders/poj/fragmentShader'
 /**
  * 一種使場景深度的材料。
  */

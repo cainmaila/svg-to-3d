@@ -5,17 +5,12 @@
 	import { SlideToggle } from '@skeletonlabs/skeleton'
 	import { debounce } from 'lodash-es'
 	import { goto } from '$app/navigation'
-	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from '$lib/threelib'
-	import {
-		CCTVCamera,
-		createCCTV,
-		createCCTVByMatrix,
-		generateShadowMap
-	} from '$lib/threelib/cctvLib'
-	import { depthMaterial, generateProjectionMaterial } from '$lib/threelib/materialLib'
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
-	import { ViewerEvent, CCTVMode } from '$lib/components/Viewer/viewerType'
+	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
+	import { CCTVCamera, createCCTV, createCCTVByMatrix, generateShadowMap } from './threelib/cctvLib'
+	import { depthMaterial, generateProjectionMaterial } from './threelib/materialLib'
+	import { ViewerEvent, CCTVMode } from './viewerType'
 	const dispatch = createEventDispatcher()
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({

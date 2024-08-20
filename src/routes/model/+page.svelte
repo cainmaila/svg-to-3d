@@ -4,7 +4,7 @@
 	import { svgString$ } from '$lib/stores'
 	import { get } from 'svelte/store'
 	import { goto } from '$app/navigation'
-	import { svgStringToURL, svgToGroupSync } from '$lib/threelib'
+	import { svgStringToURL, svgToGroupSync } from '$lib/components/Viewer/threelib'
 	import { onMount } from 'svelte'
 
 	let viewerDom: HTMLDivElement
