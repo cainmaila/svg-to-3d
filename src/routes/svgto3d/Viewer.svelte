@@ -156,15 +156,21 @@
 	let lineMap = new Map()
 	// $: points.length > 0 && createLineEnd()
 	$: switch (true) {
-		case points.length == 1:
+		case points.length === 1:
 			createLineEnd()
+			cctvMode = 'addLine'
 			break
 		case points.length > 1:
-			console.log('points.length', points.length)
+			createLine(points)
 			break
 	}
+	//傳入陣列點創建線
+	function createLine(points: THREE.Vector3[]) {
+		const geometry = new THREE.BufferGeometry().setFromPoints(points)
+		const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x00ff00 }))
+		scene.add(line)
+	}
 	function createLineEnd() {
-		cctvMode = 'addLine'
 		lineMap.set(new Date().getTime(), points)
 		lineMap = lineMap
 	}
@@ -187,6 +193,7 @@
 					)
 					poMesh.position.copy(selectPoint)
 					scene.add(poMesh)
+					selectPoint.y = 300
 					points.push(selectPoint)
 					points = points
 				}
@@ -204,6 +211,7 @@
 					)
 					poMesh.position.copy(selectPoint)
 					scene.add(poMesh)
+					selectPoint.y = 300
 					points.push(selectPoint)
 					points = points
 				}
@@ -268,6 +276,19 @@
 					cctvMode = '' //如果選到cctv就清除原來的cctvMode模式
 				}
 		}
+	}
+
+	let _downPos: THREE.Vector2 //鼠標按下的位置
+	let _downTime = 0 //鼠標按下的時間
+	function _onMouseDownHandler(event: MouseEvent) {
+		_downPos = new THREE.Vector2(event.clientX, event.clientY)
+		_downTime = Date.now()
+	}
+	function _onMouseUpHandler(event: MouseEvent) {
+		const _delayTime = Date.now() - _downTime
+		if (_delayTime > 200) return //按下時間小於200ms就不處理
+		if (_downPos.distanceTo(new THREE.Vector2(event.clientX, event.clientY)) > 10) return //距離超過10px就不處理
+		onRayMe(event)
 	}
 	//新增CCTV
 	export function addCCTV() {
@@ -548,7 +569,13 @@
 <svelte:window on:resize|passive={onWindowResize} />
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div id="Viewer" on:click={onRayMe} on:mousemove|preventDefault={onMouseMoveHandler}></div>
+<div
+	id="Viewer"
+	on:mousedown|stopPropagation={_onMouseDownHandler}
+	on:mouseup|stopPropagation={_onMouseUpHandler}
+	on:mousemove|preventDefault={onMouseMoveHandler}
+></div>
+<!-- <div id="Viewer" on:click={onRayMe} on:mousemove|preventDefault={onMouseMoveHandler}></div> -->
 
 <div id="CCTV_Info">
 	{#if selectCCTV}
