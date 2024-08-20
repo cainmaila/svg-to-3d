@@ -1,4 +1,4 @@
-import { AmbientLight, Color, DirectionalLight, HemisphereLight, Matrix4, ShaderMaterial, Vector3, WebGLRenderTarget } from "three"
+import { AmbientLight, Color, DirectionalLight, HemisphereLight, Matrix4, MeshStandardMaterial, ShaderMaterial, Vector3, WebGLRenderTarget } from "three"
 import vertexShader from './shaders/poj/vertexShader.frag'
 // import fragmentShader from '$lib/threelib/shaders/poj/fragmentShader.frag'
 import { createShader } from './shaders/poj/fragmentShader'
@@ -137,3 +137,20 @@ export function generateProjectionMaterial({ maxcctvnum, cctvNum, color, shadowM
 	directionalLight.getWorldDirection(shaderMaterial.uniforms.directionalLightDirection.value)
 	return shaderMaterial
 }
+
+//反應陰影的材質
+export const oupPutMaterial = new MeshStandardMaterial({
+	color: 0xaaaaaa,
+	roughness: 0.5,
+	metalness: 0.5
+})
+export const oupPutBoxMaterial = new MeshStandardMaterial({
+	color: 0x448844,
+	roughness: 0.5,
+	metalness: 0.5
+})
+export const oupFloorBoxMaterial = new MeshStandardMaterial({
+	color: 0xcccccc,
+	roughness: 0.5,
+	metalness: 0.5
+})

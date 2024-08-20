@@ -9,25 +9,15 @@
 	import ICON from '$lib/components/icon'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
 	import { CCTVCamera, createCCTV, createCCTVByMatrix, generateShadowMap } from './threelib/cctvLib'
-	import { depthMaterial, generateProjectionMaterial } from './threelib/materialLib'
+	import {
+		depthMaterial,
+		generateProjectionMaterial,
+		oupFloorBoxMaterial,
+		oupPutBoxMaterial,
+		oupPutMaterial
+	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode } from './viewerType'
 	const dispatch = createEventDispatcher()
-	//反應陰影的材質
-	const oupPutMaterial = new THREE.MeshStandardMaterial({
-		color: 0xaaaaaa,
-		roughness: 0.5,
-		metalness: 0.5
-	})
-	const oupPutBoxMaterial = new THREE.MeshStandardMaterial({
-		color: 0x448844,
-		roughness: 0.5,
-		metalness: 0.5
-	})
-	const oupFloorBoxMaterial = new THREE.MeshStandardMaterial({
-		color: 0xcccccc,
-		roughness: 0.5,
-		metalness: 0.5
-	})
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
 		svgString: string
@@ -143,15 +133,14 @@
 	const raycaster = new THREE.Raycaster()
 	const mouse = new THREE.Vector2()
 
-	let points: THREE.Vector3[] = []
-	let lineMap = new Map()
-	// $: points.length > 0 && createLineEnd()
+	let points: THREE.Vector3[] = [] //目前繪製的線段點
+	let lineMap = new Map() //線段紀錄
 	$: switch (true) {
-		case points.length === 1:
+		case points.length === 1: //第一個點
 			createLineEnd()
 			cctvMode = CCTVMode.ADDLINE
 			break
-		case points.length > 1:
+		case points.length > 1: //繪製線
 			createLine(points)
 			break
 	}
@@ -161,10 +150,12 @@
 		const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x00ff00 }))
 		scene.add(line)
 	}
+	//創建線完成(第一個點)
 	function createLineEnd() {
 		lineMap.set(new Date().getTime(), points)
 		lineMap = lineMap
 	}
+	//點選畫面點選場域
 	function onRayMe(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
