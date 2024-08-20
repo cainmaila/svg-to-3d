@@ -7,8 +7,10 @@ import TablerSelect from './TablerSelect.svelte'
 import GameIconsCctvCamera from './GameIconsCctvCamera.svelte'
 import MaterialSymbolsLightDeleteSharp from './MaterialSymbolsLightDeleteSharp.svelte'
 import MaterialSymbolsRestore from './MaterialSymbolsRestore.svelte'
+import TablerLine from './TablerLine.svelte'
 
 export default {
+    TablerLine, //+line
     MaterialSymbolsRestore, //+restore
     MaterialSymbolsLightDeleteSharp, //+delete
     TablerSelect, //+select

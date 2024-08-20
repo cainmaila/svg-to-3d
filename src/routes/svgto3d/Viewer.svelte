@@ -20,6 +20,7 @@
 	const MODLE_READY = 'modelReady' //模型準備好
 	const CCTV_CHANGE = 'cctvChange' //CCTV改變
 	const CCTV_DEL = 'cctvDel' //CCTV刪除
+	const MODE_CHANGE = 'modeChange' //模式改變
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
 		color: 0xaaaaaa,
@@ -48,10 +49,11 @@
 	let build: THREE.Group //建築物
 	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
-	let cctvMode = '' //cctv模式 add move lookat
+	let cctvMode = '' //cctv模式 add move lookat createLine
 	let bgImageObj: THREE.Mesh //底圖物件
 
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
+	$: dispatch(MODE_CHANGE, cctvMode) //通知父組件模式改變
 
 	// 設置場景、相機和渲染器
 	const scene = new THREE.Scene()
@@ -149,12 +151,37 @@
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
 	const mouse = new THREE.Vector2()
+
+	let points: THREE.Vector3[] = []
+	const lineMap = new Map()
+	$: points.length > 0 && createLineEnd()
+	function createLineEnd() {
+		cctvMode = ''
+		lineMap.set(new Date().getTime(), points)
+	}
 	function onRayMe(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 		raycaster.setFromCamera(mouse, camera)
 		const shadowCamera = _getCCTVCamera()
 		switch (cctvMode) {
+			case 'createLine': //創建線
+				{
+					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
+					const selectPoint = intersectsTopGrid[0]?.point
+					if (!selectPoint) return
+					const poMesh = new THREE.Mesh(
+						new THREE.SphereGeometry(10, 2, 2),
+						new THREE.MeshBasicMaterial({
+							color: 0xff0000
+						})
+					)
+					poMesh.position.copy(selectPoint)
+					scene.add(poMesh)
+					points.push(selectPoint)
+					points = points
+				}
+				break
 			case 'add':
 				selectCCTV = ''
 				if (MAX_CCTV_NUM > cctvNum) {
@@ -222,6 +249,8 @@
 	}
 	function onMouseMoveHandler(event: MouseEvent) {
 		switch (cctvMode) {
+			case 'createLine': //創建線
+				break
 			case 'lookat':
 				if (selectCCTV) {
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -244,6 +273,8 @@
 		const target = e.target as HTMLInputElement
 		const name = target.name
 		switch (name) {
+			case 'createLine': //創建線
+				break
 			case 'move':
 				cctvMode = target.checked ? 'move' : ''
 				break
@@ -476,6 +507,11 @@
 		while (cctvObjs.length) {
 			delCCTV(cctvObjs[0].name)
 		}
+	}
+	//新增線路
+	export function createLines() {
+		selectCCTV = ''
+		cctvMode = 'createLine'
 	}
 </script>
 

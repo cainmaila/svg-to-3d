@@ -14,6 +14,8 @@
 	let cctvsSettings = []
 	let cameraNum = 0
 	let bgImageDisable = false //底圖是否顯示
+	let cctvMode = '' //cctv模式
+
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
 		cameraNum = cctvsSettings.length
@@ -52,6 +54,7 @@
 		cameraNum = cctvsMap.size
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}}
+	on:modeChange={(e) => (cctvMode = e.detail)}
 />
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
@@ -76,6 +79,13 @@
 			<ICON.GameIconsCctvCamera /></button
 		>
 		<button
+			class={`${cctvMode === 'createLine' ? 'selectbn' : ''} variant-filled btn-icon bg-primary-500`}
+			on:click={viewer.createLines}
+			title="新增線路"
+		>
+			<ICON.TablerLine /></button
+		>
+		<button
 			class="variant-filled btn-icon"
 			on:click={viewer.delAllCCTV}
 			disabled={cameraNum === 0}
@@ -88,6 +98,11 @@
 {/if}
 
 <style lang="postcss">
+	button {
+		&.selectbn {
+			background-color: rgb(0, 145, 255);
+		}
+	}
 	#UI {
 		padding: 5px;
 		margin: 5px;
