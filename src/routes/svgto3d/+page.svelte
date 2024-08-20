@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { debounce } from 'lodash-es'
-	import Viewer from './Viewer.svelte'
+	import Viewer from '$lib/components/Viewer'
 	import ICON from '$lib/components/icon'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
 

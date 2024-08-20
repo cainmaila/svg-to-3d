@@ -15,8 +15,7 @@
 	import { depthMaterial, generateProjectionMaterial } from '$lib/threelib/materialLib'
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
-	import { ViewerEvent, CCTVMode } from './viewerType'
-
+	import { ViewerEvent, CCTVMode } from '$lib/components/Viewer/viewerType'
 	const dispatch = createEventDispatcher()
 	//反應陰影的材質
 	const oupPutMaterial = new THREE.MeshStandardMaterial({
