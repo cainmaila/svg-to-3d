@@ -3,12 +3,13 @@
 	import Viewer from '$lib/components/Viewer'
 	import ICON from '$lib/components/icon'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
+	import { CCTVMode } from '$lib/components/Viewer/viewerType'
 
 	export let data: {
 		svgString: string
 	}
 	const MAX_CCTV_NUM = 10 //最大CCTV數量
-	let viewer
+	let viewer: Viewer
 	let nowGenerate = true //是否正在生成模型
 	let downloadGLB: string = '' //下載的模型路徑
 	let cctvsSettings = []
@@ -37,6 +38,17 @@
 	}, 300)
 	function onCCTVchangeMoveModeHandler(e: CustomEvent) {
 		debouncedHandler(e.detail)
+	}
+	function onLineModeHandler() {
+		switch (cctvMode) {
+			case CCTVMode.CREATELINE:
+				break
+			case CCTVMode.ADDLINE:
+				viewer.clearCCTVMode()
+				break
+			default:
+				viewer.createLines()
+		}
 	}
 </script>
 
@@ -79,8 +91,8 @@
 			<ICON.GameIconsCctvCamera /></button
 		>
 		<button
-			class={`${cctvMode === 'createLine' ? 'selectbn' : ''} variant-filled btn-icon bg-primary-500`}
-			on:click={viewer.createLines}
+			class={`${cctvMode} variant-filled btn-icon bg-primary-500`}
+			on:click={onLineModeHandler}
 			title="新增線路"
 		>
 			<ICON.TablerLine /></button
@@ -99,8 +111,11 @@
 
 <style lang="postcss">
 	button {
-		&.selectbn {
+		&.createLine {
 			background-color: rgb(0, 145, 255);
+		}
+		&.addLine {
+			background-color: rgb(255, 191, 0);
 		}
 	}
 	#UI {

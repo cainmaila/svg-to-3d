@@ -129,10 +129,8 @@
 			return cctvHelper.name === `${_name || selectCCTV}_helper`
 		})
 	}
-	//點選畫面點選場域 or ray到cctvObj
-	const raycaster = new THREE.Raycaster()
-	const mouse = new THREE.Vector2()
 
+	/* 繪製線邏輯 */
 	let points: THREE.Vector3[] = [] //目前繪製的線段點
 	let lineMap = new Map() //線段紀錄
 	$: switch (true) {
@@ -155,6 +153,10 @@
 		lineMap.set(new Date().getTime(), points)
 		lineMap = lineMap
 	}
+	$: console.log('cctvMode', cctvMode)
+	//點選畫面點選場域 or ray到cctvObj
+	const raycaster = new THREE.Raycaster()
+	const mouse = new THREE.Vector2()
 	//點選畫面點選場域
 	function onRayMe(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -272,10 +274,7 @@
 		if (_downPos.distanceTo(new THREE.Vector2(event.clientX, event.clientY)) > 10) return //距離超過10px就不處理
 		onRayMe(event)
 	}
-	//新增CCTV
-	export function addCCTV() {
-		cctvMode = CCTVMode.ADD
-	}
+
 	function onMouseMoveHandler(event: MouseEvent) {
 		switch (cctvMode) {
 			case CCTVMode.CREATELINE: //創建線
@@ -478,13 +477,6 @@
 	// 將天空盒添加到場景
 	scene.add(generateSkyBox())
 
-	// 監聽視窗大小變化
-	export function onWindowResize() {
-		camera.aspect = window.innerWidth / window.innerHeight
-		camera.updateProjectionMatrix()
-		renderer.setSize(window.innerWidth, window.innerHeight)
-	}
-
 	onDestroy(() => {
 		renderer.domElement.remove()
 		// transformControls.dispose()
@@ -535,6 +527,16 @@
 			dispatch(ViewerEvent.CCTV_DEL, { name: cctvObj.name })
 		}
 	}
+	// 監聽視窗大小變化
+	export function onWindowResize() {
+		camera.aspect = window.innerWidth / window.innerHeight
+		camera.updateProjectionMatrix()
+		renderer.setSize(window.innerWidth, window.innerHeight)
+	}
+	//新增CCTV
+	export function addCCTV() {
+		cctvMode = CCTVMode.ADD
+	}
 	//刪除全部CCTV(重置)
 	export function delAllCCTV() {
 		while (cctvObjs.length) {
@@ -545,6 +547,11 @@
 	export function createLines() {
 		selectCCTV = ''
 		cctvMode = CCTVMode.CREATELINE
+	}
+	//清除CCTV模式
+	export function clearCCTVMode() {
+		selectCCTV = ''
+		cctvMode = CCTVMode.NONE
 	}
 </script>
 
