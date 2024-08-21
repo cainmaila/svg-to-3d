@@ -16,6 +16,9 @@
 	let cameraNum = 0
 	let bgImageDisable = false //底圖是否顯示
 	let cctvMode = '' //cctv模式
+	let topLineMode = true //屋頂拉線模式
+
+	$: isLineMode = cctvMode === CCTVMode.CREATELINE || cctvMode === CCTVMode.ADDLINE
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -42,7 +45,6 @@
 	function onLineModeHandler() {
 		switch (cctvMode) {
 			case CCTVMode.CREATELINE:
-				break
 			case CCTVMode.ADDLINE:
 				viewer.clearCCTVMode()
 				break
@@ -59,6 +61,7 @@
 	{cctvsSettings}
 	bind:downloadGLB
 	bind:bgImageDisable
+	bind:topLineMode
 	on:modelReady={() => (nowGenerate = false)}
 	on:cctvChange={onCCTVchangeMoveModeHandler}
 	on:cctvDel={(e) => {
@@ -106,6 +109,9 @@
 			<ICON.MaterialSymbolsRestore /></button
 		>
 		<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable}>底圖顯示</SlideToggle>
+		{#if isLineMode}
+			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode}>屋頂拉線</SlideToggle>
+		{/if}
 	</div>
 {/if}
 

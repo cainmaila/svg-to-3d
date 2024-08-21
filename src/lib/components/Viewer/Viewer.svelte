@@ -25,6 +25,7 @@
 	export let downloadGLB: string = '' //下載的模型路徑
 	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
 	export let bgImageDisable: boolean = false //底圖是否顯示
+	export let topLineMode = true //屋頂拉線模式
 
 	let cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	let build: THREE.Group //建築物
@@ -153,7 +154,6 @@
 		lineMap.set(new Date().getTime(), points)
 		lineMap = lineMap
 	}
-	$: console.log('cctvMode', cctvMode)
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
 	const mouse = new THREE.Vector2()
@@ -166,7 +166,8 @@
 		switch (cctvMode) {
 			case CCTVMode.CREATELINE: //創建線
 				{
-					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
+					const mesh = topLineMode ? topMesh : build
+					const intersectsTopGrid = raycaster.intersectObject(mesh) //ray到topGrid的位置
 					const selectPoint = intersectsTopGrid[0]?.point
 					if (!selectPoint) return
 					const poMesh = new THREE.Mesh(
@@ -184,7 +185,8 @@
 				break
 			case CCTVMode.ADDLINE: //添加線
 				{
-					const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
+					const mesh = topLineMode ? topMesh : build
+					const intersectsTopGrid = raycaster.intersectObject(mesh) //ray到topGrid的位置
 					const selectPoint = intersectsTopGrid[0]?.point
 					if (!selectPoint) return
 					const poMesh = new THREE.Mesh(
