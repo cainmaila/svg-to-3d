@@ -178,7 +178,7 @@
 					)
 					poMesh.position.copy(selectPoint)
 					scene.add(poMesh)
-					selectPoint.y = 300
+					topLineMode && (selectPoint.y = 300) //屋頂模式創建線時 y = 300
 					points.push(selectPoint)
 					points = points
 				}
@@ -197,7 +197,7 @@
 					)
 					poMesh.position.copy(selectPoint)
 					scene.add(poMesh)
-					selectPoint.y = 300
+					topLineMode && (selectPoint.y = 300)
 					points.push(selectPoint)
 					points = points
 				}
