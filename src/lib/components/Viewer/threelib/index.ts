@@ -120,10 +120,14 @@ export function svgToGroupSync(
 				})
 				if (count === 0) throw new Error('SVG 沒有路徑')
 				const svgHeight = svgBounds.max.y * scale - svgBounds.min.y * scale
+				const md = {
+					x: (svgBounds.max.x - svgBounds.min.x) / 2,
+					y: (svgBounds.max.y - svgBounds.min.y) / 2
+				}
 				count = 0
 				paths.forEach((path) => {
 					const points = path.subPaths[0].getPoints().map(
-						(point) => new Vector2(point.x * scale, svgHeight - point.y * scale) // 翻轉 Y 坐標
+						(point) => new Vector2((point.x - md.x) * scale, svgHeight - (point.y - md.y) * scale) // 翻轉 Y 坐標
 					)
 					if (points.length < 2) return // 忽略不完整的路徑
 					//計算points長度
@@ -216,6 +220,7 @@ export function svgToGroupSync(
 				}
 				// 將 group 旋轉以使其在 XZ 平面上
 				group.rotation.x = -Math.PI / 2
+				group.updateMatrixWorld(true)
 				// 根據Box移到中心
 				const box = new Box3().setFromObject(group)
 				const center = box.getCenter(new Vector3())
@@ -264,7 +269,6 @@ export function svgToGroupSync(
 							break
 					}
 				})
-
 				resolve(group)
 			},
 			undefined,

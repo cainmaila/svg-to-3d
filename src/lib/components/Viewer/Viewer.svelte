@@ -17,6 +17,7 @@
 		oupPutMaterial
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode } from './viewerType'
+	import { scale } from 'svelte/transition'
 	const dispatch = createEventDispatcher()
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
@@ -157,7 +158,7 @@
 		lineMap.set(new Date().getTime(), points)
 		lineMap = lineMap
 	}
-	//檢查兩個法線的面是否相交，如果相交則給我 pointA-> 該點 -> pointB 該點應該在面相交線上，如果沒有相交則返回null
+	//找出折線點
 	function checkFaceIntersectPoint(
 		pointA: THREE.Vector3,
 		normalA: THREE.Vector3,
@@ -168,139 +169,39 @@
 		const crossVector = new THREE.Vector3().crossVectors(normalA, normalB)
 		// 如果叉积为 0 向量，则两个面平行且不相交
 		if (crossVector.length() < 1e-6) return null
-		// 计算两个平面的交线方向向量
-		const direction = crossVector.normalize()
 		// 计算平面 A 和 B 的方程
 		const planeA = new THREE.Plane().setFromNormalAndCoplanarPoint(normalA, pointA)
 		const planeB = new THREE.Plane().setFromNormalAndCoplanarPoint(normalB, pointB)
-		console.log(normalA.toArray(), normalB.toArray())
-		console.log(planeA.constant, planeB.constant, pointA)
-		// //將planeA加入場景
-		const planeAHelper = new THREE.PlaneHelper(planeA, 1000, 0xff0000)
+		//將planeA加入場景
+		const planeAHelper = new THREE.PlaneHelper(planeA, 10000, 0xff0000)
 		scene.add(planeAHelper)
 		//將planeB加入場景
-		const planeBHelper = new THREE.PlaneHelper(planeB, 1000, 0x00ff00)
+		const planeBHelper = new THREE.PlaneHelper(planeB, 10000, 0x00ff00)
 		scene.add(planeBHelper)
+		const planeC = new THREE.Plane().setFromNormalAndCoplanarPoint(crossVector.normalize(), pointA)
+		const planeCHelper = new THREE.PlaneHelper(planeC, 10000, 0x0000ff)
+		scene.add(planeCHelper)
+		//找出 planeA planeB planeC 的交點
+		const normal1 = planeA.normal.clone()
+		const normal2 = planeB.normal.clone()
+		const normal3 = planeC.normal.clone()
+		// 计算平面常数项
+		const d1 = planeA.constant
+		const d2 = planeB.constant
+		const d3 = planeC.constant
 
-		normalA.applyEuler(new THREE.Euler(Math.PI / 2, 0, 0))
-		normalB.applyEuler(new THREE.Euler(Math.PI / 2, 0, 0))
-		// normalA.applyEuler(new THREE.Euler(-Math.PI, 0, Math.PI))
-		// normalB.applyEuler(new THREE.Euler(-Math.PI, 0, Math.PI))
-		// 使用crossVectors計算直線的方向向量
-		const dirVector = new THREE.Vector3()
-		dirVector.crossVectors(normalA, normalB)
-		if (dirVector.length() === 0) {
-			console.warn('The two planes are parallel and do not intersect.')
-			return null
-		}
-		const n1 = normalA
-		const d1 = -planeA.constant
-		const n2 = normalB
-		const d2 = -planeB.constant
-		// 任取一點滿足兩個平面方程式,作為直線上一點
-		const point1 = new THREE.Vector3()
-		point1
-			.copy(n1)
-			.multiplyScalar(d2)
-			.add(n2.multiplyScalar(d1))
-			.divideScalar(dirVector.length() * dirVector.length())
-		//取得直線上另一點
-		const point2 = point1.clone().add(dirVector.clone().multiplyScalar(1000))
-		// 將點投影到直線上,得到最近點
-		const vd = pointA.clone().sub(point1)
-		const projection = dirVector
-			.clone()
-			.multiplyScalar(vd.dot(dirVector) / dirVector.dot(dirVector))
-		const neerPo = point1.clone().add(projection)
+		const cross1 = normal2.clone().cross(normal3)
+		const cross2 = normal3.clone().cross(normal1)
+		const cross3 = normal1.clone().cross(normal2)
 
-		// return null
+		const denom = normal1.dot(normal2.cross(normal3))
 
-		// 創建線段幾何體
-		const geometry = new THREE.BufferGeometry().setFromPoints([point1, point2])
-		// 創建線段物件
-		const material = new THREE.LineBasicMaterial({ color: 0xff00ff, linewidth: 5 })
-		const line2 = new THREE.Line(geometry, material)
-		// line2.applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
-		// line2.applyMatrix4(new THREE.Matrix4())
-		scene.add(line2)
-
-		return neerPo
-
-		// return { x: 34.406398544182526, y: 172.66823976650184, z: 258.80565022471103 }
-
-		// const direction3 = new THREE.Vector3()
-		// direction3.crossVectors(planeA.normal, planeB.normal).normalize()
-		// const point = new THREE.Vector3()
-		// const d1 = planeA.constant
-		// const d2 = planeB.constant
-		// point.set(
-		// 	(d1 * planeB.normal.x - d2 * planeA.normal.x) / direction.x,
-		// 	(d1 * planeB.normal.y - d2 * planeA.normal.y) / direction.y,
-		// 	(d1 * planeB.normal.z - d2 * planeA.normal.z) / direction.z
-		// )
-
-		// return point
-
-		//法線轉90度
-		const normalA2 = normalA.clone().applyEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))
-		const poA = new THREE.Vector3()
-		poA.copy(pointA).add(normalA2.multiplyScalar(1000))
-		const poB = new THREE.Vector3()
-		poB.copy(pointB).add(normalA2.negate())
-		// .applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
-		const line = new THREE.Line3(poA, poB)
-		createLine([poA, poB])
-		console.log(poA, poB)
-		// const hitPoint = new THREE.Vector3()
-		// planeB.intersectLine(line, hitPoint)
-		// point
-		// 	.copy(direction)
-		// 	.multiplyScalar(1000)
-		// 	.add(planeB.normal)
-		// 	.multiplyScalar(1 / planeB.normal.lengthSq())
-
-		return null
-		//計算兩個面相交的交线
-		// const directionLengthSquared = direction.lengthSq()
-		// const constantA = planeA.constant
-		// const constantB = planeB.constant
-		// const scalar =
-		// 	(constantB * planeA.normal.dot(planeA.normal) -
-		// 		constantA * planeB.normal.dot(planeB.normal)) /
-		// 	directionLengthSquared
-		// const point = new THREE.Vector3()
-		// 	.copy(planeA.normal)
-		// 	.multiplyScalar(scalar)
-		// 	.add(planeB.normal.multiplyScalar(constantA / planeB.normal.lengthSq()))
-		// const point = new THREE.Vector3()
-		// point.copy(planeA.normal).multiplyScalar(constantA)
-		// point.addScaledVector(planeB.normal, constantB)
-
-		// // 计算相交线上的一点
-		// const intersectionPoint = point.divideScalar(plane1.normal.dot(direction))
-
-		// return point
-
-		// 计算从 pointA 到交线的向量
-		// const toIntersection = new THREE.Vector3()
-		// planeB.projectPoint(pointA, toIntersection)
-		// console.log(toIntersection)
-		// // // toIntersection.sub(pointA)
-		// return toIntersection
-
-		// // 计算交点
-		// const intersectionPoint = new THREE.Vector3().addVectors(pointA, toIntersection)
-
-		// // 验证交点是否在两个平面上
-		// if (
-		// 	Math.abs(planeA.distanceToPoint(intersectionPoint)) < 1e-6 &&
-		// 	Math.abs(planeB.distanceToPoint(intersectionPoint)) < 1e-6
-		// ) {
-		// 	return intersectionPoint
-		// }
-
-		// 如果计算出错，返回 null（这种情况理论上不应该发生）
-		// return null
+		const intersection = new THREE.Vector3(
+			(-d1 * cross1.x - d2 * cross2.x - d3 * cross3.x) / denom,
+			(-d1 * cross1.y - d2 * cross2.y - d3 * cross3.y) / denom,
+			(-d1 * cross1.z - d2 * cross2.z - d3 * cross3.z) / denom
+		)
+		return intersection
 	}
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
@@ -322,6 +223,7 @@
 					//取得法線的面
 					const face = intersectsTopGrid[0]?.face as THREE.Face
 					normalA = face.normal.clone().applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
+					// normalA = face.normal.clone()
 					topLineMode && (selectPoint.y = 300) //屋頂模式創建線時 y = 300
 					const poMesh = new THREE.Mesh(
 						new THREE.SphereGeometry(5, 2, 2),
@@ -343,9 +245,14 @@
 					//取得法線的面
 					const normalB = intersectsTopGrid[0]?.face?.normal
 						.clone()
-						.applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
+						.applyEuler(new THREE.Euler(Math.PI / 2, 0, 0))
 					const selectPoint = intersectsTopGrid[0].point
-					const po = checkFaceIntersectPoint(points[0], normalA!, selectPoint, normalB!)
+					const po = checkFaceIntersectPoint(
+						points[0].clone(),
+						normalA!,
+						selectPoint.clone(),
+						normalB!
+					)
 					console.log('po', po)
 					if (po) {
 						const poMesh2 = new THREE.Mesh(
