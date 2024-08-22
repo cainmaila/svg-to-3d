@@ -16,7 +16,7 @@
 	let cameraNum = 0
 	let bgImageDisable = false //底圖是否顯示
 	let cctvMode = '' //cctv模式
-	let topLineMode = true //屋頂拉線模式
+	let topLineMode = false //屋頂拉線模式
 
 	$: isLineMode = cctvMode === CCTVMode.CREATELINE || cctvMode === CCTVMode.ADDLINE
 

@@ -1,28 +1,24 @@
-
-import { join } from 'path';
-import type { Config } from 'tailwindcss';
-import { skeleton } from '@skeletonlabs/tw-plugin';
-import forms from '@tailwindcss/forms';
+import { join } from 'path'
+import type { Config } from 'tailwindcss'
+import { skeleton } from '@skeletonlabs/tw-plugin'
+import forms from '@tailwindcss/forms'
 
 const config = {
 	darkMode: 'class',
 	content: [
 		'./src/**/*.{html,js,svelte,ts}',
 		// 3. Append the path to the Skeleton package
-		join(require.resolve(
-			'@skeletonlabs/skeleton'),
-			'../**/*.{html,js,svelte,ts}'
-		)
+		join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
 	],
 	theme: {
-		extend: {},
+		extend: {}
 	},
 	plugins: [
 		forms,
 		skeleton({
-			themes: { preset: [{ name: "gold-nouveau", enhancements: true }] }
+			themes: { preset: [{ name: 'gold-nouveau', enhancements: true }] }
 		})
 	]
-} satisfies Config;
+} satisfies Config
 
-export default config;
+export default config

@@ -10,14 +10,14 @@ import MaterialSymbolsRestore from './MaterialSymbolsRestore.svelte'
 import TablerLine from './TablerLine.svelte'
 
 export default {
-    TablerLine, //+line
-    MaterialSymbolsRestore, //+restore
-    MaterialSymbolsLightDeleteSharp, //+delete
-    TablerSelect, //+select
-    FluentMdl2SaveTemplate, //+save
-    StreamlineAiGenerateVariationSpark, //+ai
-    StreamlineNewFile, //+file
-    FluentMdl2ImageCrosshair, //+image
-    EntypoDownload, //download
-    GameIconsCctvCamera //cctv
+	TablerLine, //+line
+	MaterialSymbolsRestore, //+restore
+	MaterialSymbolsLightDeleteSharp, //+delete
+	TablerSelect, //+select
+	FluentMdl2SaveTemplate, //+save
+	StreamlineAiGenerateVariationSpark, //+ai
+	StreamlineNewFile, //+file
+	FluentMdl2ImageCrosshair, //+image
+	EntypoDownload, //download
+	GameIconsCctvCamera //cctv
 }

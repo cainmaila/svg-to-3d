@@ -1,7 +1,7 @@
 /* 動態生成Shader */
 
 export function createShader(num: number = 4) {
-    return `
+	return `
     precision highp float;
 uniform vec3 cctvPositions[${num}];
 uniform vec3 cctvDirections[${num}];
@@ -16,7 +16,9 @@ uniform vec3 directionalLightDirection;
 uniform vec3 hemisphereLightSkyColor;
 uniform vec3 hemisphereLightGroundColor;
 uniform vec3 hemisphereLightPosition;
-${Array.from({ length: num }).map((_, i) => `uniform sampler2D shadowMaps${i + 1};`).join('\n')}
+${Array.from({ length: num })
+	.map((_, i) => `uniform sampler2D shadowMaps${i + 1};`)
+	.join('\n')}
 uniform mat4 shadowMatrices[${num}];
 uniform vec3 baseColor;
 
@@ -73,9 +75,13 @@ void main() {
             vec4 fragPosLightSpace = shadowMatrices[i] * vec4(vWorldPosition, 1.0);
             bool shadow;
             switch(i) {  //sampler2D 不支持数组索引，所以只能写死 QQ
-                ${Array.from({ length: num }).map((_, i) => `case ${i}:
+                ${Array.from({ length: num })
+									.map(
+										(_, i) => `case ${i}:
                     shadow = getShadow(fragPosLightSpace, shadowMaps${i + 1});
-                    break;`).join('\n')}
+                    break;`
+									)
+									.join('\n')}
             }
             if(shadow)
                 continue;

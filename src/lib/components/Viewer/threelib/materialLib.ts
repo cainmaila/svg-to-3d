@@ -1,4 +1,14 @@
-import { AmbientLight, Color, DirectionalLight, HemisphereLight, Matrix4, MeshStandardMaterial, ShaderMaterial, Vector3, WebGLRenderTarget } from "three"
+import {
+	AmbientLight,
+	Color,
+	DirectionalLight,
+	HemisphereLight,
+	Matrix4,
+	MeshStandardMaterial,
+	ShaderMaterial,
+	Vector3,
+	WebGLRenderTarget
+} from 'three'
 import vertexShader from './shaders/poj/vertexShader.frag'
 // import fragmentShader from '$lib/threelib/shaders/poj/fragmentShader.frag'
 import { createShader } from './shaders/poj/fragmentShader'
@@ -18,12 +28,11 @@ export const depthMaterial = new ShaderMaterial({
 	`
 })
 
-
 export const lightShaderMaterial = new ShaderMaterial({
 	uniforms: {
 		lightPosition: { value: new Vector3(0, 0, 0) },
 		lightDirection: { value: new Vector3(0, 0, -1) },
-		lightFov: { value: 45 * Math.PI / 180 },
+		lightFov: { value: (45 * Math.PI) / 180 },
 		aspectRatio: { value: 1.0 },
 		maxDistance: { value: 1000 },
 		sceneDepthTexture: { value: null }
@@ -84,7 +93,7 @@ export const lightShaderMaterial = new ShaderMaterial({
 		}
 	`,
 	transparent: true
-});
+})
 
 // 添加光源
 const ambientLight = new AmbientLight(0xffffff)
@@ -100,7 +109,17 @@ hemisphereLight.position.set(0, 500, 0)
  * @param param0.shadowMaps - 陰影貼圖
  * @returns 投影材料
  */
-export function generateProjectionMaterial({ maxcctvnum, cctvNum, color, shadowMaps }: { maxcctvnum: number, cctvNum: number, color: Color, shadowMaps: WebGLRenderTarget[] }) {
+export function generateProjectionMaterial({
+	maxcctvnum,
+	cctvNum,
+	color,
+	shadowMaps
+}: {
+	maxcctvnum: number
+	cctvNum: number
+	color: Color
+	shadowMaps: WebGLRenderTarget[]
+}) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const uniforms: any = {
 		cctvPositions: {
