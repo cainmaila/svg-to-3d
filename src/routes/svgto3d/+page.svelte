@@ -111,6 +111,9 @@
 		<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable}>底圖顯示</SlideToggle>
 		{#if isLineMode}
 			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode}>屋頂拉線</SlideToggle>
+			<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
+				<ICON.MaterialSymbolsUndo /></button
+			>
 		{/if}
 	</div>
 {/if}

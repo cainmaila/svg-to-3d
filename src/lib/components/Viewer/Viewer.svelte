@@ -18,6 +18,7 @@
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
+	import { computeMikkTSpaceTangents } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 	const dispatch = createEventDispatcher()
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
@@ -134,34 +135,46 @@
 
 	/* 繪製線邏輯 */
 	let points: THREE.Vector3[] = [] //目前繪製的線段點
-	let lineMap = new Map() //線段紀錄
+	const normalArray: (THREE.Vector3 | null)[] = [] //法向量的陣列，undo畫線用
+	const lineMap = new Map() //線段紀錄
+	let targetLineName = '' //目標線段
 	$: switch (true) {
-		case points.length === 1: //第一個點
-			createLineEnd()
-			cctvMode = CCTVMode.ADDLINE
-			break
-		case points.length > 1: //繪製線
+		case points.length > 0: //繪製線
 			createLine(points)
 			break
+		default:
 	}
 	//傳入陣列點創建線
 	function createLine(points: THREE.Vector3[]) {
-		const geometry = new THREE.BufferGeometry().setFromPoints(points)
-		const line = new THREE.Line(
-			geometry,
-			new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 3 })
-		)
-		scene.add(line)
+		if (!targetLineName) return
+		const targetLine = scene.getObjectByName(targetLineName) as THREE.Line
+		if (targetLine) {
+			targetLine.geometry = new THREE.BufferGeometry().setFromPoints(points)
+		} else {
+			const geometry = new THREE.BufferGeometry().setFromPoints(points)
+			const line = new THREE.Line(
+				geometry,
+				new THREE.LineBasicMaterial({
+					color: 0x00ff00,
+					linewidth: 10,
+					depthTest: false,
+					depthWrite: true
+				})
+			)
+			line.name = targetLineName
+			scene.add(line)
+		}
 	}
 	//創建線完成(第一個點)
 	function createLineEnd() {
-		lineMap.set(new Date().getTime(), points)
-		lineMap = lineMap
+		const lineName = 'Line_' + new Date().getTime()
+		lineMap.set(lineName, points)
+		cctvMode = CCTVMode.ADDLINE
+		return lineName
 	}
 	//點選畫面點選場域 or ray到cctvObj
 	const raycaster = new THREE.Raycaster()
 	const mouse = new THREE.Vector2()
-	let normalA: THREE.Vector3 | undefined
 	//點選畫面點選場域
 	function onRayMe(event: MouseEvent) {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -177,19 +190,20 @@
 					if (!selectPoint) return
 					//取得法線的面
 					const face = intersectsTopGrid[0]?.face as THREE.Face
-					normalA = face.normal.clone().applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
-					// normalA = face.normal.clone()
+					const normalA = face.normal.clone().applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
 					topLineMode && (selectPoint.y = 300) //屋頂模式創建線時 y = 300
 					const poMesh = new THREE.Mesh(
 						new THREE.SphereGeometry(5, 2, 2),
 						new THREE.MeshBasicMaterial({
-							color: 0x00ffff
+							color: 0xff0000
 						})
 					)
 					poMesh.position.copy(selectPoint)
 					scene.add(poMesh)
 					points.push(selectPoint)
-					points = points
+					normalArray.push(normalA)
+					targetLineName = createLineEnd()
+					poMesh.name = targetLineName + '_PO'
 				}
 				break
 			case CCTVMode.ADDLINE: //添加線
@@ -202,37 +216,22 @@
 						.clone()
 						.applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
 					const selectPoint = intersectsTopGrid[0].point
-					const po = checkFaceIntersectPoint(
-						points[0].clone(),
-						normalA!,
+					if (!selectPoint) return
+					const explainPo = checkFaceIntersectPoint(
+						points[points.length - 1].clone(),
+						normalArray[normalArray.length - 1]!.clone(),
 						selectPoint.clone(),
 						normalB!
 						// scene
 					)
-					console.log('po', po)
-					if (po) {
-						const poMesh2 = new THREE.Mesh(
-							new THREE.SphereGeometry(5, 2, 2),
-							new THREE.MeshBasicMaterial({
-								color: 0xff0000
-							})
-						)
-						poMesh2.position.copy(po)
-						scene.add(poMesh2)
-						points.push(po)
+					if (explainPo) {
+						points.push(explainPo)
+						normalArray.push(null)
 					}
-					if (!selectPoint) return
-					const poMesh = new THREE.Mesh(
-						new THREE.SphereGeometry(5, 2, 2),
-						new THREE.MeshBasicMaterial({
-							color: 0x00ffff
-						})
-					)
-					poMesh.position.copy(selectPoint)
-					scene.add(poMesh)
 					topLineMode && (selectPoint.y = 300)
 					points.push(selectPoint)
 					points = points
+					normalArray.push(normalB!)
 				}
 				break
 			case CCTVMode.ADD: //添加CCTV
@@ -587,6 +586,27 @@
 	export function clearCCTVMode() {
 		selectCCTV = ''
 		cctvMode = CCTVMode.NONE
+	}
+	//畫線undo
+	export function unDoAddLine() {
+		if (cctvMode !== CCTVMode.ADDLINE) return
+		if (normalArray.length === 0) return
+		if (normalArray.length === 1) {
+			//剛創建重新開始
+			points = []
+			normalArray.length = 0
+			cctvMode = CCTVMode.CREATELINE
+		} else if (normalArray.length > 1) {
+			//移除上一個點
+			normalArray.pop()
+			points.pop()
+			if (normalArray[normalArray.length - 1] === null) {
+				//則線點一起移除
+				normalArray.pop()
+				points.pop()
+			}
+			points = points
+		}
 	}
 </script>
 

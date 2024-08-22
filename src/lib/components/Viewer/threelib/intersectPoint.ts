@@ -18,7 +18,8 @@ export function checkFaceIntersectPoint(
     // 计算两个法向量的叉积
     const crossVector = new Vector3().crossVectors(normalA, normalB)
     // 如果叉积为 0 向量，则两个面平行且不相交
-    if (crossVector.length() < 1e-6) return null
+    // if (crossVector.length() < 1e-6) return null
+    if (crossVector.length() < 0.1) return null
     // 计算平面 A 和 B 的方程
     const planeA = new Plane().setFromNormalAndCoplanarPoint(normalA, pointA)
     const planeB = new Plane().setFromNormalAndCoplanarPoint(normalB, pointB)

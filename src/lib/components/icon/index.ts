@@ -8,8 +8,10 @@ import GameIconsCctvCamera from './GameIconsCctvCamera.svelte'
 import MaterialSymbolsLightDeleteSharp from './MaterialSymbolsLightDeleteSharp.svelte'
 import MaterialSymbolsRestore from './MaterialSymbolsRestore.svelte'
 import TablerLine from './TablerLine.svelte'
+import MaterialSymbolsUndo from './MaterialSymbolsUndo.svelte'
 
 export default {
+	MaterialSymbolsUndo, //+undo
 	TablerLine, //+line
 	MaterialSymbolsRestore, //+restore
 	MaterialSymbolsLightDeleteSharp, //+delete
