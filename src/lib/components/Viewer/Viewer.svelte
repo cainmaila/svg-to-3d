@@ -18,7 +18,6 @@
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
-	import { computeMikkTSpaceTangents } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 	const dispatch = createEventDispatcher()
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
@@ -28,7 +27,7 @@
 	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
 	export let bgImageDisable: boolean = false //底圖是否顯示
 	export let topLineMode = true //屋頂拉線模式
-
+	const TARGET_LINE_POINT_END = '_PO' //繪製點的的顯示模型結尾名稱
 	let cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	let build: THREE.Group //建築物
 	let { svgString } = data //SVG字串
@@ -203,7 +202,7 @@
 					points.push(selectPoint)
 					normalArray.push(normalA)
 					targetLineName = createLineEnd()
-					poMesh.name = targetLineName + '_PO'
+					poMesh.name = targetLineName + TARGET_LINE_POINT_END
 				}
 				break
 			case CCTVMode.ADDLINE: //添加線
@@ -595,6 +594,10 @@
 			//剛創建重新開始
 			points = []
 			normalArray.length = 0
+			lineMap.delete(targetLineName)
+			const pointMesh = scene.getObjectByName(targetLineName + TARGET_LINE_POINT_END)
+			pointMesh && scene.remove(pointMesh)
+			targetLineName = ''
 			cctvMode = CCTVMode.CREATELINE
 		} else if (normalArray.length > 1) {
 			//移除上一個點
