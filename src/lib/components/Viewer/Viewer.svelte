@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { debounce } from 'lodash-es'
 	import * as THREE from 'three'
 	import { OrbitControls } from 'three/examples/jsm/Addons.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
-	import { debounce } from 'lodash-es'
 	import { goto } from '$app/navigation'
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
@@ -18,7 +18,7 @@
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
-	const dispatch = createEventDispatcher()
+
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
 		svgString: string
@@ -27,14 +27,17 @@
 	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
 	export let bgImageDisable: boolean = false //底圖是否顯示
 	export let topLineMode = true //屋頂拉線模式
+
+	const dispatch = createEventDispatcher()
 	const TARGET_LINE_POINT_END = '_PO' //繪製點的的顯示模型結尾名稱
-	let cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
+	const { svgString } = data //
+
 	let build: THREE.Group //建築物
-	let { svgString } = data //SVG字串
 	let selectCCTV: string = '' //選擇的cctv
 	let cctvMode: CCTVMode = CCTVMode.NONE //cctv模式 add move lookat createLine addLine
 	let bgImageObj: THREE.Mesh //底圖物件
 
+	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
 	$: dispatch(ViewerEvent.MODE_CHANGE, cctvMode) //通知父組件模式改變
 
