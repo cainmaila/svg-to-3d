@@ -8,7 +8,7 @@
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
-	import { CCTVCamera, createCCTV, cctvObjsFactory, generateShadowMap } from './threelib/cctvLib'
+	import { createCCTV, cctvObjsFactory, generateShadowMap } from './threelib/cctvLib'
 	import {
 		depthMaterial,
 		generateProjectionMaterial,
@@ -18,6 +18,7 @@
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
+	import type { CCTVCamera } from './threelib/cctvCamera'
 
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
