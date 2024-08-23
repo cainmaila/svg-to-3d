@@ -12,7 +12,7 @@
 		CCTVCamera,
 		createCCTV,
 		createCCTVByMatrix,
-		createCCTVObj,
+		cctvObjsFactory,
 		generateShadowMap
 	} from './threelib/cctvLib'
 	import {
@@ -79,18 +79,10 @@
 	})
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
-	//攝影機物件
-	const cctvObjs: THREE.Mesh[] = cctvs.map((cctvObj) => {
-		const cctv = createCCTVObj({
-			cctv: cctvObj.cctv
-		}) //創建CCTV Obj
-		cctv.name = cctvObj.name
-		scene.add(cctv)
-		return cctv
-	})
+	const { cctvObjs, getCCTVObj, createCCTVObj } = cctvObjsFactory(cctvs, scene) //攝影機物件 創建CCTV Obj
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
-		const cctvObj = _getCCTVObj(name)
+		const cctvObj = getCCTVObj(name)
 		const shadowCamera = _getCCTVCamera(name)
 		if (!cctvObj || !shadowCamera) return //找不到cctvObj或shadowCamera
 		cctvObj.position.copy(shadowCamera.position)
@@ -125,10 +117,6 @@
 		return shadowCameras.find((cctv) => {
 			return cctv.name === `${_name || selectCCTV}_camera`
 		}) as CCTVCamera | undefined
-	}
-	//找到CCTV Obj
-	function _getCCTVObj(_name?: string) {
-		return cctvObjs.find((cctvObj) => cctvObj.name === (_name || selectCCTV))
 	}
 	function _getCCTVHelper(_name?: string) {
 		return cctvHelpers.find((cctvHelper) => {
@@ -246,7 +234,7 @@
 				if (intersectsTopGrid.length > 0) {
 					const point = intersectsTopGrid[0].point
 					let _n = 1
-					while (_getCCTVObj(`cctv${_n}`)) {
+					while (getCCTVObj(`cctv${_n}`)) {
 						_n++
 					}
 					const { cctv, cctvHelper, name } = createCCTV(
@@ -553,7 +541,7 @@
 	}
 	//刪除CCTV
 	function delCCTV(name?: string) {
-		const cctvObj = _getCCTVObj(name)
+		const cctvObj = getCCTVObj(name || selectCCTV)
 		if (cctvObj) {
 			const index = cctvObjs.indexOf(cctvObj)
 			cctvObjs.splice(index, 1)

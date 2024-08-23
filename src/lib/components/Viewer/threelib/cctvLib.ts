@@ -183,6 +183,35 @@ export function generateShadowMap() {
 	})
 }
 
+
+/**
+ * CCTV物件創建器
+ * @param cctvs
+ * @param scene
+ * @returns
+ */
+export function cctvObjsFactory
+	(cctvs: {
+		cctv: PerspectiveCamera
+		name: string
+		color?: number
+	}[], scene: Scene) {
+	//攝影機物件
+	const cctvObjs: Mesh[] = cctvs.map((cctvObj) => {
+		const cctv = _createCCTVObj({
+			cctv: cctvObj.cctv
+		}) //創建CCTV Obj
+		cctv.name = cctvObj.name
+		scene.add(cctv)
+		return cctv
+	})
+	//找到CCTV Obj
+	function getCCTVObj(_name: string) {
+		return cctvObjs.find((cctvObj) => cctvObj.name === (_name))
+	}
+	return { cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
+}
+
 /**
  * 建立一個CCTV
  * @param param0
@@ -190,7 +219,7 @@ export function generateShadowMap() {
  * @param param0.color - 顏色
  * @returns cctvObj
  */
-export function createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera, color?: number }) {
+function _createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera, color?: number }) {
 	const cctvObj = new Mesh(
 		new BoxGeometry(10, 10, 20),
 		new MeshBasicMaterial({ color: color || 0x880000 })
