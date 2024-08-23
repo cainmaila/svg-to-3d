@@ -230,8 +230,6 @@ export function svgToGroupSync(
 				const center = box.getCenter(new Vector3())
 				group.position.x -= center.x
 				group.position.z -= center.z
-				const box3 = new Box3().setFromObject(group)
-				console.log(box3)
 				// 更新世界矩陣
 				group.updateMatrixWorld(true)
 				const svg = new Svg(data.xml as unknown as SVGSVGElement)
