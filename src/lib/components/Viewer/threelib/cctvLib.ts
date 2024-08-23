@@ -1,8 +1,11 @@
 import {
+	BoxGeometry,
 	CameraHelper,
 	FloatType,
 	LinearFilter,
 	Matrix4,
+	Mesh,
+	MeshBasicMaterial,
 	PerspectiveCamera,
 	RGBAFormat,
 	Scene,
@@ -178,4 +181,21 @@ export function generateShadowMap() {
 		type: FloatType, // 使用浮點數格式提高精度
 		anisotropy: 16 // 啟用各向異性過濾
 	})
+}
+
+/**
+ * 建立一個CCTV
+ * @param param0
+ * @param param0.cctv - CCTV PerspectiveCamera
+ * @param param0.color - 顏色
+ * @returns cctvObj
+ */
+export function createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera, color: number }) {
+	const cctvObj = new Mesh(
+		new BoxGeometry(10, 10, 20),
+		new MeshBasicMaterial({ color: color || 0x880000 })
+	)
+	cctvObj.position.copy(cctv.position)
+	cctvObj.quaternion.copy(cctv.quaternion)
+	return cctvObj
 }

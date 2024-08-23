@@ -8,7 +8,13 @@
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
-	import { CCTVCamera, createCCTV, createCCTVByMatrix, generateShadowMap } from './threelib/cctvLib'
+	import {
+		CCTVCamera,
+		createCCTV,
+		createCCTVByMatrix,
+		createCCTVObj,
+		generateShadowMap
+	} from './threelib/cctvLib'
 	import {
 		depthMaterial,
 		generateProjectionMaterial,
@@ -74,19 +80,12 @@
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
-	const cctvObjs: THREE.Mesh[] = cctvs.map(_createCCTVObj)
-	//創建CCTV Obj物件
-	function _createCCTVObj({ cctv, name }: { cctv: THREE.PerspectiveCamera; name: string }) {
-		const cctvObj = new THREE.Mesh(
-			new THREE.BoxGeometry(10, 10, 20),
-			new THREE.MeshBasicMaterial({ color: 0x880000 })
-		)
-		cctvObj.name = name
-		scene.add(cctvObj)
-		cctvObj.position.copy(cctv.position)
-		cctvObj.quaternion.copy(cctv.quaternion)
-		return cctvObj
-	}
+	const cctvObjs: THREE.Mesh[] = cctvs.map((cctvObj) => {
+		const cctv = createCCTVObj(cctvObj) //創建CCTV Obj
+		cctv.name = cctvObj.name
+		scene.add(cctv)
+		return cctv
+	})
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
 		const cctvObj = _getCCTVObj(name)
@@ -254,7 +253,9 @@
 						new THREE.Vector3(),
 						scene
 					)
-					const cctvObj = _createCCTVObj({ cctv, name: `cctv${_n}` })
+					const cctvObj = createCCTVObj({ cctv })
+					cctvObj.name = `cctv${_n}`
+					scene.add(cctvObj)
 					shadowCameras.push(cctv)
 					cctvObjs.push(cctvObj)
 					cctvHelpers.push(cctvHelper)
