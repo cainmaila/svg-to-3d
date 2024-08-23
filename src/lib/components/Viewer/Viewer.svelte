@@ -81,7 +81,9 @@
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
 	const cctvObjs: THREE.Mesh[] = cctvs.map((cctvObj) => {
-		const cctv = createCCTVObj(cctvObj) //創建CCTV Obj
+		const cctv = createCCTVObj({
+			cctv: cctvObj.cctv
+		}) //創建CCTV Obj
 		cctv.name = cctvObj.name
 		scene.add(cctv)
 		return cctv

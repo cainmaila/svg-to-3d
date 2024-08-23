@@ -190,7 +190,7 @@ export function generateShadowMap() {
  * @param param0.color - 顏色
  * @returns cctvObj
  */
-export function createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera, color: number }) {
+export function createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera, color?: number }) {
 	const cctvObj = new Mesh(
 		new BoxGeometry(10, 10, 20),
 		new MeshBasicMaterial({ color: color || 0x880000 })
