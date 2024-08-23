@@ -13,14 +13,6 @@ import {
 	WebGLRenderTarget
 } from 'three'
 
-type I_CCTV_SETTING = {
-	focalLength: number
-	sensorWidth: number
-	sensorHeight: number
-	near: number
-	far: number
-}
-
 const ANGLE = 180 / Math.PI // 弧度轉角度
 export class CCTVCamera extends PerspectiveCamera {
 	private _focalLength: number = 8 // 焦距
@@ -183,7 +175,6 @@ export function generateShadowMap() {
 	})
 }
 
-
 /**
  * CCTV物件創建器
  * @param cctvs
@@ -191,11 +182,16 @@ export function generateShadowMap() {
  * @returns
  */
 export function cctvObjsFactory
-	(cctvs: {
-		cctv: PerspectiveCamera
-		name: string
-		color?: number
-	}[], scene: Scene) {
+	(cctvsSettings: T_CCTV_MAP, scene: Scene) {
+	//攝影機定義
+	const cctvs = cctvsSettings.map((cctvSetting) => {
+		return createCCTVByMatrix(
+			cctvSetting[0] /* name */,
+			cctvSetting[1].matrix /* matrix */,
+			cctvSetting[1].focalLength,
+				/* Matri */ scene
+		)
+	})
 	//攝影機物件
 	const cctvObjs: Mesh[] = cctvs.map((cctvObj) => {
 		const cctv = _createCCTVObj({
@@ -209,7 +205,7 @@ export function cctvObjsFactory
 	function getCCTVObj(_name: string) {
 		return cctvObjs.find((cctvObj) => cctvObj.name === (_name))
 	}
-	return { cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
+	return { cctvs, cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
 }
 
 /**

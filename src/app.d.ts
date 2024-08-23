@@ -2,6 +2,7 @@
 // for information about these interfaces
 
 /// <reference types="vite-plugin-glsl/ext" />
+/// <reference types="./lib/components/Viewer/threelib/cctvLib" />
 
 declare global {
 	namespace App {

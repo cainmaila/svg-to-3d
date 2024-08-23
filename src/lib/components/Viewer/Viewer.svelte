@@ -8,13 +8,7 @@
 	import { scalceSize$ } from '$lib/stores'
 	import ICON from '$lib/components/icon'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
-	import {
-		CCTVCamera,
-		createCCTV,
-		createCCTVByMatrix,
-		cctvObjsFactory,
-		generateShadowMap
-	} from './threelib/cctvLib'
+	import { CCTVCamera, createCCTV, cctvObjsFactory, generateShadowMap } from './threelib/cctvLib'
 	import {
 		depthMaterial,
 		generateProjectionMaterial,
@@ -30,7 +24,7 @@
 		svgString: string
 	}
 	export let downloadGLB: string = '' //下載的模型路徑
-	export let cctvsSettings: [name: string, matrix: THREE.Matrix4][] //初始化的CCTV設定
+	export let cctvsSettings: T_CCTV_MAP //初始化的CCTV設定
 	export let bgImageDisable: boolean = false //底圖是否顯示
 	export let topLineMode = true //屋頂拉線模式
 
@@ -67,19 +61,9 @@
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.maxDistance = 10000 // 最大缩放距离
-	const cctvs = cctvsSettings.map((cctvSetting) => {
-		return createCCTVByMatrix(
-			cctvSetting[0] /* name */,
-			// @ts-ignore
-			cctvSetting[1]?.matrix /* matrix */,
-			//@ts-ignore
-			cctvSetting[1]?.focalLength,
-			/* Matri */ scene
-		)
-	})
+	const { cctvs, cctvObjs, getCCTVObj, createCCTVObj } = cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
 	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
 	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
-	const { cctvObjs, getCCTVObj, createCCTVObj } = cctvObjsFactory(cctvs, scene) //攝影機物件 創建CCTV Obj
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
 		const cctvObj = getCCTVObj(name)
