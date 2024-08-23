@@ -119,15 +119,11 @@ export function svgToGroupSync(
 					})
 				})
 				if (count === 0) throw new Error('SVG 沒有路徑')
-				const svgHeight = svgBounds.max.y * scale - svgBounds.min.y * scale
-				const md = {
-					x: (svgBounds.max.x - svgBounds.min.x) / 2,
-					y: (svgBounds.max.y - svgBounds.min.y) / 2
-				}
+				const svgHeight = svgBounds.max.y - svgBounds.min.y
 				count = 0
 				paths.forEach((path) => {
 					const points = path.subPaths[0].getPoints().map(
-						(point) => new Vector2((point.x - md.x) * scale, svgHeight - (point.y - md.y) * scale) // 翻轉 Y 坐標
+						(point) => new Vector2((point.x) * scale, svgHeight - (point.y) * scale) // 翻轉 Y 坐標
 					)
 					if (points.length < 2) return // 忽略不完整的路徑
 					//計算points長度
@@ -218,23 +214,26 @@ export function svgToGroupSync(
 					building.name = 'Background'
 					group.add(building)
 				}
-				// 將 group 旋轉以使其在 XZ 平面上
-				group.rotation.x = -Math.PI / 2
-				group.updateMatrixWorld(true)
-				// 根據Box移到中心
-				const box = new Box3().setFromObject(group)
-				const center = box.getCenter(new Vector3())
-				group.position.x = -center.x
-				group.position.z = -center.z
-				// 更新世界矩陣
-				group.updateMatrixWorld(true)
+
+
 				group.traverse((child) => {
 					if (child instanceof Mesh) {
 						child.geometry = BufferGeometryUtils.mergeVertices(child.geometry)
 						child.material = material
 					}
 				})
-
+				// 將 group 旋轉以使其在 XZ 平面上
+				group.rotation.x = -Math.PI / 2
+				group.position.set(0, 0, 0)
+				// 根據Box移到中心
+				const box = new Box3().setFromObject(group)
+				const center = box.getCenter(new Vector3())
+				group.position.x -= center.x
+				group.position.z -= center.z
+				const box3 = new Box3().setFromObject(group)
+				console.log(box3)
+				// 更新世界矩陣
+				group.updateMatrixWorld(true)
 				const svg = new Svg(data.xml as unknown as SVGSVGElement)
 				svg.children().forEach(async (child) => {
 					switch (child.type) {
@@ -246,23 +245,22 @@ export function svgToGroupSync(
 							//利用以上數據建立一個theejs平面
 							{
 								const href = child.attr('xlink:href')
-								const w = child.width() as number
-								const h = child.height() as number
-								const geometry = new PlaneGeometry((w as number) * scale, (h as number) * scale)
+								const w = child.width() as number * scale
+								const h = child.height() as number * scale
+								const x = child.attr('x') as number * scale
+								const y = child.attr('y') as number * scale
+								const geometry = new PlaneGeometry(w, h)
 								const textureLoader = new TextureLoader()
 								textureLoader.load(href, (texture) => {
 									//透明材質
 									const material = new MeshBasicMaterial({
-										map: texture
+										map: texture,
 									})
 									const mesh = new Mesh(geometry, material)
 									mesh.name = 'BG'
-									const dy = svgBounds.max.y - svgBounds.min.y
-									mesh.position.set(
-										(child.cx() as number) * scale,
-										((dy - child.cy()) as number) * scale,
-										1
-									)
+									mesh.position.x = x + w / 2
+									mesh.position.y = svgHeight - (y + h / 2)
+									mesh.position.z = 1
 									group.add(mesh)
 								})
 							}

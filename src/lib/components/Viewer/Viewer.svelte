@@ -157,7 +157,7 @@
 				new THREE.LineBasicMaterial({
 					color: 0x00ff00,
 					linewidth: 10,
-					depthTest: false,
+					// depthTest: false,
 					depthWrite: true
 				})
 			)
