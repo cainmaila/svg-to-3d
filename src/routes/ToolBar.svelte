@@ -118,7 +118,7 @@
 		left: 10px;
 		right: 10px;
 		height: 50px;
-		z-index: 100;
+		z-index: 10;
 		display: inline-box;
 		pointer-events: none;
 		& .top {
