@@ -127,7 +127,12 @@ export function cctvObjsFactory
 			return cctv.name === `${_name}_camera`
 		}) as CCTVCamera | undefined
 	}
-	return { shadowCameras, getCCTVCamera, cctvHelpers, cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
+	function getCCTVHelper(_name: string) {
+		return cctvHelpers.find((cctvHelper) => {
+			return cctvHelper.name === `${_name}_helper`
+		})
+	}
+	return { shadowCameras, getCCTVCamera, cctvHelpers, getCCTVHelper, cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
 }
 
 /**

@@ -62,8 +62,15 @@
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.maxDistance = 10000 // 最大缩放距离
-	const { shadowCameras, getCCTVCamera, cctvHelpers, cctvObjs, getCCTVObj, createCCTVObj } =
-		cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
+	const {
+		shadowCameras,
+		getCCTVCamera,
+		cctvHelpers,
+		getCCTVHelper,
+		cctvObjs,
+		getCCTVObj,
+		createCCTVObj
+	} = cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
 		const cctvObj = getCCTVObj(name)
@@ -71,7 +78,7 @@
 		if (!cctvObj || !shadowCamera) return //找不到cctvObj或shadowCamera
 		cctvObj.position.copy(shadowCamera.position)
 		cctvObj.quaternion.copy(shadowCamera.quaternion)
-		_getCCTVHelper(name)?.update()
+		getCCTVHelper(name)?.update()
 		dispatch(ViewerEvent.CCTV_CHANGE, {
 			name: cctvObj.name,
 			matrix: cctvObj.matrix,
@@ -82,7 +89,7 @@
 	$: {
 		if (selectCCTV) {
 			_clearSelectCCTV()
-			const cctvHelper = _getCCTVHelper()
+			const cctvHelper = getCCTVHelper(selectCCTV)
 			if (cctvHelper) cctvHelper.visible = true
 			const shadowCamera = getCCTVCamera(selectCCTV)
 			if (shadowCamera) selectCCTVSeting.focalLength = (shadowCamera as CCTVCamera).focalLength
@@ -94,11 +101,6 @@
 	function _clearSelectCCTV() {
 		cctvHelpers.forEach((cctvHelper) => {
 			cctvHelper.visible = false
-		})
-	}
-	function _getCCTVHelper(_name?: string) {
-		return cctvHelpers.find((cctvHelper) => {
-			return cctvHelper.name === `${_name || selectCCTV}_helper`
 		})
 	}
 
@@ -466,7 +468,7 @@
 		const initialClearColor = renderer.getClearColor(new THREE.Color())
 		const initialClearAlpha = renderer.getClearAlpha()
 		renderer.setClearColor(0xffffff, 1)
-		const selectCCTVHelper = _getCCTVHelper()
+		const selectCCTVHelper = getCCTVHelper(selectCCTV)
 		selectCCTVHelper && (selectCCTVHelper.visible = false) //避免選擇的CCTV干擾
 		scene.overrideMaterial = depthMaterial
 		for (let i = 0; i < cctvNum; i++) {
@@ -507,7 +509,7 @@
 		if (!shadowCamera) return
 		;(shadowCamera as CCTVCamera).focalLength = focalLength
 		selectCCTVSeting.focalLength = focalLength
-		const cctvHelper = _getCCTVHelper()
+		const cctvHelper = getCCTVHelper(selectCCTV)
 		if (cctvHelper) cctvHelper.update()
 		moveCctv(selectCCTV)
 		debounce(() => updataShadowMaps(), 100)()
