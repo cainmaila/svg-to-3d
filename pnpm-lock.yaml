@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@xstate/svelte':
+        specifier: ^3.0.3
+        version: 3.0.3(svelte@4.2.18)(xstate@5.17.4)
       firebase:
         specifier: ^10.13.0
         version: 10.13.0
+      xstate:
+        specifier: ^5.17.4
+        version: 5.17.4
     devDependencies:
       '@skeletonlabs/skeleton':
         specifier: ^2.10.2
@@ -833,6 +839,15 @@ packages:
     resolution: {integrity: sha512-oySTdDSzUAFDXpsSLk9Q943o+/Yu/+TCFxnehpFQEf/3khi2stMpTHPVNwFdvZq/Z4Ky93lE+MGHpXCRpMkSCA==}
     engines: {node: '>=16'}
     hasBin: true
+
+  '@xstate/svelte@3.0.3':
+    resolution: {integrity: sha512-PS/aFLRyrA+ESt+DsmRqpe7n6Zukcqvl+BEVLpWpGqRMHbymBbPR2RR3RnGF4MlM7YkFbme60obJtS6BYILUrQ==}
+    peerDependencies:
+      svelte: ^3.24.1 || ^4
+      xstate: ^5.11.0
+    peerDependenciesMeta:
+      xstate:
+        optional: true
 
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -2197,6 +2212,9 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  xstate@5.17.4:
+    resolution: {integrity: sha512-KM2FYVOUJ04HlOO4TY3wEXqoYPR/XsDu+ewm+IWw0vilXqND0jVfvv04tEFwp8Mkk7I/oHXM8t1Ex9xJyUS4ZA==}
+
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -3026,6 +3044,12 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@xstate/svelte@3.0.3(svelte@4.2.18)(xstate@5.17.4)':
+    dependencies:
+      svelte: 4.2.18
+    optionalDependencies:
+      xstate: 5.17.4
 
   abbrev@1.1.1: {}
 
@@ -4336,6 +4360,8 @@ snapshots:
       strip-ansi: 7.1.0
 
   wrappy@1.0.2: {}
+
+  xstate@5.17.4: {}
 
   y18n@5.0.8: {}
 

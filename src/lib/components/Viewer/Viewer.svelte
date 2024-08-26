@@ -19,6 +19,8 @@
 	import { ViewerEvent, CCTVMode } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
 	import type { CCTVCamera } from './threelib/cctvCamera'
+	import { useMachine } from '@xstate/svelte'
+	import { cctvModeMachine } from '$lib/stores/cctvModeMachine'
 
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
@@ -37,6 +39,14 @@
 	let selectCCTV: string = '' //選擇的cctv
 	let cctvMode: CCTVMode = CCTVMode.NONE //cctv模式 add move lookat createLine addLine
 	let bgImageObj: THREE.Mesh //底圖物件
+
+	const { snapshot, send } = useMachine(cctvModeMachine)
+
+	$: if (snapshot) {
+		console.log('xxxxx', $snapshot.value, $snapshot.context.selectCCTV)
+	}
+	$: cctvMode = $snapshot.value as CCTVMode
+	$: selectCCTV = $snapshot.context.selectCCTV
 
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
@@ -140,7 +150,9 @@
 	function createLineEnd() {
 		const lineName = 'Line_' + new Date().getTime()
 		lineMap.set(lineName, points)
-		cctvMode = CCTVMode.ADDLINE
+		send({
+			type: CCTVMode.ADDLINE
+		})
 		return lineName
 	}
 	//點選畫面點選場域 or ray到cctvObj
@@ -206,10 +218,12 @@
 				}
 				break
 			case CCTVMode.ADD: //添加CCTV
-				selectCCTV = ''
-				if (MAX_CCTV_NUM > cctvNum) {
-					cctvMode = CCTVMode.NONE
-				}
+				// if (MAX_CCTV_NUM > cctvNum) {
+				// 	send({
+				// 		type: CCTVMode.NONE,
+				// 		selectCCTV: ''
+				// 	})
+				// }
 				const intersectsTopGrid = raycaster.intersectObject(topMesh) //ray到topGrid的位置
 				if (intersectsTopGrid.length > 0) {
 					const point = intersectsTopGrid[0].point
@@ -230,8 +244,10 @@
 					cctvObjs.push(cctvObj)
 					cctvHelpers.push(cctvHelper)
 					cctvNum++
-					selectCCTV = name
-					cctvMode = CCTVMode.LOOKAT //移動完畢
+					send({
+						type: CCTVMode.LOOKAT,
+						selectCCTV: name
+					}) //移動完畢
 				}
 				break
 			case 'move':
@@ -241,11 +257,11 @@
 						const point = intersectsTopGrid[0].point
 						shadowCamera.position.copy(point)
 						moveCctv(selectCCTV)
-						cctvMode = CCTVMode.LOOKAT //移動完畢
+						send({ type: CCTVMode.LOOKAT }) //移動完畢
 					}
 					break
 				} else {
-					cctvMode = CCTVMode.NONE
+					send({ type: CCTVMode.NONE })
 				}
 			case 'lookat':
 				if (shadowCamera) {
@@ -254,17 +270,16 @@
 						const point = intersectsBuild[0].point
 						shadowCamera.lookAt(point)
 						moveCctv(selectCCTV)
-						cctvMode = CCTVMode.NONE
+						send({ type: CCTVMode.NONE })
 					}
 				} else {
-					cctvMode = CCTVMode.NONE
+					send({ type: CCTVMode.NONE })
 				}
 			default:
 				const intersects = raycaster.intersectObjects(cctvObjs)
 				if (intersects.length > 0) {
 					const obj = intersects[0].object
-					selectCCTV = obj.name
-					cctvMode = CCTVMode.NONE //如果選到cctv就清除原來的cctvMode模式
+					send({ type: CCTVMode.NONE, selectCCTV: obj.name }) //如果選到cctv就清除原來的cctvMode模式
 				}
 		}
 	}
@@ -315,10 +330,10 @@
 			case CCTVMode.ADDLINE: //添加線
 				break
 			case CCTVMode.MOVE:
-				cctvMode = target.checked ? CCTVMode.MOVE : CCTVMode.NONE
+				send({ type: target.checked ? CCTVMode.MOVE : CCTVMode.NONE })
 				break
 			case CCTVMode.LOOKAT:
-				cctvMode = target.checked ? CCTVMode.LOOKAT : CCTVMode.NONE
+				send({ type: target.checked ? CCTVMode.LOOKAT : CCTVMode.NONE })
 				break
 		}
 	}
@@ -516,8 +531,10 @@
 	}
 
 	function onClickClearCCTVHandler() {
-		selectCCTV = ''
-		cctvMode = CCTVMode.NONE
+		send({
+			type: CCTVMode.NONE,
+			selectCCTV: ''
+		})
 	}
 	//刪除CCTV
 	function delCCTV(name?: string) {
@@ -530,7 +547,7 @@
 			cctvHelper[0] && scene.remove(cctvHelper[0])
 			scene.remove(cctvObj)
 			cctvNum--
-			selectCCTV = ''
+			send({ type: 'updateSelectCCTV', selectCCTV: '' })
 			dispatch(ViewerEvent.CCTV_DEL, { name: cctvObj.name })
 		}
 	}
@@ -542,7 +559,7 @@
 	}
 	//新增CCTV
 	export function addCCTV() {
-		cctvMode = CCTVMode.ADD
+		send({ type: CCTVMode.ADD })
 	}
 	//刪除全部CCTV(重置)
 	export function delAllCCTV() {
@@ -552,13 +569,13 @@
 	}
 	//新增線路
 	export function createLines() {
-		selectCCTV = ''
-		cctvMode = CCTVMode.CREATELINE
+		send({ type: 'updateSelectCCTV', selectCCTV: '' })
+		send({ type: CCTVMode.CREATELINE })
 	}
 	//清除CCTV模式
 	export function clearCCTVMode() {
-		selectCCTV = ''
-		cctvMode = CCTVMode.NONE
+		send({ type: 'updateSelectCCTV', selectCCTV: '' })
+		send({ type: CCTVMode.NONE })
 	}
 	//畫線undo
 	export function unDoAddLine() {
@@ -572,7 +589,7 @@
 			const pointMesh = scene.getObjectByName(targetLineName + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
 			targetLineName = ''
-			cctvMode = CCTVMode.CREATELINE
+			send({ type: CCTVMode.CREATELINE })
 		} else if (normalArray.length > 1) {
 			//移除上一個點
 			normalArray.pop()

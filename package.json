@@ -52,6 +52,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"firebase": "^10.13.0"
+		"@xstate/svelte": "^3.0.3",
+		"firebase": "^10.13.0",
+		"xstate": "^5.17.4"
 	}
 }

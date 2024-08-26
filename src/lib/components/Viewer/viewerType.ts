@@ -12,7 +12,7 @@ export enum ViewerEvent {
  * CCTV模式 (Viewer狀態模式)
  */
 export enum CCTVMode {
-	NONE = '', //無狀態
+	NONE = 'none', //無狀態
 	ADD = 'add', //新增CCTV
 	MOVE = 'move', //移動CCTV
 	LOOKAT = 'lookat', //CCTV看的方向
