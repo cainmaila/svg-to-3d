@@ -62,13 +62,12 @@
 	// 添加軌道控制
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.maxDistance = 10000 // 最大缩放距离
-	const { cctvs, cctvObjs, getCCTVObj, createCCTVObj } = cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
-	const shadowCameras: THREE.PerspectiveCamera[] = cctvs.map(({ cctv }) => cctv)
-	const cctvHelpers: THREE.CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
+	const { shadowCameras, getCCTVCamera, cctvHelpers, cctvObjs, getCCTVObj, createCCTVObj } =
+		cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
 		const cctvObj = getCCTVObj(name)
-		const shadowCamera = _getCCTVCamera(name)
+		const shadowCamera = getCCTVCamera(name)
 		if (!cctvObj || !shadowCamera) return //找不到cctvObj或shadowCamera
 		cctvObj.position.copy(shadowCamera.position)
 		cctvObj.quaternion.copy(shadowCamera.quaternion)
@@ -85,7 +84,7 @@
 			_clearSelectCCTV()
 			const cctvHelper = _getCCTVHelper()
 			if (cctvHelper) cctvHelper.visible = true
-			const shadowCamera = _getCCTVCamera()
+			const shadowCamera = getCCTVCamera(selectCCTV)
 			if (shadowCamera) selectCCTVSeting.focalLength = (shadowCamera as CCTVCamera).focalLength
 		} else {
 			_clearSelectCCTV()
@@ -96,12 +95,6 @@
 		cctvHelpers.forEach((cctvHelper) => {
 			cctvHelper.visible = false
 		})
-	}
-	//找到CCTV shadowCamera
-	function _getCCTVCamera(_name?: string) {
-		return shadowCameras.find((cctv) => {
-			return cctv.name === `${_name || selectCCTV}_camera`
-		}) as CCTVCamera | undefined
 	}
 	function _getCCTVHelper(_name?: string) {
 		return cctvHelpers.find((cctvHelper) => {
@@ -156,7 +149,7 @@
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 		raycaster.setFromCamera(mouse, camera)
-		const shadowCamera = _getCCTVCamera()
+		const shadowCamera = getCCTVCamera(selectCCTV)
 		switch (cctvMode) {
 			case CCTVMode.CREATELINE: //創建線
 				{
@@ -301,7 +294,7 @@
 					const intersectsBuild = raycaster.intersectObject(build)
 					if (intersectsBuild.length > 0) {
 						const point = intersectsBuild[0].point
-						const shadowCamera = _getCCTVCamera()
+						const shadowCamera = getCCTVCamera(selectCCTV)
 						if (shadowCamera) shadowCamera.lookAt(point)
 						moveCctv(selectCCTV)
 					}
@@ -501,7 +494,7 @@
 	$: CCTV_ChangefocalLength(selectCCTV) //焦距改變
 	//改變 UI的 焦距數值
 	function CCTV_ChangefocalLength(cctvName: string) {
-		const cctv = _getCCTVCamera(cctvName)
+		const cctv = getCCTVCamera(cctvName)
 		if (cctv) {
 			selectCCTVSeting.focalLength = (cctv as CCTVCamera).focalLength
 		}
@@ -510,7 +503,7 @@
 	function changeCCTV_FocalLength(e: Event) {
 		const target = e.target as HTMLInputElement
 		const focalLength = parseFloat(target?.value) || 4
-		const shadowCamera = _getCCTVCamera()
+		const shadowCamera = getCCTVCamera(selectCCTV)
 		if (!shadowCamera) return
 		;(shadowCamera as CCTVCamera).focalLength = focalLength
 		selectCCTVSeting.focalLength = focalLength

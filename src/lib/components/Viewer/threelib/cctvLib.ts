@@ -106,6 +106,8 @@ export function cctvObjsFactory
 				/* Matri */ scene
 		)
 	})
+	const shadowCameras: CCTVCamera[] = cctvs.map(({ cctv }) => cctv)
+	const cctvHelpers: CameraHelper[] = cctvs.map(({ cctvHelper }) => cctvHelper)
 	//攝影機物件
 	const cctvObjs: Mesh[] = cctvs.map((cctvObj) => {
 		const cctv = _createCCTVObj({
@@ -119,7 +121,13 @@ export function cctvObjsFactory
 	function getCCTVObj(_name: string) {
 		return cctvObjs.find((cctvObj) => cctvObj.name === (_name))
 	}
-	return { cctvs, cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
+	//找到CCTV shadowCamera
+	function getCCTVCamera(_name: string) {
+		return shadowCameras.find((cctv) => {
+			return cctv.name === `${_name}_camera`
+		}) as CCTVCamera | undefined
+	}
+	return { shadowCameras, getCCTVCamera, cctvHelpers, cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
 }
 
 /**
