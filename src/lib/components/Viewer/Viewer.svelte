@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { debounce } from 'lodash-es'
 	import * as THREE from 'three'
-	import { OrbitControls } from 'three/examples/jsm/Addons.js'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
 	import { goto } from '$app/navigation'
@@ -9,6 +8,7 @@
 	import ICON from '$lib/components/icon'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
 	import { createCCTV, cctvObjsFactory, generateShadowMap } from './threelib/cctvLib'
+	import { threeSeneInit } from './threelib/threeSeneInit'
 	import {
 		depthMaterial,
 		generateProjectionMaterial,
@@ -50,11 +50,7 @@
 	$: dispatch(ViewerEvent.MODE_CHANGE, cctvMode) //通知父組件模式改變
 
 	// 設置場景、相機和渲染器
-	const scene = new THREE.Scene()
-	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000)
-	const renderer = new THREE.WebGLRenderer({ antialias: true })
-	renderer.setPixelRatio(window.devicePixelRatio)
-	renderer.setSize(window.innerWidth, window.innerHeight)
+	const { scene, camera, renderer, controls } = threeSeneInit()
 	//加個頂部網格底座
 	const top = new THREE.PlaneGeometry(10000, 10000, 100, 100)
 	const topMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 })
@@ -66,9 +62,7 @@
 	onMount(() => {
 		document.getElementById('Viewer')?.appendChild(renderer.domElement)
 	})
-	// 添加軌道控制
-	const controls = new OrbitControls(camera, renderer.domElement)
-	controls.maxDistance = 10000 // 最大缩放距离
+
 	const {
 		shadowCameras,
 		getCCTVCamera,
