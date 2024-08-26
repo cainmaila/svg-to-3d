@@ -1,4 +1,8 @@
+import type { User } from 'firebase/auth'
 import { persisted } from 'svelte-persisted-store'
+import { writable } from 'svelte/store'
+
+export const user$ = writable<User>()
 
 export const backgroundImg$ = persisted<{
 	width: number
