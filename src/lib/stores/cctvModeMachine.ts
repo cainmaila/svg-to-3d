@@ -4,7 +4,6 @@ import { setup, assign } from 'xstate'
 type CCTVContext = {
     selectCCTV: string;
 };
-
 export const cctvModeMachine = setup({
     types: {
         context: {
@@ -15,6 +14,7 @@ export const cctvModeMachine = setup({
         },
     },
     actions: {
+        //目前選擇的CCTV
         updateSelectCCTV: assign(({ context, event }) => ({
             selectCCTV: event.selectCCTV ?? context.selectCCTV
         }))
@@ -61,19 +61,11 @@ export const cctvModeMachine = setup({
             on: {
                 [CCTVMode.NONE]: {
                     target: CCTVMode.NONE,
-                    actions: assign(({ event }) => {
-                        return {
-                            selectCCTV: event.selectCCTV
-                        }
-                    })
+                    actions: 'updateSelectCCTV'
                 },
                 [CCTVMode.LOOKAT]: {
                     target: CCTVMode.LOOKAT,
-                    actions: assign(({ event }) => {
-                        return {
-                            selectCCTV: event.selectCCTV
-                        }
-                    })
+                    actions: 'updateSelectCCTV'
                 },
                 [CCTVMode.MOVE]: {
                     target: CCTVMode.MOVE

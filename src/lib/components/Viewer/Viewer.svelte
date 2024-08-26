@@ -36,17 +36,14 @@
 	const { svgString } = data //
 
 	let build: THREE.Group //建築物
-	let selectCCTV: string = '' //選擇的cctv
-	let cctvMode: CCTVMode = CCTVMode.NONE //cctv模式 add move lookat createLine addLine
 	let bgImageObj: THREE.Mesh //底圖物件
 
-	const { snapshot, send } = useMachine(cctvModeMachine)
-
-	$: if (snapshot) {
-		console.log('xxxxx', $snapshot.value, $snapshot.context.selectCCTV)
-	}
-	$: cctvMode = $snapshot.value as CCTVMode
-	$: selectCCTV = $snapshot.context.selectCCTV
+	const { snapshot, send } = useMachine(cctvModeMachine) //cctv模式狀態機
+	// $: if (snapshot) {
+	// 	console.log('xxxxx', $snapshot.value, $snapshot.context.selectCCTV)
+	// }
+	$: cctvMode = $snapshot.value as CCTVMode //選擇的cctv
+	$: selectCCTV = $snapshot.context.selectCCTV //cctv模式 add move lookat createLine addLine
 
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
