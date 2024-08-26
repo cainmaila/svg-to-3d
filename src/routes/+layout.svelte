@@ -23,7 +23,7 @@
 	export let data
 	const { API_KEY } = data
 
-	let loginStatus = 0 //登入狀態 0:未登入 1:登入中 -1:未登入 2:登入成功
+	let loginStatus = dev ? 2 : 0 //登入狀態 0:未登入 1:登入中 -1:未登入 2:登入成功
 	const firebaseConfig = {
 		apiKey: API_KEY,
 		authDomain: 'dt-group-cain.firebaseapp.com',
