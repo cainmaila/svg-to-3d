@@ -16,7 +16,7 @@
 		oupPutBoxMaterial,
 		oupPutMaterial
 	} from './threelib/materialLib'
-	import { ViewerEvent, CCTVMode } from './viewerType'
+	import { ViewerEvent, CCTVMode, PIPE_MODE } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
 	import type { CCTVCamera } from './threelib/cctvCamera'
 	import { useMachine } from '@xstate/svelte'
@@ -39,15 +39,21 @@
 	let bgImageObj: THREE.Mesh //底圖物件
 
 	const { snapshot, send } = useMachine(cctvModeMachine) //cctv模式狀態機
-	// $: if (snapshot) {
-	// 	console.log('xxxxx', $snapshot.value, $snapshot.context.selectCCTV)
-	// }
-	$: cctvMode = $snapshot.value as CCTVMode //選擇的cctv
+	$: if (snapshot) {
+		const { value, context } = $snapshot
+		console.log('cctvModeMachine', value, context.selectCCTV)
+	}
+	$: cctvMode = $snapshot.matches(CCTVMode.PIPE_MODE)
+		? CCTVMode.PIPE_MODE
+		: ($snapshot.value as CCTVMode) //選擇的cctv
 	$: selectCCTV = $snapshot.context.selectCCTV //cctv模式 add move lookat createLine addLine
+	$: pipeMode = $snapshot.matches(CCTVMode.PIPE_MODE) //線路模式
+		? ($snapshot.value as { [CCTVMode.PIPE_MODE]: PIPE_MODE })[CCTVMode.PIPE_MODE]
+		: ''
 
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
-	$: dispatch(ViewerEvent.MODE_CHANGE, cctvMode) //通知父組件模式改變
+	$: dispatch(ViewerEvent.MODE_CHANGE, { cctvMode, pipeMode }) //通知父組件模式改變
 
 	// 設置場景、相機和渲染器
 	const { scene, camera, renderer, controls } = threeSeneInit()
@@ -142,7 +148,7 @@
 		const lineName = 'Line_' + new Date().getTime()
 		lineMap.set(lineName, points)
 		send({
-			type: CCTVMode.ADDLINE
+			type: PIPE_MODE.ADD
 		})
 		return lineName
 	}
@@ -156,57 +162,8 @@
 		raycaster.setFromCamera(mouse, camera)
 		const shadowCamera = getCCTVCamera(selectCCTV)
 		switch (cctvMode) {
-			case CCTVMode.CREATELINE: //創建線
-				{
-					const mesh = topLineMode ? topMesh : build
-					const intersectsTopGrid = raycaster.intersectObject(mesh) //ray到topGrid的位置
-					const selectPoint = intersectsTopGrid[0]?.point
-					if (!selectPoint) return
-					//取得法線的面
-					const face = intersectsTopGrid[0]?.face as THREE.Face
-					const normalA = face.normal.clone().applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
-					topLineMode && (selectPoint.y = 300) //屋頂模式創建線時 y = 300
-					const poMesh = new THREE.Mesh(
-						new THREE.SphereGeometry(5, 2, 2),
-						new THREE.MeshBasicMaterial({
-							color: 0xff0000
-						})
-					)
-					poMesh.position.copy(selectPoint)
-					scene.add(poMesh)
-					points.push(selectPoint)
-					normalArray.push(normalA)
-					targetLineName = createLineEnd()
-					poMesh.name = targetLineName + TARGET_LINE_POINT_END
-				}
-				break
-			case CCTVMode.ADDLINE: //添加線
-				{
-					const mesh = topLineMode ? topMesh : build
-					const intersectsTopGrid = raycaster.intersectObject(mesh) //ray到topGrid的位置i
-					if (intersectsTopGrid.length === 0) return
-					//取得法線的面
-					const normalB = intersectsTopGrid[0]?.face?.normal
-						.clone()
-						.applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
-					const selectPoint = intersectsTopGrid[0].point
-					if (!selectPoint) return
-					const explainPo = checkFaceIntersectPoint(
-						points[points.length - 1].clone(),
-						normalArray[normalArray.length - 1]!.clone(),
-						selectPoint.clone(),
-						normalB!
-						// scene
-					)
-					if (explainPo) {
-						points.push(explainPo)
-						normalArray.push(null)
-					}
-					topLineMode && (selectPoint.y = 300)
-					points.push(selectPoint)
-					points = points
-					normalArray.push(normalB!)
-				}
+			case CCTVMode.PIPE_MODE: //創建線
+				onPipeMoveHandler()
 				break
 			case CCTVMode.ADD: //添加CCTV
 				// if (MAX_CCTV_NUM > cctvNum) {
@@ -275,6 +232,64 @@
 		}
 	}
 
+	function onPipeMoveHandler() {
+		switch (pipeMode) {
+			case PIPE_MODE.CREATE:
+				{
+					const mesh = topLineMode ? topMesh : build
+					const intersectsTopGrid = raycaster.intersectObject(mesh) //ray到topGrid的位置
+					const selectPoint = intersectsTopGrid[0]?.point
+					if (!selectPoint) return
+					//取得法線的面
+					const face = intersectsTopGrid[0]?.face as THREE.Face
+					const normalA = face.normal.clone().applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
+					topLineMode && (selectPoint.y = 300) //屋頂模式創建線時 y = 300
+					const poMesh = new THREE.Mesh(
+						new THREE.SphereGeometry(5, 2, 2),
+						new THREE.MeshBasicMaterial({
+							color: 0xff0000
+						})
+					)
+					poMesh.position.copy(selectPoint)
+					scene.add(poMesh)
+					points.push(selectPoint)
+					normalArray.push(normalA)
+					targetLineName = createLineEnd()
+					poMesh.name = targetLineName + TARGET_LINE_POINT_END
+				}
+				break
+			case PIPE_MODE.ADD:
+				{
+					const mesh = topLineMode ? topMesh : build
+					const intersectsTopGrid = raycaster.intersectObject(mesh) //ray到topGrid的位置i
+					if (intersectsTopGrid.length === 0) return
+					//取得法線的面
+					const normalB = intersectsTopGrid[0]?.face?.normal
+						.clone()
+						.applyEuler(new THREE.Euler(-Math.PI / 2, 0, 0))
+					const selectPoint = intersectsTopGrid[0].point
+					if (!selectPoint) return
+					const explainPo = checkFaceIntersectPoint(
+						points[points.length - 1].clone(),
+						normalArray[normalArray.length - 1]!.clone(),
+						selectPoint.clone(),
+						normalB!
+						// scene
+					)
+					if (explainPo) {
+						points.push(explainPo)
+						normalArray.push(null)
+					}
+					topLineMode && (selectPoint.y = 300)
+					points.push(selectPoint)
+					points = points
+					normalArray.push(normalB!)
+				}
+				break
+			default:
+		}
+	}
+
 	let _downPos: THREE.Vector2 //鼠標按下的位置
 	let _downTime = 0 //鼠標按下的時間
 	function _onMouseDownHandler(event: MouseEvent) {
@@ -290,10 +305,10 @@
 
 	function onMouseMoveHandler(event: MouseEvent) {
 		switch (cctvMode) {
-			case CCTVMode.CREATELINE: //創建線
-				break
-			case CCTVMode.ADDLINE: //添加線
-				break
+			// case CCTVMode.CREATELINE: //創建線
+			// 	break
+			// case CCTVMode.ADDLINE: //添加線
+			// 	break
 			case CCTVMode.LOOKAT:
 				if (selectCCTV) {
 					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -316,10 +331,10 @@
 		const target = e.target as HTMLInputElement
 		const name = target.name
 		switch (name) {
-			case CCTVMode.CREATELINE: //創建線
-				break
-			case CCTVMode.ADDLINE: //添加線
-				break
+			// case CCTVMode.CREATELINE: //創建線
+			// 	break
+			// case CCTVMode.ADDLINE: //添加線
+			// 	break
 			case CCTVMode.MOVE:
 				send({ type: target.checked ? CCTVMode.MOVE : CCTVMode.NONE })
 				break
@@ -560,17 +575,15 @@
 	}
 	//新增線路
 	export function createLines() {
-		send({ type: 'updateSelectCCTV', selectCCTV: '' })
-		send({ type: CCTVMode.CREATELINE })
+		send({ type: CCTVMode.PIPE_MODE, selectCCTV: '' })
 	}
 	//清除CCTV模式
 	export function clearCCTVMode() {
-		send({ type: 'updateSelectCCTV', selectCCTV: '' })
-		send({ type: CCTVMode.NONE })
+		send({ type: CCTVMode.NONE, selectCCTV: '' })
 	}
 	//畫線undo
 	export function unDoAddLine() {
-		if (cctvMode !== CCTVMode.ADDLINE) return
+		// if (cctvMode !== CCTVMode.ADDLINE) return
 		if (normalArray.length === 0) return
 		if (normalArray.length === 1) {
 			//剛創建重新開始
@@ -580,7 +593,7 @@
 			const pointMesh = scene.getObjectByName(targetLineName + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
 			targetLineName = ''
-			send({ type: CCTVMode.CREATELINE })
+			// send({ type: CCTVMode.CREATELINE })
 		} else if (normalArray.length > 1) {
 			//移除上一個點
 			normalArray.pop()

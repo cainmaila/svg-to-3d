@@ -1,4 +1,5 @@
 /**
+import { NODE } from '../../../../.svelte-kit/ambient.d';
  * View事件
  */
 export enum ViewerEvent {
@@ -16,6 +17,16 @@ export enum CCTVMode {
 	ADD = 'add', //新增CCTV
 	MOVE = 'move', //移動CCTV
 	LOOKAT = 'lookat', //CCTV看的方向
-	CREATELINE = 'createLine', //創建線段
-	ADDLINE = 'addLine' //添加線段點
+	PIPE_MODE = 'pipeMode', //管線模式
+	// CREATELINE = 'createLine', //創建線段
+	// ADDLINE = 'addLine', //添加線段點
+}
+
+/**
+ * 管線模式
+ */
+export enum PIPE_MODE {
+	CREATE = 'pipeModeCreate', //創建線段
+	ADD = 'pipeModeAdd', //添加線段點
+	// EDN = 'pipeModeEnd' //添加結束
 }

@@ -16,9 +16,10 @@
 	let cameraNum = 0
 	let bgImageDisable = false //底圖是否顯示
 	let cctvMode = '' //cctv模式
+	let pipeMode = '' //pipe模式
 	let topLineMode = false //屋頂拉線模式
 
-	$: isLineMode = cctvMode === CCTVMode.CREATELINE || cctvMode === CCTVMode.ADDLINE
+	$: isLineMode = cctvMode === CCTVMode.PIPE_MODE
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -43,14 +44,17 @@
 		debouncedHandler(e.detail)
 	}
 	function onLineModeHandler() {
-		switch (cctvMode) {
-			case CCTVMode.CREATELINE:
-			case CCTVMode.ADDLINE:
+		switch (true) {
+			case cctvMode === CCTVMode.PIPE_MODE:
 				viewer.clearCCTVMode()
 				break
 			default:
 				viewer.createLines()
 		}
+	}
+	function onModelChangeHandler(e: CustomEvent) {
+		cctvMode = e.detail.cctvMode
+		pipeMode = e.detail.pipeMode
 	}
 </script>
 
@@ -69,7 +73,7 @@
 		cameraNum = cctvsMap.size
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}}
-	on:modeChange={(e) => (cctvMode = e.detail)}
+	on:modeChange={onModelChangeHandler}
 />
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
@@ -94,7 +98,7 @@
 			<ICON.GameIconsCctvCamera /></button
 		>
 		<button
-			class={`${cctvMode} variant-filled btn-icon bg-primary-500`}
+			class={`${pipeMode} variant-filled btn-icon bg-primary-500`}
 			on:click={onLineModeHandler}
 			title="新增線路"
 		>
@@ -120,10 +124,10 @@
 
 <style lang="postcss">
 	button {
-		&.createLine {
+		&.pipeModeCreate {
 			background-color: rgb(0, 145, 255);
 		}
-		&.addLine {
+		&.pipeModeAdd {
 			background-color: rgb(255, 191, 0);
 		}
 	}
