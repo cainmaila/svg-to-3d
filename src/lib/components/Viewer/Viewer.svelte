@@ -39,10 +39,10 @@
 	let bgImageObj: THREE.Mesh //底圖物件
 
 	const { snapshot, send } = useMachine(cctvModeMachine) //cctv模式狀態機
-	$: if (snapshot) {
-		const { value, context } = $snapshot
-		console.log('cctvModeMachine', value, context.selectCCTV)
-	}
+	// $: if (snapshot) {
+	// 	const { value, context } = $snapshot
+	// 	console.log('cctvModeMachine', value, context.selectCCTV)
+	// }
 	$: cctvMode = $snapshot.matches(CCTVMode.PIPE_MODE)
 		? CCTVMode.PIPE_MODE
 		: ($snapshot.value as CCTVMode) //選擇的cctv
@@ -50,6 +50,8 @@
 	$: pipeMode = $snapshot.matches(CCTVMode.PIPE_MODE) //線路模式
 		? ($snapshot.value as { [CCTVMode.PIPE_MODE]: PIPE_MODE })[CCTVMode.PIPE_MODE]
 		: ''
+
+	$: console.log('selectCCTV', selectCCTV)
 
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)

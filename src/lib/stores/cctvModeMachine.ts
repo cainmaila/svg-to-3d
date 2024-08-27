@@ -1,5 +1,5 @@
 import { CCTVMode, PIPE_MODE } from '$lib/components/Viewer/viewerType'
-import { setup, assign } from 'xstate'
+import { setup, assign, raise } from 'xstate'
 
 type CCTVContext = {
     selectCCTV: string;
@@ -30,6 +30,11 @@ export const cctvModeMachine = setup({
         updateSelectCCTV: {
             actions: 'updateSelectCCTV'
         },
+        '*': {
+            actions: (state) => {
+                console.error('未定義的狀態', state)
+            }
+        }
     },
     states: {
         [CCTVMode.NONE]: {
@@ -50,10 +55,10 @@ export const cctvModeMachine = setup({
                 [CCTVMode.LOOKAT]: {
                     target: CCTVMode.LOOKAT
                 },
-                [CCTVMode.PIPE_MODE]: {
-                    target: CCTVMode.PIPE_MODE,
-                    actions: 'updateSelectCCTV'
-                }
+                // [CCTVMode.PIPE_MODE]: {
+                //     target: CCTVMode.PIPE_MODE,
+                //     actions: 'updateSelectCCTV'
+                // }
             }
         },
         [CCTVMode.ADD]: {
