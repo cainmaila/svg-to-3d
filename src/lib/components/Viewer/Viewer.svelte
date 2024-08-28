@@ -580,8 +580,18 @@
 		send({ type: CCTVMode.PIPE_MODE, selectCCTV: '' })
 	}
 	//清除CCTV模式
-	export function clearCCTVMode() {
+	export function addLineEnd() {
 		send({ type: CCTVMode.NONE, selectCCTV: '' })
+		switch (pipeMode) {
+			case PIPE_MODE.ADD:
+				if (points.length === 1) {
+					unDoAddLine()
+				} else {
+					points = []
+				}
+				break
+		}
+		targetLineName = ''
 	}
 	//畫線undo
 	export function unDoAddLine() {

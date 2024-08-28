@@ -55,10 +55,10 @@ export const cctvModeMachine = setup({
                 [CCTVMode.LOOKAT]: {
                     target: CCTVMode.LOOKAT
                 },
-                // [CCTVMode.PIPE_MODE]: {
-                //     target: CCTVMode.PIPE_MODE,
-                //     actions: 'updateSelectCCTV'
-                // }
+                [CCTVMode.PIPE_MODE]: {
+                    target: CCTVMode.PIPE_MODE,
+                    actions: 'updateSelectCCTV'
+                }
             }
         },
         [CCTVMode.ADD]: {

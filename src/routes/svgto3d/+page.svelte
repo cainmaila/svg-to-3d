@@ -46,7 +46,7 @@
 	function onLineModeHandler() {
 		switch (true) {
 			case cctvMode === CCTVMode.PIPE_MODE:
-				viewer.clearCCTVMode()
+				viewer.addLineEnd()
 				break
 			default:
 				viewer.createLines()
