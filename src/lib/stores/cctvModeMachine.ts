@@ -18,6 +18,9 @@ export const cctvModeMachine = setup({
         //目前選擇的CCTV
         updateSelectCCTV: assign(({ context, event }) => ({
             selectCCTV: event.selectCCTV ?? context.selectCCTV
+        })),
+        clearSelectCCTV: assign(() => ({
+            selectCCTV: ''
         }))
     }
 }).createMachine({
@@ -29,6 +32,9 @@ export const cctvModeMachine = setup({
     on: {
         updateSelectCCTV: {
             actions: 'updateSelectCCTV'
+        },
+        clearSelectCCTV: {
+            actions: 'clearSelectCCTV'
         },
         '*': {
             actions: (state) => {
@@ -112,20 +118,55 @@ export const cctvModeMachine = setup({
                         }
                     }
                 }
+            },
+            on: {
+                [ViewerMode.PIPE]: {
+                    target: ViewerMode.PIPE,
+                    actions: 'clearSelectCCTV'
+                }
             }
         },
         [ViewerMode.PIPE]: {
             initial: PIPE_MODE.NONE,
-            actions: 'updateSelectCCTV',
+            on: {
+                [ViewerMode.CCTV]: {
+                    target: ViewerMode.CCTV,
+                    actions: 'updateSelectCCTV'
+                }
+            },
             states: {
                 [PIPE_MODE.NONE]: {
-                    target: PIPE_MODE.NONE
+                    target: PIPE_MODE.NONE,
+                    on: {
+                        [PIPE_MODE.CREATE]: {
+                            target: PIPE_MODE.CREATE
+                        },
+                        [PIPE_MODE.ADD]: {
+                            target: PIPE_MODE.ADD
+                        }
+                    }
                 },
                 [PIPE_MODE.CREATE]: {
-                    target: PIPE_MODE.CREATE
+                    target: PIPE_MODE.CREATE,
+                    on: {
+                        [PIPE_MODE.NONE]: {
+                            target: PIPE_MODE.NONE
+                        },
+                        [PIPE_MODE.ADD]: {
+                            target: PIPE_MODE.ADD
+                        }
+                    }
                 },
                 [PIPE_MODE.ADD]: {
-                    target: PIPE_MODE.ADD
+                    target: PIPE_MODE.ADD,
+                    on: {
+                        [PIPE_MODE.NONE]: {
+                            target: PIPE_MODE.NONE
+                        },
+                        [PIPE_MODE.CREATE]: {
+                            target: PIPE_MODE.CREATE
+                        }
+                    }
                 }
             }
         }

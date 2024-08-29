@@ -17,12 +17,10 @@
 	let cctvsSettings = []
 	let cameraNum = 0
 	let bgImageDisable = false //底圖是否顯示
-	let viewerMode = '' //viewer模式
+	let viewerMode: ViewerMode = ViewerMode.CCTV //viewer模式
 	let cctvMode = '' //cctv模式
 	let pipeMode = '' //pipe模式
 	let topLineMode = false //屋頂拉線模式
-
-	$: isLineMode = viewerMode === ViewerMode.PIPE
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -57,8 +55,12 @@
 		}
 	}
 	function onModelChangeHandler(e: CustomEvent) {
+		viewerMode = e.detail.viewerMode
 		cctvMode = e.detail.cctvMode
 		pipeMode = e.detail.pipeMode
+	}
+	function onViewerModeChangeHandler(e: CustomEvent) {
+		viewer.setViewerMode(e.detail)
 	}
 </script>
 
@@ -116,9 +118,9 @@
 		>
 			<ICON.MaterialSymbolsRestore /></button
 		>
-		<ModePicker />
+		<ModePicker {viewerMode} on:change={onViewerModeChangeHandler} />
 		<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable}>底圖顯示</SlideToggle>
-		{#if isLineMode}
+		{#if viewerMode === ViewerMode.PIPE}
 			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode}>屋頂拉線</SlideToggle>
 			<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
 				<ICON.MaterialSymbolsUndo /></button

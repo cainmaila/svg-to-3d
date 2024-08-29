@@ -43,7 +43,8 @@
 		const { value, context } = $snapshot
 		console.log('cctvModeMachine', value, context.selectCCTV)
 	}
-	$: cctvMode = $snapshot.matches(ViewerMode.CCTV) ? $snapshot.value[ViewerMode.CCTV] : '' //選擇的cctv
+	$: viewerMode = $snapshot.matches(ViewerMode.CCTV) ? ViewerMode.CCTV : ViewerMode.PIPE //選擇的cctv
+	$: cctvMode = $snapshot.matches(ViewerMode.CCTV) ? $snapshot.value[ViewerMode.CCTV] : '' //cctv模式 add move lookat createLine addLine
 	$: selectCCTV = $snapshot.context.selectCCTV //cctv模式 add move lookat createLine addLine
 	$: pipeMode = $snapshot.matches(ViewerMode.PIPE) //線路模式
 		? $snapshot.value[ViewerMode.PIPE]
@@ -53,7 +54,7 @@
 
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
-	$: dispatch(ViewerEvent.MODE_CHANGE, { cctvMode, pipeMode }) //通知父組件模式改變
+	$: dispatch(ViewerEvent.MODE_CHANGE, { viewerMode, pipeMode, cctvMode }) //通知父組件模式改變
 
 	// 設置場景、相機和渲染器
 	const { scene, camera, renderer, controls } = threeSeneInit()
@@ -227,7 +228,14 @@
 				const intersects = raycaster.intersectObjects(cctvObjs)
 				if (intersects.length > 0) {
 					const obj = intersects[0].object
-					send({ type: 'updateSelectCCTV', selectCCTV: obj.name }) //如果選到cctv就清除原來的cctvMode模式
+					switch (true) {
+						case $snapshot.matches(ViewerMode.CCTV):
+							send({ type: 'updateSelectCCTV', selectCCTV: obj.name }) //選到cctv就清除原來的cctvMode模式
+							break
+						case $snapshot.matches(ViewerMode.PIPE):
+							send({ type: ViewerMode.CCTV, selectCCTV: obj.name }) //選到cctv就清除原來的cctvMode模式
+							break
+					}
 				}
 		}
 	}
@@ -608,6 +616,10 @@
 			}
 			points = points
 		}
+	}
+
+	export function setViewerMode(mode: ViewerMode) {
+		send({ type: mode })
 	}
 </script>
 

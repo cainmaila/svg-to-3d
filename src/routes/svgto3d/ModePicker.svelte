@@ -1,35 +1,29 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte'
 	import ICON from '$lib/components/icon'
+	import { ViewerMode } from '$lib/components/Viewer/viewerType'
 	const dispatch = createEventDispatcher()
-	const CCTV = 'cctv'
-	const PIPE = 'pipe'
-	export let cctvMode: string = CCTV
+	export let viewerMode: ViewerMode
 
-	function onSelectHeader(mode: string) {
-		cctvMode = mode
+	$: cctvStyle = selectedStyle(viewerMode, ViewerMode.CCTV)
+	$: pipeStyle = selectedStyle(viewerMode, ViewerMode.PIPE)
+
+	function onSelectHeader(mode: ViewerMode) {
+		viewerMode = mode
 		dispatch('change', mode)
 	}
 
-	function selectedStyle(cctvMode: string, mode: string) {
-		return cctvMode === mode ? 'variant-filled' : 'variant-soft'
+	function selectedStyle(viewerMode: ViewerMode, mode: ViewerMode) {
+		return viewerMode === mode ? 'variant-filled' : 'variant-soft'
 	}
 </script>
 
 <div>
-	<button
-		class="{selectedStyle(cctvMode, CCTV)} chip"
-		on:click={() => onSelectHeader(CCTV)}
-		on:keypress
-	>
+	<button class="{cctvStyle} chip" on:click={() => onSelectHeader(ViewerMode.CCTV)} on:keypress>
 		<span><ICON.GameIconsCctvCamera /></span>
 		<span>CCTV</span>
 	</button>
-	<button
-		class="{selectedStyle(cctvMode, PIPE)} chip"
-		on:click={() => onSelectHeader(PIPE)}
-		on:keypress
-	>
+	<button class="{pipeStyle} chip" on:click={() => onSelectHeader(ViewerMode.PIPE)} on:keypress>
 		<ICON.TablerLine />
 		<span>PIPE</span>
 	</button>
