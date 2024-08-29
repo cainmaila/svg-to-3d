@@ -50,6 +50,7 @@
 		? $snapshot.value[ViewerMode.PIPE]
 		: '' //選擇的cctv
 	$: selectPipe = $snapshot.context.selectPipe //選取的pipe
+	$: lineMap = $snapshot.context.lineMap //線段紀錄
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
 	$: dispatch(ViewerEvent.MODE_CHANGE, { viewerMode, pipeMode, cctvMode }) //通知父組件模式改變
@@ -112,9 +113,7 @@
 
 	/* 繪製線邏輯 */
 	let points: THREE.Vector3[] = [] //目前繪製的線段點
-	const normalArray: (THREE.Vector3 | null)[] = [] //法向量的陣列，undo畫線用
-	const lineMap = new Map() //線段紀錄
-	// let targetLineName = '' //目標線段
+	const normalArray: (THREE.Vector3 | null)[] = [] //法向量的陣列，undo畫線用錄
 	let targetLine: THREE.Line | null = null //目標線段
 	$: switch (true) {
 		case points.length > 0: //繪製線
@@ -141,9 +140,7 @@
 		})
 	}
 	//更新線段紀錄
-	function updateLineMap() {
-		dispatch(ViewerEvent.PIPE_MAP_UPDATE, lineMap)
-	}
+	$: dispatch(ViewerEvent.PIPE_MAP_UPDATE, lineMap)
 	//傳入陣列點創建線
 	function createLine(points: THREE.Vector3[]) {
 		if (!selectPipe) return
@@ -166,9 +163,10 @@
 	//創建線完成(第一個點)
 	function createLineEnd() {
 		const lineName = 'Line_' + new Date().getTime()
-		lineMap.set(lineName, points)
 		send({
-			type: PIPE_MODE.ADD
+			type: PIPE_MODE.ADD,
+			poName: lineName,
+			points
 		})
 		return lineName
 	}
@@ -618,7 +616,6 @@
 				}
 				break
 		}
-		updateLineMap()
 	}
 	//畫線undo
 	export function unDoAddLine() {
@@ -627,11 +624,10 @@
 			//剛創建重新開始
 			points = []
 			normalArray.length = 0
-			lineMap.delete(selectPipe)
+			send({ type: 'delPipe', poName: selectPipe })
 			const pointMesh = scene.getObjectByName(selectPipe + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
 			send({ type: PIPE_MODE.CREATE })
-			updateLineMap()
 		} else if (normalArray.length > 1) {
 			//移除上一個點
 			normalArray.pop()
@@ -656,7 +652,7 @@
 	export function selectLine(line: string) {
 		const pipe = lineMap.get(line)
 		if (pipe) {
-			points = pipe
+			points = pipe as THREE.Vector3[]
 			send({ type: 'updateSelectPipe', selectPipe: line })
 			return line
 		}
