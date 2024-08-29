@@ -35,6 +35,7 @@ export const cctvModeMachine = setup({
             return { lineMap }
         }),
         delPipe: assign(({ context, event }) => {
+            if (!event.poName) return {}
             const { lineMap } = context
             lineMap.delete(event.poName)
             return { lineMap }
@@ -61,6 +62,12 @@ export const cctvModeMachine = setup({
         updateSelectPipe: {
             actions: 'updateSelectPipe'
         },
+        addPipe: {
+            actions: 'addPipe'
+        },
+        delPipe: {
+            actions: 'delPipe'
+        },
         '*': {
             actions: (state) => {
                 console.error('未定義的狀態', state)
@@ -73,7 +80,7 @@ export const cctvModeMachine = setup({
             on: {
                 [ViewerMode.PIPE]: {
                     target: ViewerMode.PIPE,
-                    actions: 'clearSelectCCTV'
+                    actions: ['clearSelectCCTV']
                 }
             },
             states: {
@@ -153,18 +160,7 @@ export const cctvModeMachine = setup({
             on: {
                 [ViewerMode.CCTV]: {
                     target: ViewerMode.CCTV,
-                    actions: ['updateSelectCCTV', {
-                        type: 'updateSelectPipe',
-                        params: {
-                            selectPipe: ''
-                        }
-                    }],
-                },
-                addPipe: {
-                    actions: 'addPipe'
-                },
-                delPipe: {
-                    actions: 'delPipe'
+                    actions: ['updateSelectCCTV', assign({ selectPipe: '' })],
                 },
             },
             states: {
@@ -198,7 +194,12 @@ export const cctvModeMachine = setup({
                     on: {
                         [PIPE_MODE.NONE]: {
                             target: PIPE_MODE.NONE,
-                            actions: 'addPipe',
+                            actions: ['addPipe', {
+                                type: 'updateSelectPipe',
+                                params: {
+                                    selectPipe: ''
+                                }
+                            }],
                         },
                         [PIPE_MODE.ADD]: {
                             target: PIPE_MODE.ADD,
@@ -210,7 +211,13 @@ export const cctvModeMachine = setup({
                     target: PIPE_MODE.ADD,
                     on: {
                         [PIPE_MODE.NONE]: {
-                            target: PIPE_MODE.NONE
+                            target: PIPE_MODE.NONE,
+                            actions: {
+                                type: 'updateSelectPipe',
+                                params: {
+                                    selectPipe: ''
+                                }
+                            }
                         },
                         [PIPE_MODE.CREATE]: {
                             target: PIPE_MODE.CREATE,
