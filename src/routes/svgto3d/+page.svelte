@@ -46,12 +46,13 @@
 	}
 	function onLineModeHandler() {
 		switch (true) {
-			case cctvMode === PIPE_MODE.ADD:
-			case cctvMode === PIPE_MODE.CREATE:
+			case pipeMode === PIPE_MODE.ADD:
+			case pipeMode === PIPE_MODE.CREATE:
 				viewer.addLineEnd()
 				break
-			default:
+			case pipeMode === PIPE_MODE.NONE:
 				viewer.createLines()
+				break
 		}
 	}
 	function onModelChangeHandler(e: CustomEvent) {

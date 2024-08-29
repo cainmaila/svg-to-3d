@@ -49,9 +49,6 @@
 	$: pipeMode = $snapshot.matches(ViewerMode.PIPE) //線路模式
 		? $snapshot.value[ViewerMode.PIPE]
 		: '' //選擇的cctv
-
-	$: console.log('selectCCTV', selectCCTV)
-
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
 	$: dispatch(ViewerEvent.MODE_CHANGE, { viewerMode, pipeMode, cctvMode }) //通知父組件模式改變
@@ -162,10 +159,17 @@
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 		raycaster.setFromCamera(mouse, camera)
 		const shadowCamera = getCCTVCamera(selectCCTV)
+		if (viewerMode === ViewerMode.PIPE) {
+			switch (pipeMode) {
+				case PIPE_MODE.NONE:
+					break
+				case PIPE_MODE.CREATE:
+				case PIPE_MODE.ADD:
+					onPipeMoveHandler()
+					break
+			}
+		}
 		switch (cctvMode) {
-			// case CCTVMode.PIPE_MODE: //創建線
-			// 	onPipeMoveHandler()
-			// 	break
 			case CCTVMode.ADD: //添加CCTV
 				// if (MAX_CCTV_NUM > cctvNum) {
 				// 	send({
@@ -576,11 +580,11 @@
 	}
 	//新增線路
 	export function createLines() {
-		// send({ type: CCTVMode.PIPE_MODE, selectCCTV: '' })
+		send({ type: PIPE_MODE.CREATE })
 	}
 	//清除CCTV模式
 	export function addLineEnd() {
-		send({ type: CCTVMode.NONE, selectCCTV: '' })
+		send({ type: PIPE_MODE.NONE })
 		switch (pipeMode) {
 			case PIPE_MODE.ADD:
 				if (points.length === 1) {
