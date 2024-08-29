@@ -3,7 +3,9 @@
 	import Viewer from '$lib/components/Viewer'
 	import ICON from '$lib/components/icon'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
-	import { CCTVMode } from '$lib/components/Viewer/viewerType'
+	import { CCTVMode, PIPE_MODE, ViewerEvent, ViewerMode } from '$lib/components/Viewer/viewerType'
+	import ModePicker from './ModePicker.svelte'
+	import { PI2 } from 'three/examples/jsm/nodes/Nodes.js'
 
 	export let data: {
 		svgString: string
@@ -15,11 +17,12 @@
 	let cctvsSettings = []
 	let cameraNum = 0
 	let bgImageDisable = false //底圖是否顯示
+	let viewerMode = '' //viewer模式
 	let cctvMode = '' //cctv模式
 	let pipeMode = '' //pipe模式
 	let topLineMode = false //屋頂拉線模式
 
-	$: isLineMode = cctvMode === CCTVMode.PIPE_MODE
+	$: isLineMode = viewerMode === ViewerMode.PIPE
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -45,7 +48,8 @@
 	}
 	function onLineModeHandler() {
 		switch (true) {
-			case cctvMode === CCTVMode.PIPE_MODE:
+			case cctvMode === PIPE_MODE.ADD:
+			case cctvMode === PIPE_MODE.CREATE:
 				viewer.addLineEnd()
 				break
 			default:
@@ -95,14 +99,14 @@
 			disabled={cameraNum >= MAX_CCTV_NUM}
 			title={cameraNum >= MAX_CCTV_NUM ? `最多只能新增${MAX_CCTV_NUM}個CCTV` : '新增CCTV'}
 		>
-			<ICON.GameIconsCctvCamera /></button
+			<ICON.MaterialSymbolsAdd /></button
 		>
 		<button
 			class={`${pipeMode} variant-filled btn-icon bg-primary-500`}
 			on:click={onLineModeHandler}
 			title="新增線路"
 		>
-			<ICON.TablerLine /></button
+			<ICON.MaterialSymbolsAdd /></button
 		>
 		<button
 			class="variant-filled btn-icon"
@@ -112,6 +116,7 @@
 		>
 			<ICON.MaterialSymbolsRestore /></button
 		>
+		<ModePicker />
 		<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable}>底圖顯示</SlideToggle>
 		{#if isLineMode}
 			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode}>屋頂拉線</SlideToggle>

@@ -9,8 +9,10 @@ import MaterialSymbolsLightDeleteSharp from './MaterialSymbolsLightDeleteSharp.s
 import MaterialSymbolsRestore from './MaterialSymbolsRestore.svelte'
 import TablerLine from './TablerLine.svelte'
 import MaterialSymbolsUndo from './MaterialSymbolsUndo.svelte'
+import MaterialSymbolsAdd from './MaterialSymbolsAdd.svelte'
 
 export default {
+	MaterialSymbolsAdd, //+add
 	MaterialSymbolsUndo, //+undo
 	TablerLine, //+line
 	MaterialSymbolsRestore, //+restore
