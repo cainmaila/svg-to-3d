@@ -6,7 +6,8 @@ export enum ViewerEvent {
 	MODLE_READY = 'modelReady', //模型準備好
 	CCTV_CHANGE = 'cctvChange', //CCTV改變
 	CCTV_DEL = 'cctvDel', //CCTV刪除
-	MODE_CHANGE = 'modeChange' //模式改變
+	MODE_CHANGE = 'modeChange', //模式改變
+	PIPE_MAP_UPDATE = 'pipeMapUpdate', //管線地圖更新
 }
 
 export enum ViewerMode {

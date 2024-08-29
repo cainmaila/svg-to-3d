@@ -120,6 +120,9 @@
 			break
 		default:
 	}
+	function updateLineMap() {
+		dispatch(ViewerEvent.PIPE_MAP_UPDATE, lineMap)
+	}
 	//傳入陣列點創建線
 	function createLine(points: THREE.Vector3[]) {
 		if (!targetLineName) return
@@ -595,10 +598,10 @@
 				break
 		}
 		targetLineName = ''
+		updateLineMap()
 	}
 	//畫線undo
 	export function unDoAddLine() {
-		// if (cctvMode !== CCTVMode.ADDLINE) return
 		if (normalArray.length === 0) return
 		if (normalArray.length === 1) {
 			//剛創建重新開始
@@ -624,6 +627,14 @@
 
 	export function setViewerMode(mode: ViewerMode) {
 		send({ type: mode })
+	}
+
+	export function selectLine(line: string) {
+		const pipe = lineMap.get(line)
+		if (pipe) {
+			points = pipe
+			targetLineName = line
+		}
 	}
 </script>
 

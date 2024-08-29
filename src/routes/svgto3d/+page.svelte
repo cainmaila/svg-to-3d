@@ -20,6 +20,7 @@
 	let cctvMode = '' //cctv模式
 	let pipeMode = '' //pipe模式
 	let topLineMode = false //屋頂拉線模式
+	let pipes: string[] = []
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -62,6 +63,16 @@
 	function onViewerModeChangeHandler(e: CustomEvent) {
 		viewer.setViewerMode(e.detail)
 	}
+	function onSelectLineHandler(line: string) {
+		viewer.selectLine(line)
+	}
+	function onPipeMapUpdateHandler(e: CustomEvent) {
+		const pis: string[] = []
+		e.detail.forEach((_: unknown, key: string) => {
+			pis.push(key)
+		})
+		pipes = pis
+	}
 </script>
 
 <Viewer
@@ -80,10 +91,22 @@
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}}
 	on:modeChange={onModelChangeHandler}
+	on:pipeMapUpdate={onPipeMapUpdateHandler}
 />
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
 {/if}
+<div class="fixed left-5 top-20 z-10">
+	<ul>
+		{#each pipes as pipe (pipe)}
+			<li>
+				<button class="card p-1 hover:text-rose-500" on:click={() => onSelectLineHandler(pipe)}
+					>{pipe}</button
+				>
+			</li>
+		{/each}
+	</ul>
+</div>
 {#if downloadGLB}
 	<div id="UI">
 		<a
