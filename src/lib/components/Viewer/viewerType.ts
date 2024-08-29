@@ -8,6 +8,7 @@ export enum ViewerEvent {
 	CCTV_DEL = 'cctvDel', //CCTV刪除
 	MODE_CHANGE = 'modeChange', //模式改變
 	PIPE_MAP_UPDATE = 'pipeMapUpdate', //管線地圖更新
+	SELECTED_PIPE = 'selectedPipe', //選擇管線
 }
 
 export enum ViewerMode {

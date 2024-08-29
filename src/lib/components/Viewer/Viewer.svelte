@@ -114,11 +114,30 @@
 	const normalArray: (THREE.Vector3 | null)[] = [] //法向量的陣列，undo畫線用
 	const lineMap = new Map() //線段紀錄
 	let targetLineName = '' //目標線段
+	let targetLine: THREE.Line | null = null //目標線段
 	$: switch (true) {
 		case points.length > 0: //繪製線
 			createLine(points)
 			break
 		default:
+	}
+
+	$: selectLineHandler(targetLineName)
+	function selectLineHandler(name: string) {
+		if (targetLine) {
+			targetLine.material = new THREE.LineBasicMaterial({
+				color: 0x00ff00,
+				depthWrite: true
+			})
+		}
+		targetLine = scene.getObjectByName(name) as THREE.Line
+		dispatch(ViewerEvent.SELECTED_PIPE, targetLine?.name || '')
+		if (!targetLine) return
+		targetLine.material = new THREE.LineBasicMaterial({
+			color: 0xffff00,
+			depthWrite: true,
+			depthTest: false
+		})
 	}
 	function updateLineMap() {
 		dispatch(ViewerEvent.PIPE_MAP_UPDATE, lineMap)
@@ -135,8 +154,6 @@
 				geometry,
 				new THREE.LineBasicMaterial({
 					color: 0x00ff00,
-					linewidth: 10,
-					// depthTest: false,
 					depthWrite: true
 				})
 			)
@@ -583,6 +600,7 @@
 	}
 	//新增線路
 	export function createLines() {
+		selectLine('') //清除選擇的線
 		send({ type: PIPE_MODE.CREATE })
 	}
 	//清除CCTV模式
@@ -611,7 +629,7 @@
 			const pointMesh = scene.getObjectByName(targetLineName + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
 			targetLineName = ''
-			// send({ type: CCTVMode.CREATELINE })
+			updateLineMap()
 		} else if (normalArray.length > 1) {
 			//移除上一個點
 			normalArray.pop()
@@ -634,7 +652,11 @@
 		if (pipe) {
 			points = pipe
 			targetLineName = line
+			return line
 		}
+		points = []
+		targetLineName = ''
+		return ''
 	}
 </script>
 

@@ -21,6 +21,7 @@
 	let pipeMode = '' //pipe模式
 	let topLineMode = false //屋頂拉線模式
 	let pipes: string[] = []
+	let selectPipeName = '' //選擇的pipe
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -73,6 +74,9 @@
 		})
 		pipes = pis
 	}
+	function onSelectedPipeHandler(e: CustomEvent) {
+		selectPipeName = e.detail
+	}
 </script>
 
 <Viewer
@@ -92,6 +96,7 @@
 	}}
 	on:modeChange={onModelChangeHandler}
 	on:pipeMapUpdate={onPipeMapUpdateHandler}
+	on:selectedPipe={onSelectedPipeHandler}
 />
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
@@ -100,8 +105,9 @@
 	<ul>
 		{#each pipes as pipe (pipe)}
 			<li>
-				<button class="card p-1 hover:text-rose-500" on:click={() => onSelectLineHandler(pipe)}
-					>{pipe}</button
+				<button
+					class="card p-1 hover:text-rose-500 {selectPipeName === pipe ? 'text-amber-400' : ''}"
+					on:click={() => onSelectLineHandler(pipe)}>{pipe}</button
 				>
 			</li>
 		{/each}
