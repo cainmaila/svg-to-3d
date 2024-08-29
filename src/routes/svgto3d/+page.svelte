@@ -109,6 +109,10 @@
 </div>
 {#if downloadGLB}
 	<div id="UI">
+		<div class="card flex p-2">
+			底圖顯示
+			<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable} />
+		</div>
 		<a
 			class="variant-filled btn-icon"
 			role="button"
@@ -118,21 +122,25 @@
 		>
 			<ICON.EntypoDownload /></a
 		>
-		<button
-			class="variant-filled btn-icon"
-			on:click={viewer.addCCTV}
-			disabled={cameraNum >= MAX_CCTV_NUM}
-			title={cameraNum >= MAX_CCTV_NUM ? `最多只能新增${MAX_CCTV_NUM}個CCTV` : '新增CCTV'}
-		>
-			<ICON.MaterialSymbolsAdd /></button
-		>
-		<button
-			class={`${pipeMode} variant-filled btn-icon bg-primary-500`}
-			on:click={onLineModeHandler}
-			title="新增線路"
-		>
-			<ICON.MaterialSymbolsAdd /></button
-		>
+		{#if viewerMode === ViewerMode.CCTV}
+			<button
+				class="{cctvMode} variant-filled btn-icon"
+				on:click={viewer.addCCTV}
+				disabled={cameraNum >= MAX_CCTV_NUM}
+				title={cameraNum >= MAX_CCTV_NUM ? `最多只能新增${MAX_CCTV_NUM}個CCTV` : '新增CCTV'}
+			>
+				<ICON.MaterialSymbolsAdd /></button
+			>
+		{:else}
+			<button
+				class={`${pipeMode} variant-filled btn-icon bg-primary-500`}
+				on:click={onLineModeHandler}
+				title="新增線路"
+			>
+				<ICON.MaterialSymbolsAdd /></button
+			>
+		{/if}
+
 		<button
 			class="variant-filled btn-icon"
 			on:click={viewer.delAllCCTV}
@@ -142,9 +150,10 @@
 			<ICON.MaterialSymbolsRestore /></button
 		>
 		<ModePicker {viewerMode} on:change={onViewerModeChangeHandler} />
-		<SlideToggle name="slider-label" size="sm" bind:checked={bgImageDisable}>底圖顯示</SlideToggle>
+
 		{#if viewerMode === ViewerMode.PIPE}
-			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode}>屋頂拉線</SlideToggle>
+			<lable class="lable">屋頂拉線</lable>
+			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode} />
 			<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
 				<ICON.MaterialSymbolsUndo /></button
 			>
@@ -159,6 +168,9 @@
 		}
 		&.pipeModeAdd {
 			background-color: rgb(255, 191, 0);
+		}
+		&.cctvAdd {
+			background-color: rgb(0, 145, 255);
 		}
 	}
 	#UI {
