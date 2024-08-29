@@ -49,6 +49,7 @@
 	$: pipeMode = $snapshot.matches(ViewerMode.PIPE) //線路模式
 		? $snapshot.value[ViewerMode.PIPE]
 		: '' //選擇的cctv
+	$: selectPipe = $snapshot.context.selectPipe //選取的pipe
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
 	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
 	$: dispatch(ViewerEvent.MODE_CHANGE, { viewerMode, pipeMode, cctvMode }) //通知父組件模式改變
@@ -113,7 +114,7 @@
 	let points: THREE.Vector3[] = [] //目前繪製的線段點
 	const normalArray: (THREE.Vector3 | null)[] = [] //法向量的陣列，undo畫線用
 	const lineMap = new Map() //線段紀錄
-	let targetLineName = '' //目標線段
+	// let targetLineName = '' //目標線段
 	let targetLine: THREE.Line | null = null //目標線段
 	$: switch (true) {
 		case points.length > 0: //繪製線
@@ -122,7 +123,7 @@
 		default:
 	}
 
-	$: selectLineHandler(targetLineName)
+	$: selectLineHandler(selectPipe)
 	function selectLineHandler(name: string) {
 		if (targetLine) {
 			targetLine.material = new THREE.LineBasicMaterial({
@@ -145,8 +146,8 @@
 	}
 	//傳入陣列點創建線
 	function createLine(points: THREE.Vector3[]) {
-		if (!targetLineName) return
-		const targetLine = scene.getObjectByName(targetLineName) as THREE.Line
+		if (!selectPipe) return
+		const targetLine = scene.getObjectByName(selectPipe) as THREE.Line
 		if (targetLine) {
 			targetLine.geometry = new THREE.BufferGeometry().setFromPoints(points)
 		} else {
@@ -158,7 +159,7 @@
 					depthWrite: true
 				})
 			)
-			line.name = targetLineName
+			line.name = selectPipe
 			scene.add(line)
 		}
 	}
@@ -287,8 +288,9 @@
 					scene.add(poMesh)
 					points.push(selectPoint)
 					normalArray.push(normalA)
-					targetLineName = createLineEnd()
-					poMesh.name = targetLineName + TARGET_LINE_POINT_END
+					const _selectPipe = createLineEnd()
+					send({ type: 'updateSelectPipe', selectPipe: _selectPipe })
+					poMesh.name = _selectPipe + TARGET_LINE_POINT_END
 				}
 				break
 			case PIPE_MODE.ADD:
@@ -606,7 +608,7 @@
 	}
 	//清除CCTV模式
 	export function addLineEnd() {
-		send({ type: PIPE_MODE.NONE })
+		send({ type: PIPE_MODE.NONE, selectPipe: '' })
 		switch (pipeMode) {
 			case PIPE_MODE.ADD:
 				if (points.length === 1) {
@@ -616,7 +618,6 @@
 				}
 				break
 		}
-		targetLineName = ''
 		updateLineMap()
 	}
 	//畫線undo
@@ -626,10 +627,9 @@
 			//剛創建重新開始
 			points = []
 			normalArray.length = 0
-			lineMap.delete(targetLineName)
-			const pointMesh = scene.getObjectByName(targetLineName + TARGET_LINE_POINT_END)
+			lineMap.delete(selectPipe)
+			const pointMesh = scene.getObjectByName(selectPipe + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
-			targetLineName = ''
 			send({ type: PIPE_MODE.CREATE })
 			updateLineMap()
 		} else if (normalArray.length > 1) {
@@ -657,11 +657,11 @@
 		const pipe = lineMap.get(line)
 		if (pipe) {
 			points = pipe
-			targetLineName = line
+			send({ type: 'updateSelectPipe', selectPipe: line })
 			return line
 		}
 		points = []
-		targetLineName = ''
+		send({ type: 'updateSelectPipe', selectPipe: '' })
 		return ''
 	}
 </script>
