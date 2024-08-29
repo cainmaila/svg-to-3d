@@ -18,7 +18,7 @@
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode, PIPE_MODE, ViewerMode } from './viewerType'
 	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
-	import type { CCTVCamera } from './threelib/cctvCamera'
+	import { CCTVCamera } from './threelib/cctvCamera'
 	import { useMachine } from '@xstate/svelte'
 	import { cctvModeMachine } from '$lib/stores/cctvModeMachine'
 
@@ -139,6 +139,7 @@
 			depthTest: false
 		})
 	}
+	//更新線段紀錄
 	function updateLineMap() {
 		dispatch(ViewerEvent.PIPE_MAP_UPDATE, lineMap)
 	}
@@ -629,6 +630,7 @@
 			const pointMesh = scene.getObjectByName(targetLineName + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
 			targetLineName = ''
+			send({ type: PIPE_MODE.CREATE })
 			updateLineMap()
 		} else if (normalArray.length > 1) {
 			//移除上一個點
@@ -644,6 +646,10 @@
 	}
 
 	export function setViewerMode(mode: ViewerMode) {
+		if (pipeMode === PIPE_MODE.ADD || pipeMode === PIPE_MODE.CREATE) {
+			addLineEnd()
+			updataShadowMaps()
+		}
 		send({ type: mode })
 	}
 

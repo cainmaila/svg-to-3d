@@ -101,18 +101,20 @@
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
 {/if}
-<div class="fixed left-5 top-20 z-10">
-	<ul>
-		{#each pipes as pipe (pipe)}
-			<li>
-				<button
-					class="card p-1 hover:text-rose-500 {selectPipeName === pipe ? 'text-amber-400' : ''}"
-					on:click={() => onSelectLineHandler(pipe)}>{pipe}</button
-				>
-			</li>
-		{/each}
-	</ul>
-</div>
+{#if viewerMode === ViewerMode.PIPE}
+	<div class="fixed left-5 top-20 z-10">
+		<ul>
+			{#each pipes as pipe (pipe)}
+				<li>
+					<button
+						class="card p-1 hover:text-rose-500 {selectPipeName === pipe ? 'text-amber-400' : ''}"
+						on:click={() => onSelectLineHandler(pipe)}>{pipe}</button
+					>
+				</li>
+			{/each}
+		</ul>
+	</div>
+{/if}
 {#if downloadGLB}
 	<div id="UI">
 		<div class="card flex p-2">
