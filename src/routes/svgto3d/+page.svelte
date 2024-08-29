@@ -3,9 +3,8 @@
 	import Viewer from '$lib/components/Viewer'
 	import ICON from '$lib/components/icon'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
-	import { CCTVMode, PIPE_MODE, ViewerEvent, ViewerMode } from '$lib/components/Viewer/viewerType'
+	import { PIPE_MODE, ViewerMode } from '$lib/components/Viewer/viewerType'
 	import ModePicker from './ModePicker.svelte'
-	import { PI2 } from 'three/examples/jsm/nodes/Nodes.js'
 
 	export let data: {
 		svgString: string
