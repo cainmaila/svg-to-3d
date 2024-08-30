@@ -46,6 +46,15 @@ export function checkFaceIntersectPoint(
     )
 }
 
+//串入一個點陣列，這些點連成一條直線，並算出總長度
+export function getLineLength(points: Vector3[], scele: number = 1): number {
+    let length = 0, i = 0
+    for (i; i < points.length - 1; i++) {
+        length += points[i].distanceTo(points[i + 1])
+    }
+    return length * scele
+}
+
 function _showHelper(planeA: Plane, planeB: Plane, planeC: Plane, scene: Scene) {
     const planeAHelper = new PlaneHelper(planeA, 10000, 0xff0000)
     scene.add(planeAHelper)

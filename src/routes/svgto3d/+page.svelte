@@ -20,7 +20,10 @@
 	let cctvMode = '' //cctv模式
 	let pipeMode = '' //pipe模式
 	let topLineMode = false //屋頂拉線模式
-	let pipes: string[] = []
+	let pipes: {
+		name: string
+		length: number
+	}[] = []
 	let selectPipeName = '' //選擇的pipe
 
 	try {
@@ -68,11 +71,7 @@
 		viewer.selectLine(line)
 	}
 	function onPipeMapUpdateHandler(e: CustomEvent) {
-		const pis: string[] = []
-		e.detail.forEach((_: unknown, key: string) => {
-			pis.push(key)
-		})
-		pipes = pis
+		pipes = e.detail
 	}
 	function onSelectedPipeHandler(e: CustomEvent) {
 		selectPipeName = e.detail
@@ -104,11 +103,12 @@
 {#if viewerMode === ViewerMode.PIPE}
 	<div class="fixed left-5 top-20 z-10">
 		<ul>
-			{#each pipes as pipe (pipe)}
+			{#each pipes as { name, length } (name)}
 				<li>
 					<button
-						class="card p-1 hover:text-rose-500 {selectPipeName === pipe ? 'text-amber-400' : ''}"
-						on:click={() => onSelectLineHandler(pipe)}>{pipe}</button
+						class="card p-1 hover:text-rose-500 {selectPipeName === name ? 'text-amber-400' : ''}"
+						on:click={() => onSelectLineHandler(name)}
+						>{name} <code class="code">{~~length}cm</code></button
 					>
 				</li>
 			{/each}

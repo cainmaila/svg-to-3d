@@ -1,10 +1,11 @@
 import { CCTVMode, PIPE_MODE, ViewerMode } from '$lib/components/Viewer/viewerType'
+import type { Vector3 } from 'three';
 import { setup, assign } from 'xstate'
 
 type CCTVContext = {
     selectCCTV: string;
     selectPipe: string;
-    lineMap: Map<string, { x: number, y: number, z: number }[]>
+    lineMap: Map<string, Vector3[]>
 };
 
 export const cctvModeMachine = setup({

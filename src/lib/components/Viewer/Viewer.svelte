@@ -18,7 +18,7 @@
 		oupPutMaterial
 	} from './threelib/materialLib'
 	import { ViewerEvent, CCTVMode, PIPE_MODE, ViewerMode } from './viewerType'
-	import { checkFaceIntersectPoint } from './threelib/intersectPoint'
+	import { checkFaceIntersectPoint, getLineLength } from './threelib/intersectPoint'
 	import { CCTVCamera } from './threelib/cctvCamera'
 	import { useMachine } from '@xstate/svelte'
 	import { cctvModeMachine } from '$lib/stores/cctvModeMachine'
@@ -138,7 +138,21 @@
 		})
 	}
 	//更新線段紀錄
-	$: dispatch(ViewerEvent.PIPE_MAP_UPDATE, lineMap)
+	$: dispatchLineMap(lineMap)
+	//生成一個資訊陣列
+	function dispatchLineMap(map: Map<string, THREE.Vector3[]>) {
+		const pipeInfos: {
+			name: string
+			length: number
+		}[] = []
+		map.forEach((pos, key) => {
+			pipeInfos.push({
+				name: key,
+				length: getLineLength(pos)
+			})
+		})
+		dispatch(ViewerEvent.PIPE_MAP_UPDATE, pipeInfos)
+	}
 	//傳入陣列點創建線
 	function createLine(points: THREE.Vector3[]) {
 		if (!selectPipe) return
@@ -636,14 +650,19 @@
 
 	export function selectLine(line: string) {
 		const pipe = lineMap.get(line)
-		if (pipe) {
-			points = pipe as THREE.Vector3[]
-			send({ type: PIPE_MODE.NONE, selectPipe: line })
-			return line
+		switch (true) {
+			case pipeMode === PIPE_MODE.NONE:
+				send({ type: 'updateSelectPipe', selectPipe: line || '' })
+				return line || ''
+			case !!pipe:
+				points = pipe as THREE.Vector3[]
+				send({ type: PIPE_MODE.NONE, selectPipe: line })
+				return line
+			default:
+				points = []
+				send({ type: PIPE_MODE.NONE, selectPipe: '' })
+				return ''
 		}
-		points = []
-		send({ type: PIPE_MODE.NONE, selectPipe: '' })
-		return ''
 	}
 	//刪除線路
 	export function delPipe(name?: string) {
