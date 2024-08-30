@@ -673,10 +673,9 @@
 </script>
 
 <svelte:window on:resize|passive={onWindowResize} />
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
 	id="Viewer"
+	role="presentation"
 	on:mousedown|stopPropagation={_onMouseDownHandler}
 	on:mouseup|stopPropagation={_onMouseUpHandler}
 	on:mousemove|preventDefault={onMouseMoveHandler}
