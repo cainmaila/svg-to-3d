@@ -611,8 +611,8 @@
 	}
 	//畫線undo
 	export function unDoAddLine() {
-		if (normalArray.length === 0) return
-		if (normalArray.length === 1) {
+		if (points.length === 0) return
+		if (points.length === 1) {
 			//剛創建重新開始
 			points = []
 			normalArray.length = 0
@@ -620,15 +620,10 @@
 			const pointMesh = scene.getObjectByName(selectPipe + TARGET_LINE_POINT_END)
 			pointMesh && scene.remove(pointMesh)
 			send({ type: PIPE_MODE.CREATE })
-		} else if (normalArray.length > 1) {
+		} else if (points.length > 1) {
 			//移除上一個點
 			normalArray.pop()
 			points.pop()
-			if (normalArray[normalArray.length - 1] === null) {
-				//則線點一起移除
-				normalArray.pop()
-				points.pop()
-			}
 			points = points
 		}
 	}
