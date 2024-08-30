@@ -516,7 +516,6 @@
 		}
 		renderShadowMaps() // 渲染阴影贴图
 	}
-
 	//render深度紋理
 	function renderShadowMaps() {
 		const initialClearColor = renderer.getClearColor(new THREE.Color())
@@ -534,15 +533,11 @@
 		renderer.setClearColor(initialClearColor, initialClearAlpha)
 		renderer.setRenderTarget(null)
 	}
-
 	// 將天空盒添加到場景
 	scene.add(generateSkyBox())
-
 	onDestroy(() => {
 		renderer.domElement.remove()
-		// transformControls.dispose()
 	})
-
 	//CCTV設定
 	let selectCCTVSeting = {
 		focalLength: 4
@@ -567,7 +562,7 @@
 		moveCctv(selectCCTV)
 		debounce(() => updataShadowMaps(), 100)()
 	}
-
+	//清除CCTV
 	function onClickClearCCTVHandler() {
 		send({ type: 'updateSelectCCTV', selectCCTV: '' })
 	}
@@ -636,7 +631,7 @@
 			points = points
 		}
 	}
-
+	//切換模式
 	export function setViewerMode(mode: ViewerMode) {
 		if (pipeMode === PIPE_MODE.ADD || pipeMode === PIPE_MODE.CREATE) {
 			addLineEnd()
@@ -644,7 +639,7 @@
 		}
 		send({ type: mode })
 	}
-
+	//選擇線路
 	export function selectLine(line: string) {
 		const pipe = lineMap.get(line)
 		switch (true) {
@@ -657,6 +652,7 @@
 				return line
 			default:
 				points = []
+				normalArray.length = 0
 				send({ type: PIPE_MODE.NONE, selectPipe: '' })
 				return ''
 		}
