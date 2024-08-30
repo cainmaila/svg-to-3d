@@ -108,8 +108,11 @@
 					<button
 						class="card p-1 hover:text-rose-500 {selectPipeName === name ? 'text-amber-400' : ''}"
 						on:click={() => onSelectLineHandler(name)}
-						>{name} <code class="code">{~~length}cm</code></button
-					>
+						>{name}
+						{#if length}
+							<code class="code">{~~length}cm</code>
+						{/if}
+					</button>
 				</li>
 			{/each}
 		</ul>
