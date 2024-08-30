@@ -42,7 +42,7 @@
 	const { snapshot, send } = useMachine(cctvModeMachine) //cctv模式狀態機
 	$: if (snapshot) {
 		const { value, context } = $snapshot
-		console.log('cctvModeMachine', value, context.selectCCTV)
+		console.debug('cctvModeMachine', value, context.selectCCTV)
 	}
 	$: viewerMode = $snapshot.matches(ViewerMode.CCTV) ? ViewerMode.CCTV : ViewerMode.PIPE //選擇的cctv
 	$: cctvMode = $snapshot.matches(ViewerMode.CCTV) ? $snapshot.value[ViewerMode.CCTV] : '' //cctv模式 add move lookat createLine addLine
