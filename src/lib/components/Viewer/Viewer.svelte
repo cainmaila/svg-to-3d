@@ -2,10 +2,8 @@
 	import { debounce } from 'lodash-es'
 	import * as THREE from 'three'
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-	import { SlideToggle } from '@skeletonlabs/skeleton'
 	import { goto } from '$app/navigation'
 	import { scalceSize$ } from '$lib/stores'
-	import ICON from '$lib/components/icon'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
 	import { createCCTV, cctvObjsFactory, generateShadowMap } from './threelib/cctvLib'
 	import { threeSeneInit } from './threelib/threeSeneInit'
@@ -22,6 +20,7 @@
 	import { CCTVCamera } from './threelib/cctvCamera'
 	import { useMachine } from '@xstate/svelte'
 	import { cctvModeMachine } from '$lib/stores/cctvModeMachine'
+	import CCTVInfo from './CCTVInfo.svelte'
 
 	export let MAX_CCTV_NUM = 20 //最大CCTV數量
 	export let data: {
@@ -366,15 +365,14 @@
 		debounce(() => updataShadowMaps(), 100)()
 	}
 	//CCTV Info變動移動模式
-	function onCCTVchangeMoveModeHandler(e: Event) {
-		const target = e.target as HTMLInputElement
-		const name = target.name
-		switch (name) {
+	function onCCTVchangeMoveModeHandler(e: CustomEvent) {
+		const { moveMode, checked } = e.detail
+		switch (moveMode) {
 			case CCTVMode.MOVE:
-				send({ type: target.checked ? CCTVMode.MOVE : CCTVMode.NONE })
+				send({ type: checked ? CCTVMode.MOVE : CCTVMode.NONE })
 				break
 			case CCTVMode.LOOKAT:
-				send({ type: target.checked ? CCTVMode.LOOKAT : CCTVMode.NONE })
+				send({ type: checked ? CCTVMode.LOOKAT : CCTVMode.NONE })
 				break
 		}
 	}
@@ -558,9 +556,8 @@
 		}
 	}
 	//UI 改變焦距
-	function changeCCTV_FocalLength(e: Event) {
-		const target = e.target as HTMLInputElement
-		const focalLength = parseFloat(target?.value) || 4
+	function changeCCTV_FocalLength(e: CustomEvent) {
+		const focalLength = parseFloat(e.detail) || 4
 		const shadowCamera = getCCTVCamera(selectCCTV)
 		if (!shadowCamera) return
 		;(shadowCamera as CCTVCamera).focalLength = focalLength
@@ -685,64 +682,12 @@
 	on:mousemove|preventDefault={onMouseMoveHandler}
 ></div>
 <!-- <div id="Viewer" on:click={onRayMe} on:mousemove|preventDefault={onMouseMoveHandler}></div> -->
-
-<div id="CCTV_Info">
-	{#if selectCCTV}
-		<div class="flex items-center justify-between">
-			<p class="h4">{selectCCTV}</p>
-			<button type="button" class="variant-filled btn btn-sm" on:click={onClickClearCCTVHandler}
-				>Clear</button
-			>
-		</div>
-		<label class="label" for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
-		<input
-			class="input"
-			type="range"
-			min="2.8"
-			max="6.0"
-			step="0.1"
-			value={selectCCTVSeting.focalLength}
-			on:input={changeCCTV_FocalLength}
-		/>
-		<div>
-			<SlideToggle
-				name={CCTVMode.MOVE}
-				checked={cctvMode === CCTVMode.MOVE}
-				on:change={onCCTVchangeMoveModeHandler}
-				active="bg-primary-500"
-				size="sm">移動位置</SlideToggle
-			>
-			<SlideToggle
-				name={CCTVMode.LOOKAT}
-				checked={cctvMode === CCTVMode.LOOKAT}
-				on:change={onCCTVchangeMoveModeHandler}
-				active="bg-primary-500"
-				size="sm">拍攝方向</SlideToggle
-			>
-			<button class="variant-filled btn-icon btn-sm scale-75 text-2xl" on:click={() => delCCTV()}>
-				<ICON.MaterialSymbolsLightDeleteSharp />
-			</button>
-		</div>
-	{/if}
-</div>
-
-<style lang="postcss">
-	#Viewer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 1;
-	}
-	#CCTV_Info {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		z-index: 100;
-		min-width: 100px;
-		min-height: 50px;
-		padding: 10px;
-		background-color: rgba(0, 0, 0, 0.5);
-		border-radius: 10px;
-		font-size: small;
-	}
-</style>
+<CCTVInfo
+	{selectCCTV}
+	{cctvMode}
+	{selectCCTVSeting}
+	on:clear={onClickClearCCTVHandler}
+	on:del={() => delCCTV()}
+	on:moveMode={onCCTVchangeMoveModeHandler}
+	on:focalLength={changeCCTV_FocalLength}
+/>
