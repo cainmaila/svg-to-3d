@@ -616,9 +616,7 @@
 			//剛創建重新開始
 			points = []
 			normalArray.length = 0
-			send({ type: 'delPipe', poName: selectPipe })
-			const pointMesh = scene.getObjectByName(selectPipe + TARGET_LINE_POINT_END)
-			pointMesh && scene.remove(pointMesh)
+			delPipe(selectPipe)
 			send({ type: PIPE_MODE.CREATE })
 		} else if (points.length > 1) {
 			//移除上一個點
@@ -646,6 +644,15 @@
 		points = []
 		send({ type: 'updateSelectPipe', selectPipe: '' })
 		return ''
+	}
+	//刪除線路
+	export function delPipe(name?: string) {
+		name = name || selectPipe
+		const targetLine = scene.getObjectByName(selectPipe)
+		targetLine && scene.remove(targetLine)
+		const pointMesh = scene.getObjectByName(name + TARGET_LINE_POINT_END)
+		pointMesh && scene.remove(pointMesh)
+		send({ type: 'delPipe', poName: name })
 	}
 </script>
 

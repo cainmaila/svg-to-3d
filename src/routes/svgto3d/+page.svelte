@@ -166,6 +166,12 @@
 				<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
 					<ICON.MaterialSymbolsUndo /></button
 				>
+			{:else if selectPipeName}
+				<button class="variant-filled btn-icon" on:click={() => viewer.delPipe()} title="刪除Pipe">
+					<ICON.MaterialSymbolsLightDeleteSharp /></button
+				>
+			{:else}
+				<!-- else content here -->
 			{/if}
 		{/if}
 	</div>
