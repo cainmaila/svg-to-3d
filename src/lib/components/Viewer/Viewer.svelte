@@ -306,9 +306,9 @@
 						normalArray.push(null)
 					}
 					topLineMode && (selectPoint.y = 300)
+					normalArray.push(normalB!)
 					points.push(selectPoint)
 					points = points
-					normalArray.push(normalB!)
 				}
 				break
 			default:
