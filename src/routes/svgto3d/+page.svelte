@@ -162,9 +162,11 @@
 		{#if viewerMode === ViewerMode.PIPE}
 			<lable class="lable">屋頂拉線</lable>
 			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode} />
-			<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
-				<ICON.MaterialSymbolsUndo /></button
-			>
+			{#if pipeMode !== PIPE_MODE.NONE}
+				<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
+					<ICON.MaterialSymbolsUndo /></button
+				>
+			{/if}
 		{/if}
 	</div>
 {/if}
