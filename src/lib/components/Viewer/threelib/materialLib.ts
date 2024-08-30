@@ -3,6 +3,7 @@ import {
 	Color,
 	DirectionalLight,
 	HemisphereLight,
+	LineBasicMaterial,
 	Matrix4,
 	MeshStandardMaterial,
 	ShaderMaterial,
@@ -172,4 +173,10 @@ export const oupFloorBoxMaterial = new MeshStandardMaterial({
 	color: 0xcccccc,
 	roughness: 0.5,
 	metalness: 0.5
+})
+
+//線材質
+export const lineMaterial = new LineBasicMaterial({
+	color: 0x00ff00,
+	depthWrite: true
 })

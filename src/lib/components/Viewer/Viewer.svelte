@@ -12,6 +12,7 @@
 	import {
 		depthMaterial,
 		generateProjectionMaterial,
+		lineMaterial,
 		oupFloorBoxMaterial,
 		oupPutBoxMaterial,
 		oupPutMaterial
@@ -114,21 +115,18 @@
 	/* 繪製線邏輯 */
 	let points: THREE.Vector3[] = [] //目前繪製的線段點
 	const normalArray: (THREE.Vector3 | null)[] = [] //法向量的陣列，undo畫線用錄
-	let targetLine: THREE.Line | null = null //目標線段
+
 	$: switch (true) {
 		case points.length > 0: //繪製線
 			createLine(points)
 			break
 		default:
 	}
-
 	$: selectLineHandler(selectPipe)
+	let targetLine: THREE.Line | null = null //目標線段
 	function selectLineHandler(name: string) {
 		if (targetLine) {
-			targetLine.material = new THREE.LineBasicMaterial({
-				color: 0x00ff00,
-				depthWrite: true
-			})
+			targetLine.material = lineMaterial
 		}
 		targetLine = scene.getObjectByName(name) as THREE.Line
 		dispatch(ViewerEvent.SELECTED_PIPE, targetLine?.name || '')
@@ -149,13 +147,7 @@
 			targetLine.geometry = new THREE.BufferGeometry().setFromPoints(points)
 		} else {
 			const geometry = new THREE.BufferGeometry().setFromPoints(points)
-			const line = new THREE.Line(
-				geometry,
-				new THREE.LineBasicMaterial({
-					color: 0x00ff00,
-					depthWrite: true
-				})
-			)
+			const line = new THREE.Line(geometry, lineMaterial)
 			line.name = selectPipe
 			scene.add(line)
 		}
