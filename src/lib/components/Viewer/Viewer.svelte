@@ -638,11 +638,11 @@
 		const pipe = lineMap.get(line)
 		if (pipe) {
 			points = pipe as THREE.Vector3[]
-			send({ type: 'updateSelectPipe', selectPipe: line })
+			send({ type: PIPE_MODE.NONE, selectPipe: line })
 			return line
 		}
 		points = []
-		send({ type: 'updateSelectPipe', selectPipe: '' })
+		send({ type: PIPE_MODE.NONE, selectPipe: '' })
 		return ''
 	}
 	//刪除線路
