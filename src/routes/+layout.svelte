@@ -60,7 +60,7 @@
 	function validateEmail(mail: string) {
 		const domainRegex = /^[a-zA-Z0-9._%+-]+@dgiots\.com$/
 		//並符合以下陣列中的一個
-		const mailRegex = ['cainmaila@gmail.com']
+		const mailRegex = ['cainmaila@gmail.com', 'sophy.rscloud@gmail.com']
 		return domainRegex.test(mail) || mailRegex.includes(mail)
 	}
 
