@@ -67,7 +67,8 @@
 	function onLoginModStateHandler(e: CustomEvent) {
 		switch (e.detail) {
 			case 'logining':
-				loginStatus = 1
+				// loginStatus = 1
+				alert('Google服務費用已超標')
 				break
 			case 'success':
 				// loginStatus = 2
@@ -90,6 +91,7 @@
 {:else if loginStatus === -1}
 	<LoginMod on:state={onLoginModStateHandler} />
 {:else}
-	<slot></slot>
+	<div>Google服務費用已超標</div>
+	<!-- <slot></slot> -->
 {/if}
 <Toast />
