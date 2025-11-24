@@ -164,7 +164,7 @@
 		>
 			<ICON.MaterialSymbolsRestore /></button
 		>
-		<ModePicker {viewerMode} on:change={onViewerModeChangeHandler} />
+		<ModePicker {viewerMode} onchange={onViewerModeChangeHandler} />
 
 		{#if viewerMode === ViewerMode.PIPE}
 			<lable class="lable">屋頂拉線</lable>

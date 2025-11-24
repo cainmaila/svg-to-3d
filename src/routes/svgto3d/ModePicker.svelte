@@ -2,19 +2,18 @@
 	import { createBubbler } from 'svelte/legacy'
 
 	const bubble = createBubbler()
-	import { createEventDispatcher } from 'svelte'
 	import ICON from '$lib/components/icon'
 	import { ViewerMode } from '$lib/components/Viewer/viewerType'
-	const dispatch = createEventDispatcher()
 	interface Props {
 		viewerMode: ViewerMode
+		onchange?: (event: CustomEvent) => void
 	}
 
-	let { viewerMode = $bindable() }: Props = $props()
+	let { viewerMode = $bindable(), onchange }: Props = $props()
 
 	function onSelectHeader(mode: ViewerMode) {
 		viewerMode = mode
-		dispatch('change', mode)
+		onchange?.(new CustomEvent('change', { detail: mode }))
 	}
 
 	function selectedStyle(viewerMode: ViewerMode, mode: ViewerMode) {
