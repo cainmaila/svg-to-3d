@@ -14,6 +14,9 @@ const config = {
 		adapter: adapter({
 			runtime: 'nodejs20.x'
 		})
+	},
+	vitePlugin: {
+		inspector: true // 啟用 Svelte Inspector
 	}
 }
 
