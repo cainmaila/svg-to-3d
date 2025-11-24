@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy'
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import '@svgdotjs/svg.panzoom.js'
@@ -433,8 +432,8 @@
 	}
 	//拖放文件 並載入
 	function loadFile(event: Event) {
+		event.preventDefault()
 		const dragEvent = event as DragEvent
-		dragEvent.preventDefault()
 		const file = dragEvent.dataTransfer?.files[0]
 		if (!file) return
 		const reader = new FileReader()
@@ -462,7 +461,7 @@
 	ondragleave={(e) => {
 		e.preventDefault()
 	}}
-	ondrop={preventDefault(loadFile)}
+	ondrop={loadFile}
 ></div>
 <ScaleBar>{viewScaleWidth.toFixed(2)} 公尺</ScaleBar>
 

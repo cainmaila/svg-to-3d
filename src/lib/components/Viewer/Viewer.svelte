@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { passive, stopPropagation, preventDefault } from 'svelte/legacy'
-
 	import { debounce } from 'lodash-es'
 	import * as THREE from 'three'
 	import { onDestroy, onMount } from 'svelte'
@@ -81,6 +79,8 @@
 	scene.add(topMesh)
 	onMount(() => {
 		document.getElementById('Viewer')?.appendChild(renderer.domElement)
+		// 添加被動事件監聽器以提高性能
+		window.addEventListener('resize', onWindowResize, { passive: true })
 	})
 
 	const {
@@ -327,11 +327,13 @@
 	let _downPos: THREE.Vector2 //鼠標按下的位置
 	let _downTime = 0 //鼠標按下的時間
 	function _onMouseDownHandler(event: Event) {
+		event.stopPropagation()
 		const mouseEvent = event as MouseEvent
 		_downPos = new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY)
 		_downTime = Date.now()
 	}
 	function _onMouseUpHandler(event: Event) {
+		event.stopPropagation()
 		const mouseEvent = event as MouseEvent
 		const _delayTime = Date.now() - _downTime
 		if (_delayTime > 200) return //按下時間小於200ms就不處理
@@ -340,6 +342,7 @@
 	}
 
 	function onMouseMoveHandler(event: Event) {
+		event.preventDefault()
 		const mouseEvent = event as MouseEvent
 		switch (cctvMode) {
 			// case CCTVMode.CREATELINE: //創建線
@@ -537,6 +540,7 @@
 	scene.add(generateSkyBox())
 	onDestroy(() => {
 		renderer.domElement.remove()
+		window.removeEventListener('resize', onWindowResize)
 	})
 	//CCTV設定
 	let selectCCTVSeting = $state({
@@ -724,13 +728,12 @@
 	})
 </script>
 
-<svelte:window use:passive={['resize', () => onWindowResize]} />
 <div
 	id="Viewer"
 	role="presentation"
-	onmousedown={stopPropagation(_onMouseDownHandler)}
-	onmouseup={stopPropagation(_onMouseUpHandler)}
-	onmousemove={preventDefault(onMouseMoveHandler)}
+	onmousedown={_onMouseDownHandler}
+	onmouseup={_onMouseUpHandler}
+	onmousemove={onMouseMoveHandler}
 ></div>
 <!-- <div id="Viewer" on:click={onRayMe} on:mousemove|preventDefault={onMouseMoveHandler}></div> -->
 <CCTVInfo
