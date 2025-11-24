@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { debounce } from 'lodash-es'
+	import { onMount } from 'svelte'
 	import Viewer from '$lib/components/Viewer'
 	import ICON from '$lib/components/icon'
 	import { SlideToggle } from '@skeletonlabs/skeleton'
@@ -17,7 +18,7 @@
 	let viewer: Viewer | undefined = $state()
 	let nowGenerate = $state(true) //是否正在生成模型
 	let downloadGLB: string = $state('') //下載的模型路徑
-	let cctvsSettings = $state([])
+	let cctvsSettings = $state<any[]>([])
 	let cameraNum = $state(0)
 	let bgImageDisable = $state(false) //底圖是否顯示
 	let viewerMode: ViewerMode = $state(ViewerMode.CCTV) //viewer模式
@@ -30,15 +31,23 @@
 	}[] = $state([])
 	let selectPipeName = $state('') //選擇的pipe
 
-	try {
-		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
-		cameraNum = cctvsSettings.length
-	} catch (error) {
-		cctvsSettings = []
-	}
 	const cctvsMap: Map<string, object> = new Map()
-	cctvsSettings.forEach((cctv: any) => {
-		cctvsMap.set(cctv[0], cctv[1])
+
+	// Initialize from localStorage on mount
+	onMount(() => {
+		try {
+			const stored = localStorage.getItem('cctvs')
+			if (stored) {
+				cctvsSettings = JSON.parse(stored)
+				cameraNum = cctvsSettings.length
+				cctvsSettings.forEach((cctv: any) => {
+					cctvsMap.set(cctv[0], cctv[1])
+				})
+			}
+		} catch (error) {
+			console.error('Error loading CCTVs from localStorage:', error)
+			cctvsSettings = []
+		}
 	})
 	const debouncedHandler = debounce((detail) => {
 		cctvsMap.set(detail.name, {
