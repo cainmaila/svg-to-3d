@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy'
-
 	import { goto } from '$app/navigation'
 	import * as THREE from 'three'
 
@@ -22,7 +20,7 @@
 	let loading = $state(true)
 	let loadingCount = $state(0)
 	const loader = new THREE.FileLoader()
-	run(() => {
+	$effect(() => {
 		if (loadingCount === 1) {
 			loading = false
 		}

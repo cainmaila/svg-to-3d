@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { run, passive, stopPropagation, preventDefault } from 'svelte/legacy'
+	import { passive, stopPropagation, preventDefault } from 'svelte/legacy'
 
 	import { debounce } from 'lodash-es'
 	import * as THREE from 'three'
@@ -66,7 +66,7 @@
 	const { svgString } = data //
 
 	let build: THREE.Group //建築物
-	let bgImageObj: THREE.Mesh = $state() //底圖物件
+	let bgImageObj: THREE.Mesh | undefined = $state() //底圖物件
 
 	const { snapshot, send } = useMachine(cctvModeMachine) //cctv模式狀態機 //通知父組件模式改變
 
@@ -93,6 +93,10 @@
 		getCCTVObj,
 		createCCTVObj
 	} = cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
+
+	// cctvNum 從 shadowCameras 陣列長度自動計算
+	let cctvNum = $derived(shadowCameras.length)
+
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
 		const cctvObj = getCCTVObj(name)
@@ -227,7 +231,6 @@
 					shadowCameras.push(cctv)
 					cctvObjs.push(cctvObj)
 					cctvHelpers.push(cctvHelper)
-					cctvNum++
 					send({
 						type: CCTVMode.LOOKAT,
 						selectCCTV: name
@@ -336,18 +339,21 @@
 
 	let _downPos: THREE.Vector2 //鼠標按下的位置
 	let _downTime = 0 //鼠標按下的時間
-	function _onMouseDownHandler(event: MouseEvent) {
-		_downPos = new THREE.Vector2(event.clientX, event.clientY)
+	function _onMouseDownHandler(event: Event) {
+		const mouseEvent = event as MouseEvent
+		_downPos = new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY)
 		_downTime = Date.now()
 	}
-	function _onMouseUpHandler(event: MouseEvent) {
+	function _onMouseUpHandler(event: Event) {
+		const mouseEvent = event as MouseEvent
 		const _delayTime = Date.now() - _downTime
 		if (_delayTime > 200) return //按下時間小於200ms就不處理
-		if (_downPos.distanceTo(new THREE.Vector2(event.clientX, event.clientY)) > 10) return //距離超過10px就不處理
-		onRayMe(event)
+		if (_downPos.distanceTo(new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY)) > 10) return //距離超過10px就不處理
+		onRayMe(mouseEvent)
 	}
 
-	function onMouseMoveHandler(event: MouseEvent) {
+	function onMouseMoveHandler(event: Event) {
+		const mouseEvent = event as MouseEvent
 		switch (cctvMode) {
 			// case CCTVMode.CREATELINE: //創建線
 			// 	break
@@ -355,8 +361,8 @@
 			// 	break
 			case CCTVMode.LOOKAT:
 				if (selectCCTV) {
-					mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-					mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+					mouse.x = (mouseEvent.clientX / window.innerWidth) * 2 - 1
+					mouse.y = -(mouseEvent.clientY / window.innerHeight) * 2 + 1
 					raycaster.setFromCamera(mouse, camera)
 					const intersectsBuild = raycaster.intersectObject(build)
 					if (intersectsBuild.length > 0) {
@@ -390,7 +396,7 @@
 	const projectionMaterial = $state(
 		generateProjectionMaterial({
 			maxcctvnum: MAX_CCTV_NUM,
-			cctvNum,
+			cctvNum: cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length,
 			color: new THREE.Color(0x888888),
 			shadowMaps
 		})
@@ -398,7 +404,7 @@
 	const projectionBoxMaterial = $state(
 		generateProjectionMaterial({
 			maxcctvnum: MAX_CCTV_NUM,
-			cctvNum,
+			cctvNum: cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length,
 			color: new THREE.Color(0x448844),
 			shadowMaps
 		})
@@ -406,7 +412,7 @@
 	const projectionFloorMaterial = $state(
 		generateProjectionMaterial({
 			maxcctvnum: MAX_CCTV_NUM,
-			cctvNum,
+			cctvNum: cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length,
 			color: new THREE.Color(0xcccccc),
 			shadowMaps
 		})
@@ -582,7 +588,6 @@
 			const cctvHelper = cctvHelpers.splice(index, 1)
 			cctvHelper[0] && scene.remove(cctvHelper[0])
 			scene.remove(cctvObj)
-			cctvNum--
 			send({ type: 'updateSelectCCTV', selectCCTV: '' })
 			oncctvDel?.(
 				new CustomEvent(ViewerEvent.CCTV_DEL, {
@@ -676,7 +681,7 @@
 		pointMesh && scene.remove(pointMesh)
 		send({ type: 'delPipe', poName: name })
 	}
-	run(() => {
+	$effect(() => {
 		if (snapshot) {
 			const { value, context } = $snapshot
 			console.debug('cctvModeMachine', value, context.selectCCTV)
@@ -694,11 +699,10 @@
 	) //選擇的cctv
 	let selectPipe = $derived($snapshot.context.selectPipe) //選取的pipe
 	let lineMap = $derived($snapshot.context.lineMap) //線段紀錄
-	let cctvNum = $derived(cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length) //CCTV數量
-	run(() => {
-		bgImageObj && (bgImageObj.visible = bgImageDisable)
+	$effect(() => {
+		if (bgImageObj) bgImageObj.visible = bgImageDisable
 	})
-	run(() => {
+	$effect(() => {
 		onmodeChange?.(
 			new CustomEvent(ViewerEvent.MODE_CHANGE, {
 				detail: { viewerMode, pipeMode, cctvMode }
@@ -706,7 +710,7 @@
 		)
 	})
 	//選擇cctv
-	run(() => {
+	$effect(() => {
 		if (selectCCTV) {
 			_clearSelectCCTV()
 			const cctvHelper = getCCTVHelper(selectCCTV)
@@ -717,27 +721,25 @@
 			_clearSelectCCTV()
 		}
 	})
-	run(() => {
-		switch (true) {
-			case points.length > 0: //繪製線
-				createLine(points)
-				break
-			default:
+	$effect(() => {
+		if (points.length > 0) {
+			//繪製線
+			createLine(points)
 		}
 	})
-	run(() => {
+	$effect(() => {
 		selectLineHandler(selectPipe)
 	})
 	//更新線段紀錄
-	run(() => {
+	$effect(() => {
 		dispatchLineMap(lineMap)
 	})
-	run(() => {
+	$effect(() => {
 		projectionMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
 		projectionBoxMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
 		projectionFloorMaterial.uniforms.cctvCount.value = cctvNum //更新CCTV數量
 	})
-	run(() => {
+	$effect(() => {
 		CCTV_ChangefocalLength(selectCCTV)
 	})
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { run, createBubbler, preventDefault } from 'svelte/legacy'
+	import { createBubbler, preventDefault } from 'svelte/legacy'
 
 	const bubble = createBubbler()
 	import { Svg, SVG } from '@svgdotjs/svg.js'
@@ -23,7 +23,7 @@
 	let viewrScaleLevel = $state(1) //比例尺的縮放等級
 	let viewScaleWidth = $state(2) //下方比例尺顯示200px的寬度，會根據縮放比例變動
 
-	run(() => {
+	$effect(() => {
 		dispatch('tool', currentTool)
 	}) //發送當前工具
 
@@ -47,12 +47,12 @@
 		y: number
 		src: string
 	} //背景圖片路徑
-	let measurementLength: number = $state() //測量長度
+	let measurementLength: number | undefined = $state() //測量長度
 
-	run(() => {
+	$effect(() => {
 		dispatch('measurement', measurementLength)
 	}) //發送測量長度
-	run(() => {
+	$effect(() => {
 		viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
 	})
 
@@ -425,9 +425,10 @@
 		img.src = path
 	}
 	//拖放文件 並載入
-	function loadFile(event: DragEvent) {
-		event.preventDefault()
-		const file = event.dataTransfer?.files[0]
+	function loadFile(event: Event) {
+		const dragEvent = event as DragEvent
+		dragEvent.preventDefault()
+		const file = dragEvent.dataTransfer?.files[0]
 		if (!file) return
 		const reader = new FileReader()
 		reader.onload = (e) => {
@@ -461,10 +462,11 @@
 		box-sizing: border-box;
 		user-select: none;
 		-webkit-user-drag: none;
-		& svg {
-			position: absolute;
-			left: 0;
-			top: 0;
-		}
+	}
+
+	#drawing :global(svg) {
+		position: absolute;
+		left: 0;
+		top: 0;
 	}
 </style>

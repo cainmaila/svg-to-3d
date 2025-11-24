@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy'
-
 	import { SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
@@ -33,7 +31,7 @@
 					if (_num === 0) throw new Error('沒東西')
 					draw?.loadSvg(svgString)
 				} catch (error) {
-					draw.loadImg('/demo.png')
+					draw?.loadImg('/demo.png')
 				}
 				// svgString && draw.loadSvg(svgString)
 				// const bg = get(backgroundImg$)
@@ -43,11 +41,11 @@
 	}
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
-		;(event.key === 'Delete' || event.key === 'Backspace') && draw.deleteSelected()
+		;(event.key === 'Delete' || event.key === 'Backspace') && draw?.deleteSelected()
 	}
 	//前往3D頁面
 	function goto3d() {
-		draw.clearSelect()
+		draw?.clearSelect()
 		goto('/svgto3d')
 	}
 	//開啟一張圖片
@@ -88,7 +86,7 @@
 	}
 	//工具變動
 	function onToolChangeHandler(e: CustomEvent) {
-		draw.setCurrentTool(e.detail)
+		draw?.setCurrentTool(e.detail)
 		viewTool = e.detail
 	}
 	//下載SVG
@@ -104,8 +102,8 @@
 		a.click()
 		URL.revokeObjectURL(url)
 	}
-	run(() => {
-		draw && loadSvg()
+	$effect(() => {
+		if (draw) loadSvg()
 	})
 </script>
 
@@ -115,7 +113,7 @@
 		tool={viewTool}
 		on:tool={onToolChangeHandler}
 		on:loadBg={loadImage}
-		on:clear={() => draw.clear()}
+		on:clear={() => draw?.clear()}
 		on:build={goto3d}
 		on:download={downloadSvg}
 	/>
