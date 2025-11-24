@@ -6,25 +6,29 @@
 	import { PIPE_MODE, ViewerMode } from '$lib/components/Viewer/viewerType'
 	import ModePicker from './ModePicker.svelte'
 
-	export let data: {
-		svgString: string
+	interface Props {
+		data: {
+			svgString: string
+		}
 	}
+
+	let { data }: Props = $props()
 	const MAX_CCTV_NUM = 10 //最大CCTV數量
-	let viewer: Viewer
-	let nowGenerate = true //是否正在生成模型
-	let downloadGLB: string = '' //下載的模型路徑
-	let cctvsSettings = []
-	let cameraNum = 0
-	let bgImageDisable = false //底圖是否顯示
-	let viewerMode: ViewerMode = ViewerMode.CCTV //viewer模式
-	let cctvMode = '' //cctv模式
-	let pipeMode = '' //pipe模式
-	let topLineMode = false //屋頂拉線模式
+	let viewer: Viewer | undefined = $state()
+	let nowGenerate = $state(true) //是否正在生成模型
+	let downloadGLB: string = $state('') //下載的模型路徑
+	let cctvsSettings = $state([])
+	let cameraNum = $state(0)
+	let bgImageDisable = $state(false) //底圖是否顯示
+	let viewerMode: ViewerMode = $state(ViewerMode.CCTV) //viewer模式
+	let cctvMode = $state('') //cctv模式
+	let pipeMode = $state('') //pipe模式
+	let topLineMode = $state(false) //屋頂拉線模式
 	let pipes: {
 		name: string
 		length: number
-	}[] = []
-	let selectPipeName = '' //選擇的pipe
+	}[] = $state([])
+	let selectPipeName = $state('') //選擇的pipe
 
 	try {
 		cctvsSettings = JSON.parse(localStorage.getItem('cctvs') || '[]')
@@ -107,7 +111,7 @@
 				<li>
 					<button
 						class="card p-1 hover:text-rose-500 {selectPipeName === name ? 'text-amber-400' : ''}"
-						on:click={() => onSelectLineHandler(name)}
+						onclick={() => onSelectLineHandler(name)}
 						>{name}
 						{#if length}
 							<code class="code">{~~length}cm</code>
@@ -136,7 +140,7 @@
 		{#if viewerMode === ViewerMode.CCTV}
 			<button
 				class="{cctvMode} variant-filled btn-icon"
-				on:click={viewer.addCCTV}
+				onclick={viewer.addCCTV}
 				disabled={cameraNum >= MAX_CCTV_NUM}
 				title={cameraNum >= MAX_CCTV_NUM ? `最多只能新增${MAX_CCTV_NUM}個CCTV` : '新增CCTV'}
 			>
@@ -145,7 +149,7 @@
 		{:else}
 			<button
 				class={`${pipeMode} variant-filled btn-icon bg-primary-500`}
-				on:click={onLineModeHandler}
+				onclick={onLineModeHandler}
 				title="新增線路"
 			>
 				<ICON.MaterialSymbolsAdd /></button
@@ -154,7 +158,7 @@
 
 		<button
 			class="variant-filled btn-icon"
-			on:click={viewer.delAllCCTV}
+			onclick={viewer.delAllCCTV}
 			disabled={cameraNum === 0}
 			title="重置全部CCTV"
 		>
@@ -166,11 +170,11 @@
 			<lable class="lable">屋頂拉線</lable>
 			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode} />
 			{#if pipeMode !== PIPE_MODE.NONE}
-				<button class="variant-filled btn-icon" on:click={viewer.unDoAddLine} title="Undo">
+				<button class="variant-filled btn-icon" onclick={viewer.unDoAddLine} title="Undo">
 					<ICON.MaterialSymbolsUndo /></button
 				>
 			{:else if selectPipeName}
-				<button class="variant-filled btn-icon" on:click={() => viewer.delPipe()} title="刪除Pipe">
+				<button class="variant-filled btn-icon" onclick={() => viewer.delPipe()} title="刪除Pipe">
 					<ICON.MaterialSymbolsLightDeleteSharp /></button
 				>
 			{:else}

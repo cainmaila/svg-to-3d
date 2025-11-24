@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { createBubbler } from 'svelte/legacy'
+
+	const bubble = createBubbler()
 	import google from './googlesvg.svg'
 </script>
 
-<button on:click>
+<button onclick={bubble('click')}>
 	<img src={google} alt="Google Login" />
 </button>
 

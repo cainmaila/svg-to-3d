@@ -1,10 +1,17 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy'
+
 	import { goto } from '$app/navigation'
 	import * as THREE from 'three'
 
-	export let data: {
-		svgString: string
+	interface Props {
+		data: {
+			svgString: string
+		}
+		children?: import('svelte').Snippet
 	}
+
+	let { data, children }: Props = $props()
 	const { svgString } = data
 	if (!svgString) {
 		goto('/', {
@@ -12,12 +19,14 @@
 		})
 	}
 
-	let loading = true
-	let loadingCount = 0
+	let loading = $state(true)
+	let loadingCount = $state(0)
 	const loader = new THREE.FileLoader()
-	$: if (loadingCount === 1) {
-		loading = false
-	}
+	run(() => {
+		if (loadingCount === 1) {
+			loading = false
+		}
+	})
 	init()
 	async function init() {
 		loadingCount++
@@ -27,5 +36,5 @@
 {#if loading}
 	loading..
 {:else}
-	<slot />
+	{@render children?.()}
 {/if}

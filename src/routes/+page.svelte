@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy'
+
 	import { SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import { goto } from '$app/navigation'
@@ -9,12 +11,11 @@
 	import ToolBar from './ToolBar.svelte'
 	import { get } from 'svelte/store'
 
-	let draw: SvgEditor
-	let scalceModeOpen = false
-	let scaleLengthSetting = 0 //比例尺的真實長度 m
+	let draw: SvgEditor | undefined = $state()
+	let scalceModeOpen = $state(false)
+	let scaleLengthSetting = $state(0) //比例尺的真實長度 m
 	let measurementLength = 0 //比例尺的畫面長度 px
-	let viewTool = 'view' //預設為檢視模式
-	$: draw && loadSvg()
+	let viewTool = $state('view') //預設為檢視模式
 
 	//載入SVG
 	async function loadSvg() {
@@ -22,7 +23,7 @@
 		switch (file) {
 			case 'tomo':
 				const svg = await fetch('/area/a.svg').then((res) => res.text())
-				draw.loadSvg(svg)
+				draw?.loadSvg(svg)
 				break
 			default:
 				const svgString = get(svgString$)
@@ -30,7 +31,7 @@
 					const svgOb = SVG(svgString)
 					const _num = svgOb.node.childElementCount
 					if (_num === 0) throw new Error('沒東西')
-					draw.loadSvg(svgString)
+					draw?.loadSvg(svgString)
 				} catch (error) {
 					draw.loadImg('/demo.png')
 				}
@@ -103,9 +104,12 @@
 		a.click()
 		URL.revokeObjectURL(url)
 	}
+	run(() => {
+		draw && loadSvg()
+	})
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 <main>
 	<ToolBar
 		tool={viewTool}
@@ -137,7 +141,7 @@
 		<div class="dialog card">
 			<header class="card-header">比例尺設定</header>
 			<section id="settingDistance">
-				<form on:submit={settingScale}>
+				<form onsubmit={settingScale}>
 					<input class="input" type="number" bind:value={scaleLengthSetting} step="0.01" />公尺
 					<button class="variant-filled btn btn-sm" type="submit">設定</button>
 				</form>

@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { run, createBubbler, preventDefault } from 'svelte/legacy'
+
+	const bubble = createBubbler()
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import '@svgdotjs/svg.panzoom.js'
@@ -8,15 +11,21 @@
 	import ScaleBar from './ScaleBar.svelte'
 
 	const dispatch = createEventDispatcher()
-	//on:svg svgString變化
 
-	export let currentTool = 'view' //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
-	export let scaleBase = 1 //比例尺每px的實際cm長度
+	interface Props {
+		//on:svg svgString變化
+		currentTool?: string //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
+		scaleBase?: number //比例尺每px的實際cm長度
+	}
 
-	let viewrScaleLevel = 1 //比例尺的縮放等級
-	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
+	let { currentTool = $bindable('view'), scaleBase = 1 }: Props = $props()
 
-	$: dispatch('tool', currentTool) //發送當前工具
+	let viewrScaleLevel = $state(1) //比例尺的縮放等級
+	let viewScaleWidth = $state(2) //下方比例尺顯示200px的寬度，會根據縮放比例變動
+
+	run(() => {
+		dispatch('tool', currentTool)
+	}) //發送當前工具
 
 	//畫布大小
 	const canvasWidth = window.innerWidth
@@ -38,10 +47,14 @@
 		y: number
 		src: string
 	} //背景圖片路徑
-	let measurementLength: number //測量長度
+	let measurementLength: number = $state() //測量長度
 
-	$: dispatch('measurement', measurementLength) //發送測量長度
-	$: viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
+	run(() => {
+		dispatch('measurement', measurementLength)
+	}) //發送測量長度
+	run(() => {
+		viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
+	})
 
 	onMount(() => {
 		draw = SVG()
@@ -426,18 +439,18 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	id="drawing"
-	on:click={onSelect}
-	on:mousedown={startDrawing}
-	on:mousemove={drawing}
-	on:mouseup={endDrawing}
-	on:mouseleave={endDrawing}
-	on:dragover|preventDefault
-	on:dragleave|preventDefault
-	on:drop|preventDefault={loadFile}
+	onclick={onSelect}
+	onmousedown={startDrawing}
+	onmousemove={drawing}
+	onmouseup={endDrawing}
+	onmouseleave={endDrawing}
+	ondragover={preventDefault(bubble('dragover'))}
+	ondragleave={preventDefault(bubble('dragleave'))}
+	ondrop={preventDefault(loadFile)}
 ></div>
 <ScaleBar>{viewScaleWidth.toFixed(2)} 公尺</ScaleBar>
 

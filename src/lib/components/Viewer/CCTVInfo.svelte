@@ -4,11 +4,15 @@
 	import { CCTVMode } from './viewerType'
 	import ICON from '$lib/components/icon'
 	const dispatchEvent = createEventDispatcher()
-	export let selectCCTV: string
-	export let selectCCTVSeting: {
-		focalLength: number
+	interface Props {
+		selectCCTV: string
+		selectCCTVSeting: {
+			focalLength: number
+		}
+		cctvMode: string | undefined
 	}
-	export let cctvMode: string | undefined
+
+	let { selectCCTV, selectCCTVSeting, cctvMode }: Props = $props()
 	function onChangeCCTVFocalLength(e: any) {
 		dispatchEvent('focalLength', Number((e.target as HTMLInputElement).value))
 	}
@@ -24,10 +28,8 @@
 	{#if selectCCTV}
 		<div class="flex items-center justify-between">
 			<p class="h4">{selectCCTV}</p>
-			<button
-				type="button"
-				class="variant-filled btn btn-sm"
-				on:click={() => dispatchEvent('clear')}>Clear</button
+			<button type="button" class="variant-filled btn btn-sm" onclick={() => dispatchEvent('clear')}
+				>Clear</button
 			>
 		</div>
 		<label class="label" for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
@@ -38,7 +40,7 @@
 			max="6.0"
 			step="0.1"
 			value={selectCCTVSeting.focalLength}
-			on:input={onChangeCCTVFocalLength}
+			oninput={onChangeCCTVFocalLength}
 		/>
 		<div>
 			<SlideToggle
@@ -57,7 +59,7 @@
 			>
 			<button
 				class="variant-filled btn-icon btn-sm scale-75 text-2xl"
-				on:click={() => dispatchEvent('del')}
+				onclick={() => dispatchEvent('del')}
 			>
 				<ICON.MaterialSymbolsLightDeleteSharp />
 			</button>

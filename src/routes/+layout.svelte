@@ -20,10 +20,10 @@
 	initializeStores()
 	const toastStore = getToastStore()
 
-	export let data
+	let { data, children } = $props()
 	const { API_KEY } = data
 
-	let loginStatus = dev ? 2 : 0 //登入狀態 0:未登入 1:登入中 -1:未登入 2:登入成功
+	let loginStatus = $state(dev ? 2 : 0) //登入狀態 0:未登入 1:登入中 -1:未登入 2:登入成功
 	const firebaseConfig = {
 		apiKey: API_KEY,
 		authDomain: 'dt-group-cain.firebaseapp.com',
@@ -90,6 +90,6 @@
 {:else if loginStatus === -1}
 	<LoginMod on:state={onLoginModStateHandler} />
 {:else}
-	<slot></slot>
+	{@render children?.()}
 {/if}
 <Toast />

@@ -5,7 +5,11 @@
 	import ToolBtn from '$lib/components/btn/ToolBtn.svelte'
 	const dispatch = createEventDispatcher()
 
-	export let tool = 'view' //預設為檢視模式
+	interface Props {
+		tool?: string //預設為檢視模式
+	}
+
+	let { tool = 'view' }: Props = $props()
 
 	function dispatchToolChange(tool: string) {
 		dispatch('tool', tool)
@@ -65,34 +69,34 @@
 			</ToolBtn>
 			<div>
 				<div class="variant-filled btn-group">
-					<button id="loadimageBtn" on:click={() => dispatch('loadBg')} title="替換描繪底圖"
+					<button id="loadimageBtn" onclick={() => dispatch('loadBg')} title="替換描繪底圖"
 						><ICON.FluentMdl2ImageCrosshair /></button
 					>
-					<button id="deleteBtn" on:click={() => dispatch('clear')} title="清除所有描繪"
+					<button id="deleteBtn" onclick={() => dispatch('clear')} title="清除所有描繪"
 						><ICON.StreamlineNewFile /></button
 					>
-					<button id="generate" on:click={() => dispatch('build')} title="生成模型"
+					<button id="generate" onclick={() => dispatch('build')} title="生成模型"
 						><ICON.StreamlineAiGenerateVariationSpark /></button
 					>
-					<button id="download" on:click={() => dispatch('download')} title="下載設計圖"
+					<button id="download" onclick={() => dispatch('download')} title="下載設計圖"
 						><ICON.FluentMdl2SaveTemplate /></button
 					>
 				</div>
 				<button
 					class="variant-filled-surface btn btn-sm text-xs"
-					on:click={() => dispatchToolChange('putBox_2x1x1')}
+					onclick={() => dispatchToolChange('putBox_2x1x1')}
 					disabled={tool === 'putBox_2x1x1'}
 					title="放置設備">2x1x1</button
 				>
 				<button
 					class="variant-filled-surface btn btn-sm text-xs"
-					on:click={() => dispatchToolChange('putBox_1x2x1')}
+					onclick={() => dispatchToolChange('putBox_1x2x1')}
 					disabled={tool === 'putBox_1x2x1'}
 					title="放置設備">1x2x1</button
 				>
 				<button
 					class="variant-filled-surface btn btn-sm text-xs"
-					on:click={() => dispatchToolChange('putBox_1x1x2')}
+					onclick={() => dispatchToolChange('putBox_1x1x2')}
 					disabled={tool === 'putBox_1x1x2'}
 					title="放置設備">1x1x2</button
 				>
