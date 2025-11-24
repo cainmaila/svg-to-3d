@@ -49,10 +49,12 @@
 		console.debug('cctvModeMachine', value, context.selectCCTV)
 	}
 	$: viewerMode = $snapshot.matches(ViewerMode.CCTV) ? ViewerMode.CCTV : ViewerMode.PIPE //選擇的cctv
-	$: cctvMode = $snapshot.matches(ViewerMode.CCTV) ? $snapshot.value[ViewerMode.CCTV] : '' //cctv模式 add move lookat createLine addLine
+	$: cctvMode = $snapshot.matches(ViewerMode.CCTV)
+		? ($snapshot.value as { cctv: string })[ViewerMode.CCTV]
+		: '' //cctv模式 add move lookat createLine addLine
 	$: selectCCTV = $snapshot.context.selectCCTV //cctv模式 add move lookat createLine addLine
 	$: pipeMode = $snapshot.matches(ViewerMode.PIPE) //線路模式
-		? $snapshot.value[ViewerMode.PIPE]
+		? ($snapshot.value as { pipe: string })[ViewerMode.PIPE]
 		: '' //選擇的cctv
 	$: selectPipe = $snapshot.context.selectPipe //選取的pipe
 	$: lineMap = $snapshot.context.lineMap //線段紀錄

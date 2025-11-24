@@ -164,8 +164,6 @@ export function svgToGroupSync(
 										bevelEnabled: false
 									})
 									doorbrush = new Operation(geometry)
-									// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-									//@ts-expect-error
 									doorbrush.operation = SUBTRACTION
 									doorallMesh.add(doorbrush)
 								}
@@ -183,14 +181,10 @@ export function svgToGroupSync(
 
 								if (firstBrush) {
 									brush = new Operation(geometry)
-									// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-									//@ts-expect-error
 									brush.operation = ADDITION
 									allMesh.add(brush)
 								} else {
 									firstBrush = new Operation(geometry)
-									// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-									//@ts-expect-error
 									firstBrush.operation = ADDITION
 								}
 							}
@@ -203,8 +197,6 @@ export function svgToGroupSync(
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				//@ts-expect-error
 				if (firstBrush && allMesh) {
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-					//@ts-expect-error
 					firstBrush.operation = ADDITION
 					firstBrush.add(allMesh)
 					firstBrush.add(doorallMesh)
