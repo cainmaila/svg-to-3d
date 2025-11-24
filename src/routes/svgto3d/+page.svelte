@@ -220,17 +220,7 @@
 		align-items: center;
 		gap: 5px;
 		z-index: 100;
-		pointer-events: none;
-		& a {
-			pointer-events: auto;
-		}
-		& button {
-			pointer-events: auto;
-		}
-		& .card {
-			pointer-events: auto;
-		}
-		& :global(.slide-toggle) {
+		& > * {
 			pointer-events: auto;
 		}
 	}
