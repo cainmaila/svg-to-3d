@@ -227,7 +227,10 @@
 		& button {
 			pointer-events: auto;
 		}
-		& .slide-toggle-track {
+		& .card {
+			pointer-events: auto;
+		}
+		& :global(.slide-toggle) {
 			pointer-events: auto;
 		}
 	}
