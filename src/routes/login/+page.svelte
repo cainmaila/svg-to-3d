@@ -23,6 +23,6 @@
 <div class="flex h-dvh items-center justify-center">
 	<div class="card p-10">
 		<h1 class="h3">登入後，即可開始使用</h1>
-		<GoogleBtn on:click={userLoginAction} />
+		<GoogleBtn onclick={userLoginAction} />
 	</div>
 </div>

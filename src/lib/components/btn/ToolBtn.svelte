@@ -1,13 +1,18 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte'
 	import ICON from '$lib/components/icon'
 
-	export let select: boolean = false
+	interface Props {
+		select?: boolean
+		onclick?: (event: MouseEvent) => void
+		children?: import('svelte').Snippet
+	}
+
+	let { select = false, onclick, children }: Props = $props()
 </script>
 
-<button class="chip {select ? 'variant-filled' : 'variant-soft'}" on:click>
+<button class="chip {select ? 'variant-filled' : 'variant-soft'}" {onclick}>
 	{#if select}<ICON.TablerSelect />{/if}
-	<span><slot /></span>
+	<span>{@render children?.()}</span>
 </button>
 
 <style lang="postcss">

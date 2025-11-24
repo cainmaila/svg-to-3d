@@ -14,6 +14,14 @@ import {
 } from 'three'
 import { CCTVCamera } from './cctvCamera'
 
+export type T_CCTV_MAP = [
+	name: string,
+	{
+		matrix: Matrix4
+		focalLength?: number
+	}
+][]
+
 /**
  * 建立一個CCTV
  * @param name - 名稱
@@ -95,15 +103,14 @@ export function generateShadowMap() {
  * @param scene
  * @returns
  */
-export function cctvObjsFactory
-	(cctvsSettings: T_CCTV_MAP, scene: Scene) {
+export function cctvObjsFactory(cctvsSettings: T_CCTV_MAP, scene: Scene) {
 	//攝影機定義
 	const cctvs = cctvsSettings.map((cctvSetting) => {
 		return createCCTVByMatrix(
 			cctvSetting[0] /* name */,
 			cctvSetting[1].matrix /* matrix */,
 			cctvSetting[1].focalLength,
-				/* Matri */ scene
+			/* Matri */ scene
 		)
 	})
 	const shadowCameras: CCTVCamera[] = cctvs.map(({ cctv }) => cctv)
@@ -119,7 +126,7 @@ export function cctvObjsFactory
 	})
 	//找到CCTV Obj
 	function getCCTVObj(_name: string) {
-		return cctvObjs.find((cctvObj) => cctvObj.name === (_name))
+		return cctvObjs.find((cctvObj) => cctvObj.name === _name)
 	}
 	//找到CCTV shadowCamera
 	function getCCTVCamera(_name: string) {
@@ -132,7 +139,15 @@ export function cctvObjsFactory
 			return cctvHelper.name === `${_name}_helper`
 		})
 	}
-	return { shadowCameras, getCCTVCamera, cctvHelpers, getCCTVHelper, cctvObjs, getCCTVObj, createCCTVObj: _createCCTVObj }
+	return {
+		shadowCameras,
+		getCCTVCamera,
+		cctvHelpers,
+		getCCTVHelper,
+		cctvObjs,
+		getCCTVObj,
+		createCCTVObj: _createCCTVObj
+	}
 }
 
 /**
@@ -142,7 +157,7 @@ export function cctvObjsFactory
  * @param param0.color - 顏色
  * @returns cctvObj
  */
-function _createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera, color?: number }) {
+function _createCCTVObj({ cctv, color }: { cctv: PerspectiveCamera; color?: number }) {
 	const cctvObj = new Mesh(
 		new BoxGeometry(10, 10, 20),
 		new MeshBasicMaterial({ color: color || 0x880000 })

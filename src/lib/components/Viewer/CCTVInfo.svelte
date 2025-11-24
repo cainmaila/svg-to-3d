@@ -1,19 +1,29 @@
 <script lang="ts">
 	import { SlideToggle } from '@skeletonlabs/skeleton'
-	import { createEventDispatcher } from 'svelte'
 	import { CCTVMode } from './viewerType'
 	import ICON from '$lib/components/icon'
-	const dispatchEvent = createEventDispatcher()
-	export let selectCCTV: string
-	export let selectCCTVSeting: {
-		focalLength: number
+
+	interface Props {
+		selectCCTV: string
+		selectCCTVSeting: {
+			focalLength: number
+		}
+		cctvMode: string | undefined
+		onclear?: () => void
+		ondel?: () => void
+		onmoveMode?: (data: { moveMode: string; checked: boolean }) => void
+		onfocalLength?: (focalLength: number) => void
 	}
-	export let cctvMode: string | undefined
+
+	let { selectCCTV, selectCCTVSeting, cctvMode, onclear, ondel, onmoveMode, onfocalLength }: Props =
+		$props()
+
 	function onChangeCCTVFocalLength(e: any) {
-		dispatchEvent('focalLength', Number((e.target as HTMLInputElement).value))
+		onfocalLength?.(Number((e.target as HTMLInputElement).value))
 	}
+
 	function onCCTVchangeMoveModeHandler(e: Event) {
-		dispatchEvent('moveMode', {
+		onmoveMode?.({
 			moveMode: (e.target as HTMLInputElement).name,
 			checked: (e.target as HTMLInputElement).checked
 		})
@@ -24,10 +34,8 @@
 	{#if selectCCTV}
 		<div class="flex items-center justify-between">
 			<p class="h4">{selectCCTV}</p>
-			<button
-				type="button"
-				class="variant-filled btn btn-sm"
-				on:click={() => dispatchEvent('clear')}>Clear</button
+			<button type="button" class="variant-filled btn btn-sm" onclick={() => onclear?.()}
+				>Clear</button
 			>
 		</div>
 		<label class="label" for="length">焦距 {selectCCTVSeting.focalLength} mm</label>
@@ -38,27 +46,24 @@
 			max="6.0"
 			step="0.1"
 			value={selectCCTVSeting.focalLength}
-			on:input={onChangeCCTVFocalLength}
+			oninput={onChangeCCTVFocalLength}
 		/>
 		<div>
 			<SlideToggle
 				name={CCTVMode.MOVE}
 				checked={cctvMode === CCTVMode.MOVE}
-				on:change={onCCTVchangeMoveModeHandler}
+				onchange={onCCTVchangeMoveModeHandler}
 				active="bg-primary-500"
 				size="sm">移動位置</SlideToggle
 			>
 			<SlideToggle
 				name={CCTVMode.LOOKAT}
 				checked={cctvMode === CCTVMode.LOOKAT}
-				on:change={onCCTVchangeMoveModeHandler}
+				onchange={onCCTVchangeMoveModeHandler}
 				active="bg-primary-500"
 				size="sm">拍攝方向</SlideToggle
 			>
-			<button
-				class="variant-filled btn-icon btn-sm scale-75 text-2xl"
-				on:click={() => dispatchEvent('del')}
-			>
+			<button class="variant-filled btn-icon btn-sm scale-75 text-2xl" onclick={() => ondel?.()}>
 				<ICON.MaterialSymbolsLightDeleteSharp />
 			</button>
 		</div>

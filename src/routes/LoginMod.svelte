@@ -3,21 +3,25 @@
 	import { firebaseSDKInit } from '$lib/utils/firebaseSDK'
 	import { signInWithPopup } from 'firebase/auth'
 	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton'
-	import { createEventDispatcher } from 'svelte'
-	const dispatch = createEventDispatcher()
+
+	interface Props {
+		onstate?: (state: string) => void
+	}
+
+	let { onstate }: Props = $props()
 
 	const toastStore = getToastStore()
 
 	function userLoginAction() {
-		dispatch('state', 'logining')
+		onstate?.('logining')
 		const { auth, provider } = firebaseSDKInit()
 		signInWithPopup(auth, provider)
 			.then(() => {
-				dispatch('state', 'success')
+				onstate?.('success')
 				//onAuthStateChanged will be triggered
 			})
 			.catch((error) => {
-				dispatch('state', 'error')
+				onstate?.('error')
 				// Handle Errors here.
 				const errorCode = error?.code
 				const errorMessage = error?.errorMessage
@@ -35,6 +39,6 @@
 >
 	<div class="card p-10">
 		<h1 class="h3">登入後，即可開始使用</h1>
-		<GoogleBtn on:click={userLoginAction} />
+		<GoogleBtn onclick={userLoginAction} />
 	</div>
 </div>

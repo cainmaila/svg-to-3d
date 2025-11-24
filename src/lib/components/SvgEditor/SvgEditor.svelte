@@ -4,19 +4,32 @@
 	import '@svgdotjs/svg.panzoom.js'
 	import { onMount } from 'svelte'
 	import { loadSvgElementToDraw } from '$lib/svgLib'
-	import { createEventDispatcher } from 'svelte'
 	import ScaleBar from './ScaleBar.svelte'
 
-	const dispatch = createEventDispatcher()
-	//on:svg svgString變化
+	interface Props {
+		currentTool?: string //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
+		scaleBase?: number //比例尺每px的實際cm長度
+		onsvg?: (svgString: string) => void
+		onbackground?: (background: any) => void
+		onmeasurement?: (length: number) => void
+		ontool?: (tool: string) => void
+	}
 
-	export let currentTool = 'view' //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
-	export let scaleBase = 1 //比例尺每px的實際cm長度
+	let {
+		currentTool = $bindable('view'),
+		scaleBase = 1,
+		onsvg,
+		onbackground,
+		onmeasurement,
+		ontool
+	}: Props = $props()
 
-	let viewrScaleLevel = 1 //比例尺的縮放等級
-	let viewScaleWidth = 2 //下方比例尺顯示200px的寬度，會根據縮放比例變動
+	let viewrScaleLevel = $state(1) //比例尺的縮放等級
+	let viewScaleWidth = $state(2) //下方比例尺顯示200px的寬度，會根據縮放比例變動
 
-	$: dispatch('tool', currentTool) //發送當前工具
+	$effect(() => {
+		ontool?.(currentTool)
+	}) //發送當前工具
 
 	//畫布大小
 	const canvasWidth = window.innerWidth
@@ -38,10 +51,16 @@
 		y: number
 		src: string
 	} //背景圖片路徑
-	let measurementLength: number //測量長度
+	let measurementLength: number | undefined = $state() //測量長度
 
-	$: dispatch('measurement', measurementLength) //發送測量長度
-	$: viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
+	$effect(() => {
+		if (measurementLength !== undefined) {
+			onmeasurement?.(measurementLength)
+		}
+	}) //發送測量長度
+	$effect(() => {
+		viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
+	})
 
 	onMount(() => {
 		draw = SVG()
@@ -75,7 +94,7 @@
 		loadSvgElementToDraw(draw, svgElement, {
 			lineWidth
 		})
-		dispatch('svg', svgString)
+		onsvg?.(svgString)
 		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
 		bg && dispatchSettingBackground(bg)
 	}
@@ -128,7 +147,7 @@
 			selectedShape = null
 		}
 		svgString = draw.svg()
-		dispatch('svg', svgString)
+		onsvg?.(svgString)
 	}
 
 	// 創建控制點
@@ -311,7 +330,7 @@
 		isDrawing = false
 		currentShape = null
 		svgString = draw.svg()
-		dispatch('svg', svgString)
+		onsvg?.(svgString)
 	}
 
 	//選擇形狀
@@ -351,7 +370,7 @@
 
 	//底圖設置事件
 	function dispatchSettingBackground(background: any) {
-		dispatch('background', {
+		onbackground?.({
 			width: background.width(),
 			height: background.height(),
 			x: background.x(),
@@ -412,9 +431,10 @@
 		img.src = path
 	}
 	//拖放文件 並載入
-	function loadFile(event: DragEvent) {
+	function loadFile(event: Event) {
 		event.preventDefault()
-		const file = event.dataTransfer?.files[0]
+		const dragEvent = event as DragEvent
+		const file = dragEvent.dataTransfer?.files[0]
 		if (!file) return
 		const reader = new FileReader()
 		reader.onload = (e) => {
@@ -426,18 +446,22 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	id="drawing"
-	on:click={onSelect}
-	on:mousedown={startDrawing}
-	on:mousemove={drawing}
-	on:mouseup={endDrawing}
-	on:mouseleave={endDrawing}
-	on:dragover|preventDefault
-	on:dragleave|preventDefault
-	on:drop|preventDefault={loadFile}
+	onclick={onSelect}
+	onmousedown={startDrawing}
+	onmousemove={drawing}
+	onmouseup={endDrawing}
+	onmouseleave={endDrawing}
+	ondragover={(e) => {
+		e.preventDefault()
+	}}
+	ondragleave={(e) => {
+		e.preventDefault()
+	}}
+	ondrop={loadFile}
 ></div>
 <ScaleBar>{viewScaleWidth.toFixed(2)} 公尺</ScaleBar>
 
@@ -448,10 +472,11 @@
 		box-sizing: border-box;
 		user-select: none;
 		-webkit-user-drag: none;
-		& svg {
-			position: absolute;
-			left: 0;
-			top: 0;
-		}
+	}
+
+	#drawing :global(svg) {
+		position: absolute;
+		left: 0;
+		top: 0;
 	}
 </style>

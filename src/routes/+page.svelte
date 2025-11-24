@@ -9,12 +9,11 @@
 	import ToolBar from './ToolBar.svelte'
 	import { get } from 'svelte/store'
 
-	let draw: SvgEditor
-	let scalceModeOpen = false
-	let scaleLengthSetting = 0 //比例尺的真實長度 m
+	let draw: SvgEditor | undefined = $state()
+	let scalceModeOpen = $state(false)
+	let scaleLengthSetting = $state(0) //比例尺的真實長度 m
 	let measurementLength = 0 //比例尺的畫面長度 px
-	let viewTool = 'view' //預設為檢視模式
-	$: draw && loadSvg()
+	let viewTool = $state('view') //預設為檢視模式
 
 	//載入SVG
 	async function loadSvg() {
@@ -22,7 +21,7 @@
 		switch (file) {
 			case 'tomo':
 				const svg = await fetch('/area/a.svg').then((res) => res.text())
-				draw.loadSvg(svg)
+				draw?.loadSvg(svg)
 				break
 			default:
 				const svgString = get(svgString$)
@@ -30,9 +29,9 @@
 					const svgOb = SVG(svgString)
 					const _num = svgOb.node.childElementCount
 					if (_num === 0) throw new Error('沒東西')
-					draw.loadSvg(svgString)
+					draw?.loadSvg(svgString)
 				} catch (error) {
-					draw.loadImg('/demo.png')
+					draw?.loadImg('/demo.png')
 				}
 				// svgString && draw.loadSvg(svgString)
 				// const bg = get(backgroundImg$)
@@ -42,11 +41,11 @@
 	}
 	//監聽Delete鍵，刪除選中的形狀
 	function handleKeydown(event: KeyboardEvent) {
-		;(event.key === 'Delete' || event.key === 'Backspace') && draw.deleteSelected()
+		;(event.key === 'Delete' || event.key === 'Backspace') && draw?.deleteSelected()
 	}
 	//前往3D頁面
 	function goto3d() {
-		draw.clearSelect()
+		draw?.clearSelect()
 		goto('/svgto3d')
 	}
 	//開啟一張圖片
@@ -67,17 +66,17 @@
 		input.click()
 	}
 	//將背景圖片存入store
-	function saveBackgroundToStore(e: CustomEvent) {
-		backgroundImg$.set(e.detail)
+	function saveBackgroundToStore(background: any) {
+		backgroundImg$.set(background)
 	}
 	//比例尺變動
-	function onMeaurement(e: CustomEvent) {
-		if (e.detail === 0) return //避掉不需要的點擊事件
+	function onMeaurement(length: number) {
+		if (length === 0) return //避掉不需要的點擊事件
 		if (scaleLengthSetting === 0) {
 			//@ts-ignore
-			scaleLengthSetting = (e.detail / 100).toFixed(2) * 1
+			scaleLengthSetting = (length / 100).toFixed(2) * 1
 		}
-		measurementLength = e.detail
+		measurementLength = length
 		scalceModeOpen = true
 	}
 	//設定比例尺
@@ -86,9 +85,9 @@
 		scalceModeOpen = false
 	}
 	//工具變動
-	function onToolChangeHandler(e: CustomEvent) {
-		draw.setCurrentTool(e.detail)
-		viewTool = e.detail
+	function onToolChangeHandler(tool: string) {
+		draw?.setCurrentTool(tool)
+		viewTool = tool
 	}
 	//下載SVG
 	function downloadSvg() {
@@ -103,32 +102,35 @@
 		a.click()
 		URL.revokeObjectURL(url)
 	}
+	$effect(() => {
+		if (draw) loadSvg()
+	})
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 <main>
 	<ToolBar
 		tool={viewTool}
-		on:tool={onToolChangeHandler}
-		on:loadBg={loadImage}
-		on:clear={() => draw.clear()}
-		on:build={goto3d}
-		on:download={downloadSvg}
+		ontool={onToolChangeHandler}
+		onloadBg={loadImage}
+		onclear={() => draw?.clear()}
+		onbuild={goto3d}
+		ondownload={downloadSvg}
 	/>
 	<SvgEditor
 		bind:this={draw}
-		on:svg={(e) => {
-			const svg = SVG(e.detail)
+		onsvg={(svgString) => {
+			const svg = SVG(svgString)
 			const scalerNode = svg.findOne('[data-type="scaler"]')
 			if (scalerNode) {
 				scalceSize$.set(Number(scalerNode.data('scaler')))
 			}
 			svgString$.set(svg.svg())
 		}}
-		on:background={saveBackgroundToStore}
-		on:measurement={onMeaurement}
-		on:tool={(e) => {
-			viewTool = e.detail
+		onbackground={saveBackgroundToStore}
+		onmeasurement={onMeaurement}
+		ontool={(tool) => {
+			viewTool = tool
 		}}
 		scaleBase={$scalceSize$}
 	/>
@@ -137,7 +139,7 @@
 		<div class="dialog card">
 			<header class="card-header">比例尺設定</header>
 			<section id="settingDistance">
-				<form on:submit={settingScale}>
+				<form onsubmit={settingScale}>
 					<input class="input" type="number" bind:value={scaleLengthSetting} step="0.01" />公尺
 					<button class="variant-filled btn btn-sm" type="submit">設定</button>
 				</form>

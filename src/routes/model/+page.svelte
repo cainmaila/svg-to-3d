@@ -7,7 +7,7 @@
 	import { svgStringToURL, svgToGroupSync } from '$lib/components/Viewer/threelib'
 	import { onMount } from 'svelte'
 
-	let viewerDom: HTMLDivElement
+	let viewerDom: HTMLDivElement | undefined = $state()
 
 	const svgString = get(svgString$) // 从 store 中获取 svg 字符串
 	if (!svgString) {
@@ -64,7 +64,9 @@
 		// const cube = new THREE.Mesh(geometry, material)
 		// scene.add(cube)
 		onWindowResize()
-		viewerDom.appendChild(renderer.domElement)
+		if (viewerDom) {
+			viewerDom.appendChild(renderer.domElement)
+		}
 		animate()
 	}
 
