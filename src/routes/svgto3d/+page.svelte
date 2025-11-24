@@ -56,10 +56,10 @@
 		switch (true) {
 			case pipeMode === PIPE_MODE.ADD:
 			case pipeMode === PIPE_MODE.CREATE:
-				viewer.addLineEnd()
+				viewer?.addLineEnd()
 				break
 			case pipeMode === PIPE_MODE.NONE:
-				viewer.createLines()
+				viewer?.createLines()
 				break
 		}
 	}
@@ -69,10 +69,10 @@
 		pipeMode = e.detail.pipeMode
 	}
 	function onViewerModeChangeHandler(e: CustomEvent) {
-		viewer.setViewerMode(e.detail)
+		viewer?.setViewerMode(e.detail)
 	}
 	function onSelectLineHandler(line: string) {
-		viewer.selectLine(line)
+		viewer?.selectLine(line)
 	}
 	function onPipeMapUpdateHandler(e: CustomEvent) {
 		pipes = e.detail
@@ -90,16 +90,16 @@
 	bind:downloadGLB
 	bind:bgImageDisable
 	bind:topLineMode
-	on:modelReady={() => (nowGenerate = false)}
-	on:cctvChange={onCCTVchangeMoveModeHandler}
-	on:cctvDel={(e) => {
+	onmodelReady={() => (nowGenerate = false)}
+	oncctvChange={onCCTVchangeMoveModeHandler}
+	oncctvDel={(e) => {
 		cctvsMap.delete(e.detail.name)
 		cameraNum = cctvsMap.size
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}}
-	on:modeChange={onModelChangeHandler}
-	on:pipeMapUpdate={onPipeMapUpdateHandler}
-	on:selectedPipe={onSelectedPipeHandler}
+	onmodeChange={onModelChangeHandler}
+	onpipeMapUpdate={onPipeMapUpdateHandler}
+	onselectedPipe={onSelectedPipeHandler}
 />
 {#if nowGenerate}
 	<div class="nowGenerate">模型生成中，請稍等...</div>
@@ -140,7 +140,7 @@
 		{#if viewerMode === ViewerMode.CCTV}
 			<button
 				class="{cctvMode} variant-filled btn-icon"
-				onclick={viewer.addCCTV}
+				onclick={viewer?.addCCTV}
 				disabled={cameraNum >= MAX_CCTV_NUM}
 				title={cameraNum >= MAX_CCTV_NUM ? `最多只能新增${MAX_CCTV_NUM}個CCTV` : '新增CCTV'}
 			>
@@ -158,7 +158,7 @@
 
 		<button
 			class="variant-filled btn-icon"
-			onclick={viewer.delAllCCTV}
+			onclick={viewer?.delAllCCTV}
 			disabled={cameraNum === 0}
 			title="重置全部CCTV"
 		>
@@ -170,11 +170,11 @@
 			<lable class="lable">屋頂拉線</lable>
 			<SlideToggle name="slider-label" size="sm" bind:checked={topLineMode} />
 			{#if pipeMode !== PIPE_MODE.NONE}
-				<button class="variant-filled btn-icon" onclick={viewer.unDoAddLine} title="Undo">
+				<button class="variant-filled btn-icon" onclick={viewer?.unDoAddLine} title="Undo">
 					<ICON.MaterialSymbolsUndo /></button
 				>
 			{:else if selectPipeName}
-				<button class="variant-filled btn-icon" onclick={() => viewer.delPipe()} title="刪除Pipe">
+				<button class="variant-filled btn-icon" onclick={() => viewer?.delPipe()} title="刪除Pipe">
 					<ICON.MaterialSymbolsLightDeleteSharp /></button
 				>
 			{:else}
