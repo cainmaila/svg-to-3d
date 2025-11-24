@@ -123,7 +123,7 @@ export function svgToGroupSync(
 				count = 0
 				paths.forEach((path) => {
 					const points = path.subPaths[0].getPoints().map(
-						(point) => new Vector2((point.x) * scale, svgHeight - (point.y) * scale) // 翻轉 Y 坐標
+						(point) => new Vector2(point.x * scale, svgHeight - point.y * scale) // 翻轉 Y 坐標
 					)
 					if (points.length < 2) return // 忽略不完整的路徑
 					//計算points長度
@@ -215,7 +215,6 @@ export function svgToGroupSync(
 					group.add(building)
 				}
 
-
 				group.traverse((child) => {
 					if (child instanceof Mesh) {
 						child.geometry = BufferGeometryUtils.mergeVertices(child.geometry)
@@ -243,16 +242,16 @@ export function svgToGroupSync(
 							//利用以上數據建立一個theejs平面
 							{
 								const href = child.attr('xlink:href')
-								const w = child.width() as number * scale
-								const h = child.height() as number * scale
-								const x = child.attr('x') as number * scale
-								const y = child.attr('y') as number * scale
+								const w = (child.width() as number) * scale
+								const h = (child.height() as number) * scale
+								const x = (child.attr('x') as number) * scale
+								const y = (child.attr('y') as number) * scale
 								const geometry = new PlaneGeometry(w, h)
 								const textureLoader = new TextureLoader()
 								textureLoader.load(href, (texture) => {
 									//透明材質
 									const material = new MeshBasicMaterial({
-										map: texture,
+										map: texture
 									})
 									const mesh = new Mesh(geometry, material)
 									mesh.name = 'BG'

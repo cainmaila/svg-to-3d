@@ -4,7 +4,6 @@ import { GoogleAuthProvider, getAuth, type Auth } from 'firebase/auth'
 import { getAnalytics } from 'firebase/analytics'
 import { /* getFirestore, */ initializeFirestore, persistentLocalCache } from 'firebase/firestore'
 
-
 let app: FirebaseApp
 let provider: GoogleAuthProvider
 let auth: Auth

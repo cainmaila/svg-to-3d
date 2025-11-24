@@ -8,12 +8,12 @@ export enum ViewerEvent {
 	CCTV_DEL = 'cctvDel', //CCTV刪除
 	MODE_CHANGE = 'modeChange', //模式改變
 	PIPE_MAP_UPDATE = 'pipeMapUpdate', //管線地圖更新
-	SELECTED_PIPE = 'selectedPipe', //選擇管線
+	SELECTED_PIPE = 'selectedPipe' //選擇管線
 }
 
 export enum ViewerMode {
 	CCTV = 'cctv', //CCTV模式
-	PIPE = 'pipe', //管線模式
+	PIPE = 'pipe' //管線模式
 }
 
 /**
@@ -23,7 +23,7 @@ export enum CCTVMode {
 	NONE = 'cctvNone', //無狀態
 	ADD = 'cctvAdd', //新增CCTV
 	MOVE = 'cctvMove', //移動CCTV
-	LOOKAT = 'cctvLookat', //CCTV看的方向
+	LOOKAT = 'cctvLookat' //CCTV看的方向
 }
 
 /**
@@ -32,5 +32,5 @@ export enum CCTVMode {
 export enum PIPE_MODE {
 	NONE = 'pipeModNone', //無狀態
 	CREATE = 'pipeModeCreate', //創建線段
-	ADD = 'pipeModeAdd', //添加線段點
+	ADD = 'pipeModeAdd' //添加線段點
 }

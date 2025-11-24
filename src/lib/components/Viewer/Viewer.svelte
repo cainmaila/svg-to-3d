@@ -5,7 +5,12 @@
 	import { goto } from '$app/navigation'
 	import { scalceSize$ } from '$lib/stores'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
-	import { createCCTV, cctvObjsFactory, generateShadowMap } from './threelib/cctvLib'
+	import {
+		createCCTV,
+		cctvObjsFactory,
+		generateShadowMap,
+		type T_CCTV_MAP
+	} from './threelib/cctvLib'
 	import { threeSeneInit } from './threelib/threeSeneInit'
 	import {
 		depthMaterial,
