@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy'
-
-	const bubble = createBubbler()
 	import google from './googlesvg.svg'
+
+	interface Props {
+		onclick?: (event: MouseEvent) => void
+	}
+
+	let { onclick }: Props = $props()
 </script>
 
-<button onclick={bubble('click')}>
+<button {onclick}>
 	<img src={google} alt="Google Login" />
 </button>
 

@@ -64,8 +64,8 @@
 		return domainRegex.test(mail) || mailRegex.includes(mail)
 	}
 
-	function onLoginModStateHandler(e: CustomEvent) {
-		switch (e.detail) {
+	function onLoginModStateHandler(state: string) {
+		switch (state) {
 			case 'logining':
 				loginStatus = 1
 				break
@@ -88,7 +88,7 @@
 		<Jumper size="60" color="#ffffff" unit="px" duration="1s" />
 	</div>
 {:else if loginStatus === -1}
-	<LoginMod on:state={onLoginModStateHandler} />
+	<LoginMod onstate={onLoginModStateHandler} />
 {:else}
 	{@render children?.()}
 {/if}

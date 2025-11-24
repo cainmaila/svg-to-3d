@@ -1,30 +1,35 @@
 <script lang="ts">
-	import { createBubbler, preventDefault } from 'svelte/legacy'
-
-	const bubble = createBubbler()
+	import { preventDefault } from 'svelte/legacy'
 	import { Svg, SVG } from '@svgdotjs/svg.js'
 	import '@svgdotjs/svg.draggable.js'
 	import '@svgdotjs/svg.panzoom.js'
 	import { onMount } from 'svelte'
 	import { loadSvgElementToDraw } from '$lib/svgLib'
-	import { createEventDispatcher } from 'svelte'
 	import ScaleBar from './ScaleBar.svelte'
 
-	const dispatch = createEventDispatcher()
-
 	interface Props {
-		//on:svg svgString變化
 		currentTool?: string //當前選擇的工具 select, polygon, line, freeDraw, door, measurement, putBox
 		scaleBase?: number //比例尺每px的實際cm長度
+		onsvg?: (svgString: string) => void
+		onbackground?: (background: any) => void
+		onmeasurement?: (length: number) => void
+		ontool?: (tool: string) => void
 	}
 
-	let { currentTool = $bindable('view'), scaleBase = 1 }: Props = $props()
+	let {
+		currentTool = $bindable('view'),
+		scaleBase = 1,
+		onsvg,
+		onbackground,
+		onmeasurement,
+		ontool
+	}: Props = $props()
 
 	let viewrScaleLevel = $state(1) //比例尺的縮放等級
 	let viewScaleWidth = $state(2) //下方比例尺顯示200px的寬度，會根據縮放比例變動
 
 	$effect(() => {
-		dispatch('tool', currentTool)
+		ontool?.(currentTool)
 	}) //發送當前工具
 
 	//畫布大小
@@ -50,7 +55,9 @@
 	let measurementLength: number | undefined = $state() //測量長度
 
 	$effect(() => {
-		dispatch('measurement', measurementLength)
+		if (measurementLength !== undefined) {
+			onmeasurement?.(measurementLength)
+		}
 	}) //發送測量長度
 	$effect(() => {
 		viewScaleWidth = (scaleBase * 2) / viewrScaleLevel
@@ -88,7 +95,7 @@
 		loadSvgElementToDraw(draw, svgElement, {
 			lineWidth
 		})
-		dispatch('svg', svgString)
+		onsvg?.(svgString)
 		const bg = draw.findOne('[data-type="bg"]') //取得背景圖片
 		bg && dispatchSettingBackground(bg)
 	}
@@ -141,7 +148,7 @@
 			selectedShape = null
 		}
 		svgString = draw.svg()
-		dispatch('svg', svgString)
+		onsvg?.(svgString)
 	}
 
 	// 創建控制點
@@ -324,7 +331,7 @@
 		isDrawing = false
 		currentShape = null
 		svgString = draw.svg()
-		dispatch('svg', svgString)
+		onsvg?.(svgString)
 	}
 
 	//選擇形狀
@@ -364,7 +371,7 @@
 
 	//底圖設置事件
 	function dispatchSettingBackground(background: any) {
-		dispatch('background', {
+		onbackground?.({
 			width: background.width(),
 			height: background.height(),
 			x: background.x(),
@@ -449,8 +456,12 @@
 	onmousemove={drawing}
 	onmouseup={endDrawing}
 	onmouseleave={endDrawing}
-	ondragover={preventDefault(bubble('dragover'))}
-	ondragleave={preventDefault(bubble('dragleave'))}
+	ondragover={(e) => {
+		e.preventDefault()
+	}}
+	ondragleave={(e) => {
+		e.preventDefault()
+	}}
 	ondrop={preventDefault(loadFile)}
 ></div>
 <ScaleBar>{viewScaleWidth.toFixed(2)} 公尺</ScaleBar>

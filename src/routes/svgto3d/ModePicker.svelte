@@ -1,19 +1,17 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy'
-
-	const bubble = createBubbler()
 	import ICON from '$lib/components/icon'
 	import { ViewerMode } from '$lib/components/Viewer/viewerType'
 	interface Props {
 		viewerMode: ViewerMode
-		onchange?: (event: CustomEvent) => void
+		onchange?: (mode: ViewerMode) => void
+		onkeypress?: (event: KeyboardEvent) => void
 	}
 
-	let { viewerMode = $bindable(), onchange }: Props = $props()
+	let { viewerMode = $bindable(), onchange, onkeypress }: Props = $props()
 
 	function onSelectHeader(mode: ViewerMode) {
 		viewerMode = mode
-		onchange?.(new CustomEvent('change', { detail: mode }))
+		onchange?.(mode)
 	}
 
 	function selectedStyle(viewerMode: ViewerMode, mode: ViewerMode) {
@@ -24,19 +22,11 @@
 </script>
 
 <div>
-	<button
-		class="{cctvStyle} chip"
-		onclick={() => onSelectHeader(ViewerMode.CCTV)}
-		onkeypress={bubble('keypress')}
-	>
+	<button class="{cctvStyle} chip" onclick={() => onSelectHeader(ViewerMode.CCTV)} {onkeypress}>
 		<span><ICON.GameIconsCctvCamera /></span>
 		<span>CCTV</span>
 	</button>
-	<button
-		class="{pipeStyle} chip"
-		onclick={() => onSelectHeader(ViewerMode.PIPE)}
-		onkeypress={bubble('keypress')}
-	>
+	<button class="{pipeStyle} chip" onclick={() => onSelectHeader(ViewerMode.PIPE)} {onkeypress}>
 		<ICON.TablerLine />
 		<span>PIPE</span>
 	</button>

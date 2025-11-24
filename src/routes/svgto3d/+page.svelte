@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as THREE from 'three'
 	import { debounce } from 'lodash-es'
 	import { onMount } from 'svelte'
 	import Viewer from '$lib/components/Viewer'
@@ -58,8 +59,12 @@
 		//把所有的CCTV資料轉成字串 放進 localStorage
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}, 300)
-	function onCCTVchangeMoveModeHandler(e: CustomEvent) {
-		debouncedHandler(e.detail)
+	function onCCTVchangeMoveModeHandler(data: {
+		name: string
+		matrix: THREE.Matrix4
+		focalLength: number
+	}) {
+		debouncedHandler(data)
 	}
 	function onLineModeHandler() {
 		switch (true) {
@@ -72,22 +77,22 @@
 				break
 		}
 	}
-	function onModelChangeHandler(e: CustomEvent) {
-		viewerMode = e.detail.viewerMode
-		cctvMode = e.detail.cctvMode
-		pipeMode = e.detail.pipeMode
+	function onModelChangeHandler(data: { viewerMode: string; cctvMode: string; pipeMode: string }) {
+		viewerMode = data.viewerMode as ViewerMode
+		cctvMode = data.cctvMode
+		pipeMode = data.pipeMode
 	}
-	function onViewerModeChangeHandler(e: CustomEvent) {
-		viewer?.setViewerMode(e.detail)
+	function onViewerModeChangeHandler(mode: ViewerMode) {
+		viewer?.setViewerMode(mode)
 	}
 	function onSelectLineHandler(line: string) {
 		viewer?.selectLine(line)
 	}
-	function onPipeMapUpdateHandler(e: CustomEvent) {
-		pipes = e.detail
+	function onPipeMapUpdateHandler(pipeInfos: Array<{ name: string; length: number }>) {
+		pipes = pipeInfos
 	}
-	function onSelectedPipeHandler(e: CustomEvent) {
-		selectPipeName = e.detail
+	function onSelectedPipeHandler(pipeName: string) {
+		selectPipeName = pipeName
 	}
 </script>
 
@@ -101,8 +106,8 @@
 	bind:topLineMode
 	onmodelReady={() => (nowGenerate = false)}
 	oncctvChange={onCCTVchangeMoveModeHandler}
-	oncctvDel={(e) => {
-		cctvsMap.delete(e.detail.name)
+	oncctvDel={(data) => {
+		cctvsMap.delete(data.name)
 		cameraNum = cctvsMap.size
 		localStorage.setItem('cctvs', JSON.stringify(Array.from(cctvsMap.entries())))
 	}}

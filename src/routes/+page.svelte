@@ -66,17 +66,17 @@
 		input.click()
 	}
 	//將背景圖片存入store
-	function saveBackgroundToStore(e: CustomEvent) {
-		backgroundImg$.set(e.detail)
+	function saveBackgroundToStore(background: any) {
+		backgroundImg$.set(background)
 	}
 	//比例尺變動
-	function onMeaurement(e: CustomEvent) {
-		if (e.detail === 0) return //避掉不需要的點擊事件
+	function onMeaurement(length: number) {
+		if (length === 0) return //避掉不需要的點擊事件
 		if (scaleLengthSetting === 0) {
 			//@ts-ignore
-			scaleLengthSetting = (e.detail / 100).toFixed(2) * 1
+			scaleLengthSetting = (length / 100).toFixed(2) * 1
 		}
-		measurementLength = e.detail
+		measurementLength = length
 		scalceModeOpen = true
 	}
 	//設定比例尺
@@ -85,9 +85,9 @@
 		scalceModeOpen = false
 	}
 	//工具變動
-	function onToolChangeHandler(e: CustomEvent) {
-		draw?.setCurrentTool(e.detail)
-		viewTool = e.detail
+	function onToolChangeHandler(tool: string) {
+		draw?.setCurrentTool(tool)
+		viewTool = tool
 	}
 	//下載SVG
 	function downloadSvg() {
@@ -111,26 +111,26 @@
 <main>
 	<ToolBar
 		tool={viewTool}
-		on:tool={onToolChangeHandler}
-		on:loadBg={loadImage}
-		on:clear={() => draw?.clear()}
-		on:build={goto3d}
-		on:download={downloadSvg}
+		ontool={onToolChangeHandler}
+		onloadBg={loadImage}
+		onclear={() => draw?.clear()}
+		onbuild={goto3d}
+		ondownload={downloadSvg}
 	/>
 	<SvgEditor
 		bind:this={draw}
-		on:svg={(e) => {
-			const svg = SVG(e.detail)
+		onsvg={(svgString) => {
+			const svg = SVG(svgString)
 			const scalerNode = svg.findOne('[data-type="scaler"]')
 			if (scalerNode) {
 				scalceSize$.set(Number(scalerNode.data('scaler')))
 			}
 			svgString$.set(svg.svg())
 		}}
-		on:background={saveBackgroundToStore}
-		on:measurement={onMeaurement}
-		on:tool={(e) => {
-			viewTool = e.detail
+		onbackground={saveBackgroundToStore}
+		onmeasurement={onMeaurement}
+		ontool={(tool) => {
+			viewTool = tool
 		}}
 		scaleBase={$scalceSize$}
 	/>

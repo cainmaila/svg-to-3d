@@ -64,7 +64,9 @@
 		// const cube = new THREE.Mesh(geometry, material)
 		// scene.add(cube)
 		onWindowResize()
-		viewerDom.appendChild(renderer.domElement)
+		if (viewerDom) {
+			viewerDom.appendChild(renderer.domElement)
+		}
 		animate()
 	}
 

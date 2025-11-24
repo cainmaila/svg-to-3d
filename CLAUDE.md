@@ -43,11 +43,13 @@ This is a CCTV placement planning application that converts 2D SVG floor plans i
 ### Core Components
 
 **SVG Editor** (`src/lib/components/SvgEditor/`)
+
 - Main 2D drawing interface using SVG.js
 - Handles drawing tools, scale setting, and floor plan manipulation
 - Exports SVG data to stores for 3D conversion
 
 **Viewer** (`src/lib/components/Viewer/`)
+
 - Three.js-based 3D scene renderer
 - Located at `src/lib/components/Viewer/Viewer.svelte`
 - Supports multiple modes: CCTV placement, pipe visualization, and roof line drawing
@@ -58,6 +60,7 @@ This is a CCTV placement planning application that converts 2D SVG floor plans i
   - Custom shaders in `shaders/` subdirectory
 
 **Cesium Integration** (`src/cesium-core/`)
+
 - Separate Cesium-based map viewer for advanced geospatial features
 - Uses `CesiumCoreView.svelte` as main component
 - Includes markers, models, primitives, heatmaps, and time-based controls
@@ -66,6 +69,7 @@ This is a CCTV placement planning application that converts 2D SVG floor plans i
 ### State Management
 
 **Stores** (`src/lib/stores/`)
+
 - `appState.svelte.ts` - Global app mode and state (uses Svelte 5 runes)
 - `modelsStore.svelte.ts` - 3D model data with localStorage persistence
 - `markersStore.svelte.ts` - Marker data with localStorage persistence

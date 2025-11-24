@@ -3,7 +3,7 @@
 
 	import { debounce } from 'lodash-es'
 	import * as THREE from 'three'
-	import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+	import { onDestroy, onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { scalceSize$ } from '$lib/stores'
 	import { generateSkyBox, svgStringToURL, svgToGroupSync, generateGLB } from './threelib'
@@ -39,11 +39,11 @@
 		bgImageDisable?: boolean //底圖是否顯示
 		topLineMode?: boolean //屋頂拉線模式
 		onmodelReady?: () => void
-		oncctvChange?: (event: CustomEvent) => void
-		oncctvDel?: (event: CustomEvent) => void
-		onmodeChange?: (event: CustomEvent) => void
-		onpipeMapUpdate?: (event: CustomEvent) => void
-		onselectedPipe?: (event: CustomEvent) => void
+		oncctvChange?: (data: { name: string; matrix: THREE.Matrix4; focalLength: number }) => void
+		oncctvDel?: (data: { name: string }) => void
+		onmodeChange?: (data: { viewerMode: string; pipeMode: string; cctvMode: string }) => void
+		onpipeMapUpdate?: (pipeInfos: Array<{ name: string; length: number }>) => void
+		onselectedPipe?: (pipeName: string) => void
 	}
 
 	let {
@@ -61,7 +61,6 @@
 		onselectedPipe
 	}: Props = $props()
 
-	const dispatch = createEventDispatcher()
 	const TARGET_LINE_POINT_END = '_PO' //繪製點的的顯示模型結尾名稱
 	const { svgString } = data //
 
@@ -105,15 +104,11 @@
 		cctvObj.position.copy(shadowCamera.position)
 		cctvObj.quaternion.copy(shadowCamera.quaternion)
 		getCCTVHelper(name)?.update()
-		oncctvChange?.(
-			new CustomEvent(ViewerEvent.CCTV_CHANGE, {
-				detail: {
-					name: cctvObj.name,
-					matrix: cctvObj.matrix,
-					focalLength: shadowCamera?.focalLength
-				}
-			})
-		)
+		oncctvChange?.({
+			name: cctvObj.name,
+			matrix: cctvObj.matrix,
+			focalLength: shadowCamera?.focalLength
+		})
 	}
 	//清除選擇的CCTV
 	function _clearSelectCCTV() {
@@ -132,11 +127,7 @@
 			targetLine.material = lineMaterial
 		}
 		targetLine = scene.getObjectByName(name) as THREE.Line
-		onselectedPipe?.(
-			new CustomEvent(ViewerEvent.SELECTED_PIPE, {
-				detail: targetLine?.name || ''
-			})
-		)
+		onselectedPipe?.(targetLine?.name || '')
 		if (!targetLine) return
 		targetLine.material = new THREE.LineBasicMaterial({
 			color: 0xffff00,
@@ -156,11 +147,7 @@
 				length: getLineLength(pos)
 			})
 		})
-		onpipeMapUpdate?.(
-			new CustomEvent(ViewerEvent.PIPE_MAP_UPDATE, {
-				detail: pipeInfos
-			})
-		)
+		onpipeMapUpdate?.(pipeInfos)
 	}
 	//傳入陣列點創建線
 	function createLine(points: THREE.Vector3[]) {
@@ -377,8 +364,8 @@
 		debounce(() => updataShadowMaps(), 100)()
 	}
 	//CCTV Info變動移動模式
-	function onCCTVchangeMoveModeHandler(e: CustomEvent) {
-		const { moveMode, checked } = e.detail
+	function onCCTVchangeMoveModeHandler(data: { moveMode: string; checked: boolean }) {
+		const { moveMode, checked } = data
 		switch (moveMode) {
 			case CCTVMode.MOVE:
 				send({ type: checked ? CCTVMode.MOVE : CCTVMode.NONE })
@@ -563,12 +550,13 @@
 		}
 	}
 	//UI 改變焦距
-	function changeCCTV_FocalLength(e: CustomEvent) {
-		const focalLength = parseFloat(e.detail) || 4
+	function changeCCTV_FocalLength(focalLength: string | number) {
+		const parsedFocalLength =
+			typeof focalLength === 'string' ? parseFloat(focalLength) || 4 : focalLength
 		const shadowCamera = getCCTVCamera(selectCCTV)
 		if (!shadowCamera) return
-		;(shadowCamera as CCTVCamera).focalLength = focalLength
-		selectCCTVSeting.focalLength = focalLength
+		;(shadowCamera as CCTVCamera).focalLength = parsedFocalLength
+		selectCCTVSeting.focalLength = parsedFocalLength
 		const cctvHelper = getCCTVHelper(selectCCTV)
 		if (cctvHelper) cctvHelper.update()
 		moveCctv(selectCCTV)
@@ -589,11 +577,7 @@
 			cctvHelper[0] && scene.remove(cctvHelper[0])
 			scene.remove(cctvObj)
 			send({ type: 'updateSelectCCTV', selectCCTV: '' })
-			oncctvDel?.(
-				new CustomEvent(ViewerEvent.CCTV_DEL, {
-					detail: { name: cctvObj.name }
-				})
-			)
+			oncctvDel?.({ name: cctvObj.name })
 		}
 	}
 	// 監聽視窗大小變化
@@ -703,11 +687,7 @@
 		if (bgImageObj) bgImageObj.visible = bgImageDisable
 	})
 	$effect(() => {
-		onmodeChange?.(
-			new CustomEvent(ViewerEvent.MODE_CHANGE, {
-				detail: { viewerMode, pipeMode, cctvMode }
-			})
-		)
+		onmodeChange?.({ viewerMode, pipeMode, cctvMode })
 	})
 	//選擇cctv
 	$effect(() => {
@@ -757,8 +737,8 @@
 	{selectCCTV}
 	{cctvMode}
 	{selectCCTVSeting}
-	on:clear={onClickClearCCTVHandler}
-	on:del={() => delCCTV()}
-	on:moveMode={onCCTVchangeMoveModeHandler}
-	on:focalLength={changeCCTV_FocalLength}
+	onclear={onClickClearCCTVHandler}
+	ondel={() => delCCTV()}
+	onmoveMode={onCCTVchangeMoveModeHandler}
+	onfocalLength={changeCCTV_FocalLength}
 />
