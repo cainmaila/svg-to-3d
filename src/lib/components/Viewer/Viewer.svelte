@@ -612,8 +612,9 @@
 	}
 	//清除CCTV模式
 	export function addLineEnd() {
+		const currentPipeMode = pipeMode // 在狀態改變前捕獲當前模式
 		send({ type: PIPE_MODE.NONE, selectPipe: '' })
-		switch (pipeMode) {
+		switch (currentPipeMode) {
 			case PIPE_MODE.ADD:
 				if (points.length === 1) {
 					unDoAddLine()
