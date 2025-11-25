@@ -60,15 +60,15 @@
 	function validateEmail(mail: string) {
 		const domainRegex = /^[a-zA-Z0-9._%+-]+@dgiots\.com$/
 		//並符合以下陣列中的一個
-		const mailRegex = ['cainmaila@gmail.com', 'sophy.rscloud@gmail.com']
+		const mailRegex = ['cainmaila@gmail.com']
 		return domainRegex.test(mail) || mailRegex.includes(mail)
 	}
 
 	function onLoginModStateHandler(e: CustomEvent) {
 		switch (e.detail) {
 			case 'logining':
-				// loginStatus = 1
-				alert('Google服務費用已超標')
+				loginStatus = 1
+				// alert('Google服務費用已超標')
 				break
 			case 'success':
 				// loginStatus = 2
@@ -91,7 +91,7 @@
 {:else if loginStatus === -1}
 	<LoginMod on:state={onLoginModStateHandler} />
 {:else}
-	<div>Google服務費用已超標</div>
-	<!-- <slot></slot> -->
+	<!-- <div>Google服務費用已超標</div> -->
+	<slot></slot>
 {/if}
 <Toast />
