@@ -93,8 +93,9 @@
 		createCCTVObj
 	} = cctvObjsFactory(cctvsSettings, scene) //攝影機物件 創建CCTV Obj
 
-	// cctvNum 從 shadowCameras 陣列長度自動計算
-	let cctvNum = $derived(shadowCameras.length)
+	// cctvNum 需要手動維護，因為 shadowCameras 是普通陣列不是 $state
+	// $derived 無法追蹤普通陣列的 push/pop 操作
+	let cctvNum = $state(shadowCameras.length)
 
 	//複製攝影機位置包含旋轉
 	function moveCctv(name: string) {
@@ -218,6 +219,7 @@
 					shadowCameras.push(cctv)
 					cctvObjs.push(cctvObj)
 					cctvHelpers.push(cctvHelper)
+					cctvNum++ // 手動更新 cctvNum
 					send({
 						type: CCTVMode.LOOKAT,
 						selectCCTV: name
@@ -580,6 +582,7 @@
 			const cctvHelper = cctvHelpers.splice(index, 1)
 			cctvHelper[0] && scene.remove(cctvHelper[0])
 			scene.remove(cctvObj)
+			cctvNum-- // 手動更新 cctvNum
 			send({ type: 'updateSelectCCTV', selectCCTV: '' })
 			oncctvDel?.({ name: cctvObj.name })
 		}
