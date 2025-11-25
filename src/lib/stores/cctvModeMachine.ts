@@ -85,7 +85,6 @@ export const cctvModeMachine = setup({
 			},
 			states: {
 				[CCTVMode.NONE]: {
-					target: CCTVMode.NONE,
 					on: {
 						[CCTVMode.ADD]: {
 							target: CCTVMode.ADD,
@@ -102,7 +101,6 @@ export const cctvModeMachine = setup({
 					}
 				},
 				[CCTVMode.ADD]: {
-					target: CCTVMode.ADD,
 					on: {
 						[CCTVMode.NONE]: {
 							target: CCTVMode.NONE,
@@ -119,7 +117,6 @@ export const cctvModeMachine = setup({
 					}
 				},
 				[CCTVMode.MOVE]: {
-					target: CCTVMode.MOVE,
 					on: {
 						[CCTVMode.NONE]: {
 							target: CCTVMode.NONE,
@@ -136,7 +133,6 @@ export const cctvModeMachine = setup({
 					}
 				},
 				[CCTVMode.LOOKAT]: {
-					target: CCTVMode.LOOKAT,
 					on: {
 						[CCTVMode.NONE]: {
 							target: CCTVMode.NONE,
@@ -164,8 +160,6 @@ export const cctvModeMachine = setup({
 			},
 			states: {
 				[PIPE_MODE.NONE]: {
-					target: PIPE_MODE.NONE,
-					actions: 'updateSelectPipe',
 					on: {
 						[PIPE_MODE.CREATE]: {
 							target: PIPE_MODE.CREATE,
@@ -183,16 +177,6 @@ export const cctvModeMachine = setup({
 					}
 				},
 				[PIPE_MODE.CREATE]: {
-					target: PIPE_MODE.CREATE,
-					actions: [
-						'addPipe',
-						{
-							type: 'updateSelectPipe',
-							params: {
-								selectPipe: ''
-							}
-						}
-					],
 					on: {
 						[PIPE_MODE.NONE]: {
 							target: PIPE_MODE.NONE,
@@ -213,7 +197,6 @@ export const cctvModeMachine = setup({
 					}
 				},
 				[PIPE_MODE.ADD]: {
-					target: PIPE_MODE.ADD,
 					on: {
 						[PIPE_MODE.NONE]: {
 							target: PIPE_MODE.NONE,
@@ -225,7 +208,13 @@ export const cctvModeMachine = setup({
 							}
 						},
 						[PIPE_MODE.CREATE]: {
-							target: PIPE_MODE.CREATE
+							target: PIPE_MODE.CREATE,
+							actions: {
+								type: 'updateSelectPipe',
+								params: {
+									selectPipe: ''
+								}
+							}
 						}
 					}
 				}

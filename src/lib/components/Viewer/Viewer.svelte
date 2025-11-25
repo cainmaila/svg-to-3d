@@ -605,6 +605,8 @@
 	}
 	//新增線路
 	export function createLines() {
+		points = [] // 清空點陣列
+		normalArray.length = 0 // 清空法向量陣列
 		selectLine('') //清除選擇的線
 		send({ type: PIPE_MODE.CREATE })
 	}
@@ -643,7 +645,10 @@
 			addLineEnd()
 			updataShadowMaps()
 		}
-		send({ type: mode })
+		// 只在需要切換模式時才發送事件
+		if (viewerMode !== mode) {
+			send({ type: mode })
+		}
 	}
 	//選擇線路
 	export function selectLine(line: string) {
