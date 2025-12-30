@@ -21,7 +21,7 @@
 	let downloadGLB: string = $state('') //下載的模型路徑
 	let cctvsSettings = $state<any[]>([])
 	let cameraNum = $state(0)
-	let bgImageDisable = $state(false) //底圖是否顯示
+	let bgImageDisable = $state(true) //底圖是否顯示
 	let viewerMode: ViewerMode = $state(ViewerMode.CCTV) //viewer模式
 	let cctvMode = $state('') //cctv模式
 	let pipeMode = $state('') //pipe模式
