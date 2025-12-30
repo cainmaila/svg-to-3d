@@ -52,7 +52,7 @@
 	$: selectPipe = $snapshot.context.selectPipe //選取的pipe
 	$: lineMap = $snapshot.context.lineMap //線段紀錄
 	$: cctvNum = cctvsSettings.length > MAX_CCTV_NUM ? MAX_CCTV_NUM : cctvsSettings.length //CCTV數量
-	$: bgImageObj && (bgImageObj.visible = bgImageDisable)
+	$: bgImageObj && (bgImageObj.visible = !bgImageDisable)
 	$: dispatch(ViewerEvent.MODE_CHANGE, { viewerMode, pipeMode, cctvMode }) //通知父組件模式改變
 
 	// 設置場景、相機和渲染器
@@ -451,7 +451,7 @@
 				if (child instanceof THREE.Mesh) {
 					if (child.name === 'BG') {
 						bgImageObj = child
-						child.visible = bgImageDisable
+						child.visible = !bgImageDisable
 						return
 					}
 					if (child.name === 'Floor') {
