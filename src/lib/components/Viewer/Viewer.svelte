@@ -456,7 +456,7 @@
 				if (child instanceof THREE.Mesh) {
 					if (child.name === 'BG') {
 						bgImageObj = child
-						child.visible = bgImageDisable
+						child.visible = !bgImageDisable
 						return
 					}
 					if (child.name === 'Floor') {
@@ -697,7 +697,7 @@
 	let selectPipe = $derived($snapshot.context.selectPipe) //選取的pipe
 	let lineMap = $derived($snapshot.context.lineMap) //線段紀錄
 	$effect(() => {
-		if (bgImageObj) bgImageObj.visible = bgImageDisable
+		if (bgImageObj) bgImageObj.visible = !bgImageDisable
 	})
 	$effect(() => {
 		onmodeChange?.({ viewerMode, pipeMode, cctvMode })
