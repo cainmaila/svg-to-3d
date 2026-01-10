@@ -512,6 +512,7 @@
 		for (let i = 0; i < cctvNum; i++) {
 			const shadowCamera = shadowCameras[i]
 			shadowCamera.updateMatrixWorld()
+			shadowCamera.updateProjectionMatrix() // 更新投影矩陣以確保正確的投影計算
 			// 计算并更新阴影矩阵
 			const shadowMatrix = new THREE.Matrix4()
 			shadowMatrix.multiplyMatrices(shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse)

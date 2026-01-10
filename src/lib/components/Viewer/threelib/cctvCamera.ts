@@ -91,6 +91,7 @@ export class CCTVCamera extends PerspectiveCamera {
 		const fovVerticalRadians = 2 * Math.atan(this._sensorHeight / (2 * this._focalLength)) // 垂直視角
 		const fovVerticalDegrees = fovVerticalRadians * ANGLE // 垂直視角
 		this.fov = fovVerticalDegrees
+		this.aspect = this._sensorWidth / this._sensorHeight // 更新寬高比
 		this.updateProjectionMatrix()
 	}
 }
